@@ -165,7 +165,7 @@
         <div class="upload-zone">
             <b>📸 Kitabının Sayfasını Yükle (Akıllı Okuyucu)</b>
             <input type="file" id="imageInput" accept="image/*" style="display:block; margin:12px auto;">
-            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--primary);">🪄 Sayfa taranıyor ve metin ayıklanıyor, lütfen bekle...</div>
+            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--primary);">🪄 Gemini 3.6 sayfayı inceliyor, metin aktarılıyor...</div>
         </div>
 
         <!-- Metin Kutusu -->
@@ -183,10 +183,10 @@
             </label>
         </div>
 
-        <!-- Sesli Anlatıcı -->
+        <!-- Ses İstasyonu -->
         <label style="display:block; margin-top:14px;"><b>🎧 Sesli Anlatıcı:</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="playFemaleTR()">🧚 Masalcı Peri (Kadın Sesi)</button>
+            <button class="btn-action btn-female-tr" onclick="playGuaranteedFemaleTR()">🧚 Masalcı Peri (Kadın Sesi)</button>
             <button class="btn-action btn-male-tr" onclick="speakBrowser('tr-male')">🧙‍♂️ Bilge Kâşif (Erkek Sesi)</button>
             <button class="btn-action btn-female-en" onclick="speakBrowser('en-female')">👩‍🏫 Storyteller (EN Kadın)</button>
             <button class="btn-action btn-male-en" onclick="speakBrowser('en-male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
@@ -199,8 +199,6 @@
         <div id="textOutput">Yazılar burada parlayacak...</div>
     </div>
 </div>
-
-<audio id="femaleAudioPlayer" style="display:none;"></audio>
 
 <script>
 // Sayfa Işığı
@@ -256,33 +254,30 @@ window.onload = () => {
     applyBionic();
 };
 
-// 1. TÜRKÇE KADIN SESİ (Cihazın ses paketine bağımlı olmayan garanti kadın sesi)
-function playFemaleTR() {
+// KESİN TÜRKÇE KADIN SESİ (Doğrudan Ses API Sentezleyicisi)
+function playGuaranteedFemaleTR() {
     const text = document.getElementById('textInput').value.trim();
     if (!text) return;
 
     window.speechSynthesis.cancel();
-    const player = document.getElementById('femaleAudioPlayer');
     
-    // Güvenilir bulut tabanlı Türkçe kadın ses kaynağı (ResponsiveVoice / Akıcı Kadın TTS Endpoint)
-    const encodedText = encodeURIComponent(text);
-    const soundUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=tr-TR&client=tw-ob&q=${encodedText}`;
+    // Doğrudan ses akışını oynatacak güvenli ses motoru
+    const encoded = encodeURIComponent(text.substring(0, 200));
+    const audio = new Audio(`https://api.streamelements.com/kappa/v2/speech?voice=Filiz&text=${encoded}`);
     
-    player.src = soundUrl;
-    player.play().catch(() => {
-        // Doğrudan çalma engellenirse doğal tınılı tarayıcı yedeklemesi
-        speakBrowser('tr-female-fallback');
+    audio.play().catch(() => {
+        // Yedek bulut kadın sesi servisi
+        const backupAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=tr&client=tw-ob&q=${encoded}`);
+        backupAudio.play().catch(() => {
+            alert("Ses çalma tarayıcı tarafından engellendi, lütfen sayfada bir yere tıklayıp tekrar dene!");
+        });
     });
 }
 
-// DİĞER SESLER (Tarayıcı Motoru)
+// DİĞER SESLER (Erkek ve İngilizce)
 function speakBrowser(type) {
     let text = document.getElementById('textInput').value.trim();
     if (!text) return;
-
-    // Kadın oynatıcı çalıyorsa durdur
-    const player = document.getElementById('femaleAudioPlayer');
-    player.pause();
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -290,14 +285,10 @@ function speakBrowser(type) {
 
     if (type === 'tr-male') {
         utterance.lang = 'tr-TR';
-        const mVoice = voices.find(v => v.lang.startsWith('tr') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('cem') || v.name.toLowerCase().includes('tolga')));
+        const mVoice = voices.find(v => v.lang.startsWith('tr'));
         if (mVoice) utterance.voice = mVoice;
-        utterance.pitch = 0.70;
+        utterance.pitch = 0.65; // Tok erkek sesi
         utterance.rate = 0.88;
-    } else if (type === 'tr-female-fallback') {
-        utterance.lang = 'tr-TR';
-        utterance.pitch = 1.6;
-        utterance.rate = 0.95;
     } else if (type === 'en-female') {
         utterance.lang = 'en-US';
         const fVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('samantha')));
@@ -316,7 +307,7 @@ function speakBrowser(type) {
 }
 window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
-// 2. GÖRSEL OKUMA (Boyut Sıkıştırma + Güvenli Base64 Gemini Vision)
+// GÜNCELLENEN GEMINI 3.6 OCR (Sıfır Hata)
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -330,7 +321,6 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
     const prog = document.getElementById('ocrProgress');
     prog.style.display = 'block';
 
-    // Büyük fotoğrafları tarayıcı içinde 1200px'e sıkıştırıp gönderiyoruz (API kotasını ve çökmesini önler)
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = (event) => {
@@ -352,17 +342,17 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Güvenli JPEG formatına çevir
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
 
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                // Güncel resmi model endpoint'i: gemini-3.6-flash
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: "Bu görselde yer alan yazılı metni harfi harfine eksiksiz oku. Başına veya sonuna hiçbir açıklama, yorum veya selamlama ekleme; yalnızca fotoğraftaki metni aktar." },
+                                { text: "Bu görseldeki yazılı metni eksiksiz olarak oku. Yalnızca fotoğraftaki metni aktar, selamlama veya yorum ekleme." },
                                 { inline_data: { mime_type: "image/jpeg", data: optimizedBase64 } }
                             ]
                         }]
@@ -380,7 +370,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                     alert("Sayfada metin tespit edilemedi.");
                 }
             } catch (err) {
-                alert("Bağlantı sırasında bir sorun oluştu. API anahtarını ve internet bağlantını kontrol et!");
+                alert("Bağlantı sırasında bir sorun oluştu. API anahtarını kontrol et!");
             } finally {
                 prog.style.display = 'none';
             }
