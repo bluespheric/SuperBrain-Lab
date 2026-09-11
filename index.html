@@ -129,7 +129,7 @@
         <div class="upload-zone">
             <b>📸 Kitap Sayfasını Yükle (Yapay Zeka Okuyucu)</b>
             <input type="file" id="imageInput" accept="image/*" style="display:block; margin:12px auto;">
-            <div id="aiProgress" class="status-msg" style="display:none; color:var(--bionic-color);">🪄 Süper Beyin AI çalışıyor, lütfen bekle...</div>
+            <div id="aiProgress" class="status-msg" style="display:none; color:var(--bionic-color);">🪄 Gemini 3.6 sayfayı inceliyor, metin aktarılıyor...</div>
         </div>
 
         <!-- Metin Kutusu -->
@@ -196,7 +196,6 @@ function saveKey() {
     const k = document.getElementById('apiKeyInput').value.trim();
     if (k) {
         localStorage.setItem('superbrain_gemini_key', k);
-        sessionStorage.removeItem('cached_gemini_model'); // Model önbelleğini temizle
         document.getElementById('keyStatus').innerText = "✓ Anahtar tarayıcı hafızasına güvenle kaydedildi!";
     }
 }
@@ -210,41 +209,15 @@ window.onload = () => {
     applyBionic();
 };
 
-// HESAPTA ÇALIŞAN GÜNCEL MODELİ OTOMATİK TESPİT EDEN SİSTEM (ModelService.ListModels)
-async function getAvailableModel(apiKey) {
-    const cached = sessionStorage.getItem('cached_gemini_model');
-    if (cached) return cached;
-
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    const data = await res.json();
-    
-    if (data.error) {
-        throw new Error("Anahtar geçersiz veya modeller listelenemedi: " + data.error.message);
-    }
-    
-    if (data.models && data.models.length > 0) {
-        // Öncelikli olarak generateContent destekleyen Flash veya Pro modellerini seç
-        const usable = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
-        const best = usable.find(m => m.name.includes("flash")) || usable[0];
-        
-        if (best) {
-            sessionStorage.setItem('cached_gemini_model', best.name);
-            return best.name; // Zaten 'models/model-adi' şeklinde döner
-        }
-    }
-    throw new Error("Hesabında generateContent destekleyen aktif bir Gemini modeli bulunamadı.");
-}
-
-// MERKEZİ YAPAY ZEKA ÇEKİRDEĞİ (Dinamik Model ile)
+// MERKEZİ YAPAY ZEKA ÇEKİRDEĞİ (Doğrudan Gemini 3.6 Flash)
 async function askGemini(promptText, base64Image = null) {
     const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) {
         throw new Error("Lütfen önce Laboratuvar Anahtarını (API Key) girip kaydedin!");
     }
 
-    // Hesabında çalışan gerçek modeli otomatik tespit et
-    const modelPath = await getAvailableModel(apiKey);
-    const url = `https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent?key=${apiKey}`;
+    // Google'ın zorunlu kıldığı en güncel resmi model
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     
     let parts = [{ text: promptText }];
     if (base64Image) {
@@ -278,7 +251,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
 
     const prog = document.getElementById('aiProgress');
     prog.style.display = 'block';
-    prog.innerText = "🪄 Sayfa inceleniyor, harfler okunuyor...";
+    prog.innerText = "🪄 Gemini 3.6 sayfayı inceliyor, harfler aktarılıyor...";
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -303,7 +276,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
 
             try {
-                const prompt = "Bu görselde yer alan Türkçe metni harfi harfine eksiksiz oku. Başına veya sonuna hiçbir selamlama, yorum ekleme; sadece metni aktar.";
+                const prompt = "Bu görselde yer alan Türkçe metni harfi harfine eksiksiz oku. Başına veya sonuna hiçbir selamlama, yorum ekleme; sadece fotoğraftaki metni aktar.";
                 const resultText = await askGemini(prompt, optimizedBase64);
                 
                 document.getElementById('textInput').value = resultText;
