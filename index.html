@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Süper Beyin Laboratuvarı</title>
-    <!-- Disleksi Dostu Lexend ve Çocuk Dostu Fredoka Fontları -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,29 +11,30 @@
             --card-bg: #FAF6EF;
             --text-bg: #F5EFE1;
             --text-main: #1E293B;
-            --primary: #3B5998;
+            --primary: #2563EB;
             --jigsaw: #0284C7;
             --dual: #0D9488;
             --memory: #EA580C;
             --active: #D97706;
             --time-mod: #2563EB;
             --growth: #4338CA;
+            --ruler-bg: rgba(254, 240, 138, 0.5);
         }
         body {
-            font-family: 'Lexend', 'Fredoka', sans-serif;
+            font-family: 'Lexend', sans-serif;
             background-color: var(--bg-color);
             margin: 0;
             padding: 20px;
             color: var(--text-main);
-            letter-spacing: 0.03em;
+            letter-spacing: 0.04em;
         }
-        .container { max-width: 980px; margin: 0 auto; padding-bottom: 100px; }
+        .container { max-width: 960px; margin: 0 auto; padding-bottom: 90px; }
 
         /* GİRİŞ EKRANI */
         #onboardingScreen {
-            max-width: 680px; margin: 20px auto; background: var(--card-bg);
-            border-radius: 26px; padding: 30px; border: 2px solid #E2D7C5;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center;
+            max-width: 650px; margin: 24px auto; background: var(--card-bg);
+            border-radius: 24px; padding: 30px; border: 2px solid #E2D7C5;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04); text-align: center;
         }
         .avatar-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0; }
         .avatar-card {
@@ -43,9 +43,9 @@
         }
         .avatar-card.selected {
             border-color: var(--primary); background: #EFF6FF; border-width: 3px;
-            box-shadow: 0 4px 14px rgba(59, 89, 152, 0.15);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
         }
-        .avatar-icon { font-size: 48px; display: block; margin-bottom: 6px; }
+        .avatar-icon { font-size: 46px; display: block; margin-bottom: 6px; }
 
         .mood-grid { display: flex; gap: 10px; justify-content: center; margin: 12px 0 20px 0; flex-wrap: wrap; }
         .mood-chip {
@@ -56,18 +56,29 @@
 
         #mainApp { display: none; }
 
-        /* HEADER */
+        /* HEADER & KÂŞİF MOLASI (SAĞ ÜST KÖŞE) */
         .header {
-            background: linear-gradient(135deg, #1E3A8A, #3B82F6); color: white;
-            padding: 22px; border-radius: 24px; display: flex; justify-content: space-between;
+            background: linear-gradient(135deg, #1E3A8A, #2563EB); color: white;
+            padding: 18px 24px; border-radius: 24px; display: flex; justify-content: space-between;
             align-items: center; box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15); margin-bottom: 20px;
         }
-        .companion-badge {
-            background: rgba(255,255,255,0.2); backdrop-filter: blur(6px);
-            padding: 8px 16px; border-radius: 16px; display: flex; align-items: center; gap: 10px; font-weight: 600;
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .break-top-btn {
+            background: #E6FFFA; color: #0D9488; border: 2px solid #99F6E4;
+            padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600;
+            font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s;
+        }
+        .break-top-btn:hover { background: #CCFBF1; transform: translateY(-1px); }
+
+        .settings-btn {
+            background: rgba(255,255,255,0.2); border: none; color: white;
+            padding: 10px 14px; border-radius: 16px; cursor: pointer; font-size: 18px;
         }
 
-        /* SEKME MENÜSÜ */
+        /* MODÜL SEKME MENÜSÜ */
         .module-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .module-tab {
             flex: 1; min-width: 130px; padding: 12px 10px; border-radius: 16px;
@@ -77,33 +88,34 @@
         }
         .module-tab.active {
             background: #1E3A8A; color: white; border-color: #1E3A8A;
-            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.2);
+            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.18);
         }
         .module-content { display: none; }
         .module-content.active { display: block; }
 
         .card {
             background: var(--card-bg); padding: 24px; border-radius: 22px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #E2D7C5;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #E2D7C5;
         }
         .companion-helper {
             background: #F0FDF4; border: 2px solid #BBF7D0; border-radius: 14px;
-            padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;
-            font-size: 15px; font-weight: 500; color: #166534;
+            padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;
+            font-size: 15px; font-weight: 600; color: #14532D;
         }
         .theme-btn {
-            padding: 8px 16px; border-radius: 12px; border: 2px solid #E2D7C5;
-            cursor: pointer; font-weight: 500; background: #FFFDF9; margin-right: 6px;
-            margin-bottom: 6px; font-family: inherit;
+            padding: 8px 16px; border-radius: 12px; border: 2px solid #CBD5E1;
+            cursor: pointer; font-weight: 500; background: #FFFFFF; margin-right: 6px;
+            margin-bottom: 6px; font-family: inherit; color: #1E293B;
         }
-        textarea, input[type="password"], input[type="text"], select {
-            width: 100%; border-radius: 16px; border: 2px solid #E2D7C5;
-            padding: 16px; font-size: 17px; font-family: inherit; box-sizing: border-box;
+        textarea, input[type="text"] {
+            width: 100%; border-radius: 16px; border: 2px solid #CBD5E1;
+            padding: 14px 16px; font-size: 16px; font-family: inherit; box-sizing: border-box;
             outline: none; margin-top: 8px; background-color: var(--text-bg);
             color: var(--text-main); line-height: 1.6;
         }
-        textarea { height: 120px; resize: vertical; }
+        textarea { height: 110px; resize: vertical; }
         .controls { display: flex; gap: 10px; align-items: center; margin: 14px 0; flex-wrap: wrap; }
+        
         .btn-action {
             color: white; border: none; padding: 12px 20px; border-radius: 16px;
             font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
@@ -120,106 +132,162 @@
         .btn-time { background: var(--time-mod); }
         .btn-growth { background: var(--growth); }
 
-        /* Jigsaw & Dual */
+        /* JIGSAW (GÖREV ÇEKİRDEĞİ) */
         .jigsaw-box, .dual-box { display: none; border-radius: 20px; padding: 22px; margin-top: 18px; }
         .jigsaw-box { background: #F0F9FF; border: 2px solid #BAE6FD; }
-        .jigsaw-hero { background: #FFFFFF; border: 2px dashed #7DD3FC; padding: 16px; border-radius: 14px; font-weight: 600; color: #0369A1; }
-        .jigsaw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
-        .jigsaw-card { background: #FFFFFF; padding: 12px 14px; border-radius: 14px; border-left: 4px solid var(--jigsaw); color: var(--text-main); font-size: 15px; }
+        .jigsaw-hero { background: #FFFFFF; border: 2px solid #7DD3FC; padding: 18px; border-radius: 14px; font-weight: 600; color: #0C4A6E; font-size: 17px; }
+        .jigsaw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 14px; }
+        .jigsaw-card {
+            background: #FFFFFF; padding: 16px 18px; border-radius: 14px;
+            border-left: 5px solid var(--jigsaw); color: var(--text-main); font-size: 15px; line-height: 1.6;
+        }
+        .jigsaw-card-title { font-weight: 700; color: #0369A1; margin-bottom: 6px; font-size: 14px; }
+
+        /* DUAL CODING */
         .dual-box { background: #F0FDF4; border: 2px solid #BBF7D0; }
         .dual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
         .dual-card { background: #FFFFFF; border-radius: 16px; overflow: hidden; border: 2px solid #DCFCE7; text-align: center; }
         .dual-card img { width: 100%; height: 180px; object-fit: cover; }
-        .dual-card-caption { padding: 10px; font-weight: 600; font-size: 14px; color: #166534; }
+        .dual-card-caption { padding: 12px; font-weight: 600; font-size: 14px; color: #166534; }
 
-        /* Roma Odası (Yüksek Kontrastlı) */
+        /* ZİHİN EVİ (TEK ÇERÇEVELİ, YÜKSEK KONTRASTLI) */
         .palace-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
-        .palace-room { background: #FFFFFF; border: 2px dashed #CBD5E1; border-radius: 18px; padding: 16px; }
+        .palace-room { background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 16px; padding: 16px; text-align: left; }
         .room-header { font-weight: 700; font-size: 15px; color: #1E3A8A; margin-bottom: 10px; }
-        .room-item { background: #F1F5F9; border-left: 4px solid var(--memory); color: #0F172A; padding: 12px 14px; border-radius: 8px; font-size: 15px; font-weight: 500; line-height: 1.5; }
+        .room-item { background: #F8FAFC; border-left: 4px solid var(--memory); color: #0F172A; padding: 12px 14px; border-radius: 6px; font-size: 15px; font-weight: 500; line-height: 1.6; }
 
+        /* TEKERLEME FABRİKASI */
         .chip-container { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-        .word-chip { background: #FFFFFF; border: 2px solid #CBD5E1; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 14px; color: #1E293B; }
+        .word-chip {
+            background: #FFFFFF; border: 2px solid #CBD5E1; padding: 7px 16px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 14px; color: #1E293B; text-transform: capitalize;
+        }
         .word-chip.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .mnemonic-result {
+            background: #FFFFFF; border-left: 5px solid var(--primary); padding: 16px 20px;
+            border-radius: 14px; margin-top: 14px; font-weight: 500; line-height: 1.8; color: #0F172A; font-size: 16px;
+        }
 
-        .sensory-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 18px; padding: 18px; text-align: center; }
-        .sensory-word { font-size: 28px; font-weight: 600; letter-spacing: 0.1em; color: #1E3A8A; margin: 10px 0; }
-        .sensory-input { text-align: center; font-size: 22px; font-weight: 600; letter-spacing: 0.08em; background: #FFFFFF; }
-
-        .mindmap-tree { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 16px; }
-        .mindmap-root { background: #D97706; color: white; padding: 14px 24px; border-radius: 24px; font-size: 17px; font-weight: 600; }
-        .mindmap-branches { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; width: 100%; }
-        .mindmap-node { background: #FFFFFF; border: 2px solid #FDE68A; padding: 12px 18px; border-radius: 18px; font-weight: 500; font-size: 15px; color: #78350F; }
-
-        .forest-box { text-align: center; background: #F0FDF4; border: 2px solid #BBF7D0; border-radius: 20px; padding: 24px; margin-top: 16px; }
-        .tree-visual { font-size: 80px; margin: 12px 0; transition: transform 0.4s ease; display: inline-block; }
-        .window-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 18px; padding: 20px; margin-top: 16px; }
-        .chunk-item { background: #FFFFFF; border-left: 5px solid var(--time-mod); padding: 14px 16px; border-radius: 12px; margin-top: 10px; font-weight: 500; font-size: 15px; line-height: 1.6; }
-
-        /* Hata Fabrikası */
-        .neuron-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 18px; padding: 18px; margin-top: 14px; }
-
-        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI (BİYONİK KALDIRILDI) */
+        /* DİSLEKSİ DOSTU TİPOGRAFİ & SİHİRLİ HECE ŞERİDİ */
+        .output-wrapper { max-width: 650px; margin: 16px 0; }
         .output-container {
-            position: relative; background-color: var(--text-bg); padding: 28px;
-            border-radius: 20px; font-size: 22px; line-height: 2.3;
-            letter-spacing: 0.08em; word-spacing: 0.18em; font-weight: 500;
-            border: 3px dashed #CBD5E1; min-height: 110px; margin-top: 18px;
-            color: #0F172A; text-align: left;
+            position: relative; background-color: var(--text-bg); padding: 26px 28px;
+            border-radius: 18px; font-size: 21px; line-height: 2.1;
+            letter-spacing: 0.06em; word-spacing: 0.14em; font-weight: 500;
+            border: 2px solid #CBD5E1; min-height: 110px;
+            color: #09090B; text-align: left;
         }
         .reading-ruler {
-            position: absolute; left: 0; right: 0; height: 56px;
-            background: rgba(254, 240, 138, 0.45); border-top: 2px solid #FACC15;
-            border-bottom: 2px solid #FACC15; pointer-events: none; display: none;
+            position: absolute; left: 0; right: 0; height: 52px;
+            background: var(--ruler-bg); border-top: 2px solid #EAB308;
+            border-bottom: 2px solid #EAB308; pointer-events: none; display: none;
         }
-        .upload-zone { background: #EFE8DA; border: 2px dashed #C8BCAC; padding: 16px; border-radius: 16px; margin-top: 12px; text-align: center; }
+        .syllable-a { color: #1E3A8A; font-weight: 600; }
+        .syllable-b { color: #0F172A; font-weight: 600; }
 
-        /* MOLA KAPSÜLÜ */
-        .break-fab {
-            position: fixed; bottom: 24px; left: 24px;
-            background: linear-gradient(135deg, #EF4444, #DC2626); color: white; border: none;
-            padding: 14px 22px; border-radius: 30px; font-size: 16px; font-weight: 700;
-            cursor: pointer; z-index: 1000; display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+        /* ZİHİN AĞACI (NUMARALI AKIŞ) */
+        .tree-vertical { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; border-left: 3px solid #FCD34D; padding-left: 14px; text-align: left; }
+        .tree-node { background: #FFFFFF; border: 2px solid #FDE68A; padding: 14px 18px; border-radius: 14px; font-weight: 500; font-size: 15px; color: #78350F; }
+
+        /* ZİHİN KANCASI (İSKELELİ VE GERİ SAYIMSIZ) */
+        .sentence-starter-btn {
+            background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 6px 12px; border-radius: 12px;
+            cursor: pointer; font-size: 13px; font-weight: 600; color: #334155; font-family: inherit; margin-right: 6px; margin-bottom: 6px;
         }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000;
+        .sentence-starter-btn:hover { background: #F1F5F9; border-color: var(--primary); }
+        .progress-track { width: 100%; height: 10px; background: #E2E8F0; border-radius: 10px; margin-top: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: #10B981; transition: width 0.3s ease; }
+
+        /* YOL ARKADAŞINA ANLAT (CHAT FORMATI) */
+        .chat-box { background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 18px; padding: 18px; margin-top: 14px; }
+        .chat-msg { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+        .chat-bubble { padding: 12px 16px; border-radius: 16px; max-width: 80%; font-size: 15px; line-height: 1.5; font-weight: 500; }
+        .bubble-bot { background: #F0FDF4; color: #14532D; border: 1px solid #DCFCE7; }
+        .bubble-user { background: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE; margin-left: auto; }
+
+        /* ODAK ORMANI (TIME TIMER VE BİTKİ EVRELERİ) */
+        .forest-card { text-align: center; background: #F0FDF4; border: 2px solid #BBF7D0; border-radius: 20px; padding: 24px; margin-top: 14px; }
+        .timer-circle-container { position: relative; width: 150px; height: 150px; margin: 10px auto; }
+        .timer-svg { transform: rotate(-90deg); width: 150px; height: 150px; }
+        .timer-circle-bg { fill: none; stroke: #E2E8F0; stroke-width: 10; }
+        .timer-circle-progress { fill: none; stroke: #0D9488; stroke-width: 10; stroke-dasharray: 440; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; stroke-linecap: round; }
+        .timer-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: 700; color: #0F172A; }
+
+        .time-chips-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+        .time-chip-btn {
+            background: #FFFFFF; border: 2px solid #CBD5E1; padding: 8px 14px; border-radius: 14px;
+            cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit;
         }
-        .modal-card {
-            background: #FFFDF9; width: 90%; max-width: 580px; border-radius: 26px; padding: 24px; border: 3px solid #EF4444; text-align: center;
+        .time-chip-btn.selected { background: #0D9488; color: white; border-color: #0D9488; }
+
+        .plant-select-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .plant-card-btn {
+            background: #FFFFFF; border: 2px solid #CBD5E1; padding: 8px 14px; border-radius: 14px;
+            cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; display: flex; align-items: center; gap: 6px;
         }
-        .game-screen {
-            background: #F4EFE6; border-radius: 18px; min-height: 220px; margin: 16px 0; padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden;
+        .plant-card-btn.selected { background: #1E3A8A; color: white; border-color: #1E3A8A; }
+
+        /* ZAMAN PENCERELERİ GÖREV KARTLARI */
+        .task-checklist-item {
+            background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 14px; padding: 14px;
+            margin-top: 10px; display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500;
         }
-        .balloon { width: 48px; height: 62px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; position: absolute; cursor: pointer; transition: transform 0.1s; }
-        .star-target { font-size: 40px; cursor: pointer; position: absolute; user-select: none; }
-        .breath-circle {
-            width: 100px; height: 100px; border-radius: 50%; background: #60A5FA;
-            display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;
-            animation: breathe 8s infinite ease-in-out;
-        }
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); background: #60A5FA; }
-            50% { transform: scale(1.5); background: #10B981; }
+        .task-checklist-item.done { text-decoration: line-through; opacity: 0.6; background: #F8FAFC; }
+
+        /* BÜYÜME ZİHNİYETİ & HENÜZ MÜHRÜ */
+        .yet-stamp {
+            display: inline-block; background: #FEF08A; color: #854D0E; font-weight: 800;
+            padding: 4px 10px; border-radius: 8px; border: 2px solid #FACC15; transform: rotate(-3deg); margin-left: 6px;
         }
 
-        /* 5. BÖLÜM ROZETLER & SERTİFİKA */
+        /* 5. BÖLÜM ROZETLER */
         .badge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 14px; }
-        .badge-card { background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 16px; padding: 14px; text-align: center; transition: all 0.2s; }
+        .badge-card { background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 16px; padding: 14px; text-align: center; cursor: pointer; }
         .badge-card.unlocked { border-color: #10B981; background: #F0FDF4; }
         .badge-card-icon { font-size: 38px; margin-bottom: 6px; display: block; filter: grayscale(1); opacity: 0.4; }
         .badge-card.unlocked .badge-card-icon { filter: grayscale(0); opacity: 1; }
 
-        /* YAZDIRILABİLİR SERTİFİKA ALANI */
+        /* YAZDIRILABİLİR SERTİFİKA */
         .certificate-card {
-            display: none; background: #FFFFFF; border: 6px double #3B82F6; border-radius: 20px;
+            display: none; background: #FFFFFF; border: 6px double #2563EB; border-radius: 20px;
             padding: 30px; text-align: center; margin-top: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06);
         }
+        .sparkle-btn {
+            background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none;
+            padding: 16px; border-radius: 18px; font-size: 17px; font-weight: 700; width: 100%;
+            cursor: pointer; box-shadow: 0 4px 16px rgba(217, 119, 6, 0.3); font-family: inherit;
+        }
+
+        /* MOLA MODALI (BUZLU CAM EFEKTİ & SIFIR STRES) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(244, 239, 230, 0.85); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-card {
+            background: #FFFFFF; width: 90%; max-width: 550px; border-radius: 26px;
+            padding: 26px; border: 2px solid #99F6E4; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+        }
+        .game-screen {
+            background: #F0FDFA; border-radius: 18px; min-height: 200px; margin: 16px 0;
+            padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden;
+        }
+        .balloon { width: 48px; height: 62px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; position: absolute; cursor: pointer; }
+        .star-target { font-size: 42px; cursor: pointer; position: absolute; user-select: none; }
+        .breath-circle {
+            width: 100px; height: 100px; border-radius: 50%; background: #6EE7B7;
+            display: flex; align-items: center; justify-content: center; color: #064E3B; font-weight: 700;
+            animation: breathe 8s infinite ease-in-out;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); background: #A7F3D0; }
+            50% { transform: scale(1.4); background: #6EE7B7; }
+        }
+
         @media print {
             body * { visibility: hidden; }
             #certificatePrintArea, #certificatePrintArea * { visibility: visible; }
-            #certificatePrintArea { position: absolute; left: 0; top: 0; width: 100%; border: 4px solid #1E3A8A; }
+            #certificatePrintArea { position: absolute; left: 0; top: 0; width: 100%; border: 4px solid #1E3A8A; display: block; }
         }
     </style>
 </head>
@@ -228,11 +296,11 @@
 <div class="container">
     <!-- GİRİŞ EKRANI -->
     <div id="onboardingScreen">
-        <h1 style="margin:0; font-size:32px; color:#1E3A8A;">🚀 Kâşif Üssüne Hoş Geldin!</h1>
+        <h1 style="margin:0; font-size:30px; color:#1E3A8A;">🚀 Kâşif Üssüne Hoş Geldin!</h1>
         <p style="color:#475569; font-size:16px; margin-top:6px;">Harfleri çözecek, zihnini canlandıracak süper maceraya hazır mısın?</p>
 
         <div style="text-align:left; margin-top:20px;">
-            <label><b>👤 Kâşif Adın Nedir?</b></label>
+            <label><b>👤 Kâşif Adın:</b></label>
             <input type="text" id="explorerNameInput" placeholder="Buraya adını yaz...">
         </div>
 
@@ -256,6 +324,7 @@
                     <b>Baron</b> (Koca Yürekli Ayı)
                 </div>
             </div>
+            <label style="font-size:13px; color:#64748B;"><b>Yol Arkadaşının Adı:</b> (Dilersen adını değiştirebilirsin)</label>
             <input type="text" id="companionCustomName" value="Pupa">
         </div>
 
@@ -277,131 +346,140 @@
     <!-- ANA UYGULAMA PANELİ -->
     <div id="mainApp">
         <div class="header">
-            <div>
-                <h1 style="margin:0; font-size:26px;">⚡ Süper Beyin Laboratuvarı</h1>
-                <div style="font-size:15px; opacity:0.95; margin-top:4px;">Kâşif <span id="displayExplorerName"></span> ve Yol Arkadaşı Görevde!</div>
+            <div class="header-left">
+                <div>
+                    <h1 style="margin:0; font-size:24px;">⚡ Süper Beyin Laboratuvarı</h1>
+                    <div style="font-size:14px; opacity:0.95; margin-top:3px;">Kâşif <span id="displayExplorerName"></span> ve Yol Arkadaşı <span class="comp-name">Pupa</span> <span class="comp-icon">🦊</span> Görevde!</div>
+                </div>
             </div>
-            <div class="companion-badge">
-                <span id="displayCompanionIcon" style="font-size:26px;">🦊</span>
-                <span id="displayCompanionName">Pupa</span>
+            <div class="header-actions">
+                <!-- Sağ Üst Köşedeki Sakin Kâşif Molası -->
+                <button class="break-top-btn" onclick="openBreakModal()">
+                    ☕ Kâşif Molası
+                </button>
+                <button class="settings-btn" title="Ayarlar" onclick="openSettingsModal()">⚙️</button>
             </div>
-        </div>
-
-        <div class="card" style="background:#F6EEDF;">
-            <label><b>🔑 Laboratuvar Giriş Anahtarı (Yeni Gemini API Anahtarın):</b></label>
-            <div style="display:flex; gap:10px; margin-top:8px;">
-                <input type="password" id="apiKeyInput" placeholder="Yeni Gemini API Anahtarını buraya yapıştır...">
-                <button id="saveKeyBtn" class="btn-action btn-save">💾 Kilitle</button>
-            </div>
-            <div id="keyStatus" class="status-msg" style="color:#0D9488; margin-top:6px; font-weight:600;"></div>
         </div>
 
         <!-- MODÜL SEKME BUTONLARI -->
         <div class="module-nav">
-            <button class="module-tab active" data-mod="module1">📖 1. Rahat Okuma</button>
+            <button class="module-tab active" data-mod="module1">🪐 1. Metin Keşfi</button>
             <button class="module-tab" data-mod="module2">🏛️ 2. Zihin Evi</button>
             <button class="module-tab" data-mod="module3">🌿 3. Zihin Ağacı</button>
             <button class="module-tab" data-mod="module4">⏳ 4. Odak Kalkanı</button>
             <button class="module-tab" data-mod="module5">🏆 5. Başarı Vitrini</button>
         </div>
 
-        <!-- 1. BÖLÜM: DİSLEKSİ DOSTU RAHAT OKUMA VE GÖRSEL ZİHİN -->
+        <!-- 1. BÖLÜM: METİN KEŞİF İSTASYONU -->
         <div id="module1" class="module-content active">
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Gözlerini yormayan bu sayfada harfler dans etmez, kelimeler net durur!"</span>
+                    <span><b class="comp-name">Pupa</b> diyor ki: "Metnine göz at, birlikte şifreleri çözelim!"</span>
                 </div>
 
-                <label><b>🔭 Zihin Filtresi (Göz Dinlendiren Zeminler):</b></label><br>
+                <label><b>🎨 Gezegen Atmosferleri (Zemin Filtresi):</b></label><br>
                 <div style="margin-top:10px;">
                     <button class="theme-btn" onclick="setBg('#F4EFE6', '#FAF6EF', '#F5EFE1')">🍯 Bal Beji</button>
                     <button class="theme-btn" onclick="setBg('#EAEFE8', '#F2F7F0', '#E5ECE3')">🌱 Dingin Yosun</button>
                     <button class="theme-btn" onclick="setBg('#F6ECE6', '#FAF2EC', '#F4E7E0')">🍑 Şeftali Tozu</button>
                 </div>
 
-                <div class="upload-zone">
+                <div class="upload-zone" style="background:#EFE8DA; border:2px dashed #CBD5E1; padding:14px; border-radius:16px; margin-top:12px; text-align:center;">
                     <b>📸 Sayfa Kapsülü (Kitabından Bir Kare Yükle)</b>
-                    <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
-                    <div id="aiProgress" class="status-msg" style="display:none; color:var(--primary);">✨ Sayfa kristalize ediliyor...</div>
+                    <input type="file" id="imageInput" accept="image/*" style="display:block; margin:8px auto;">
+                    <div id="aiProgress" style="display:none; color:var(--primary); font-weight:600;">✨ Sayfa aktarılıyor...</div>
                 </div>
 
-                <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
+                <label style="margin-top:16px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
                 <textarea id="textInput" oninput="updateTextDisplay()">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong.</textarea>
 
                 <div class="controls">
-                    <label style="cursor:pointer; font-weight:600;">
-                        <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Lazer Takip Şeridi</b> (Satır Odaklayıcı)
+                    <label style="cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 Lazer Takip Şeridi
+                    </label>
+                    <label style="cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; margin-left:12px;">
+                        <input type="checkbox" id="syllableToggle" onchange="updateTextDisplay()"> 🪄 Sihirli Hece Cetveli
                     </label>
                 </div>
 
                 <div class="controls" style="border-top:1px solid #E2D7C5; padding-top:16px;">
-                    <button id="btnJigsaw" class="btn-action btn-jigsaw" onclick="runJigsaw()">🧩 Yapboz Parçala (Büyük Resim)</button>
-                    <button id="btnDual" class="btn-action btn-dual" onclick="runDualCoding()">🎬 Zihin Sineması (3 Sahne)</button>
+                    <button id="btnJigsaw" class="btn-action btn-jigsaw" onclick="runJigsaw()">🧩 Yapboz Parçala</button>
+                    <button id="btnDual" class="btn-action btn-dual" onclick="runDualCoding()">🎬 Zihin Sineması</button>
                     <span id="moduleLoading" style="display:none; font-weight:600; color:var(--primary);">⏳ Hazırlanıyor...</span>
                 </div>
             </div>
 
-            <!-- Jigsaw -->
+            <!-- Jigsaw (Görev Çekirdeği) -->
             <div id="jigsawBox" class="jigsaw-box">
-                <div style="font-weight:700; font-size:16px; color:#0369A1; margin-bottom:6px;">🖼️ KUTU KAPAĞI (BÜYÜK RESİM)</div>
+                <div style="font-weight:700; font-size:15px; color:#0369A1; margin-bottom:8px;">🌟 KÂŞİF GÖREVİNİN ÇEKİRDEĞİ</div>
                 <div id="jigsawCover" class="jigsaw-hero"></div>
-                <div style="font-weight:700; font-size:16px; color:#0369A1; margin-top:16px; margin-bottom:6px;">🧩 ÇERÇEVE TAŞLARI</div>
+                <div style="font-weight:700; font-size:15px; color:#0369A1; margin-top:16px; margin-bottom:8px;">🧩 GÖREV ADIMLARI</div>
                 <div id="jigsawEdges" class="jigsaw-grid"></div>
             </div>
 
-            <!-- Dual Coding -->
+            <!-- Dual Coding (Sadece Başarılı Olanları Gösterir) -->
             <div id="dualBox" class="dual-box">
-                <div style="font-weight:700; font-size:17px; color:#166534; margin-bottom:4px;">🎬 ZİHİN SİNEMASI: 3 NET SAHNE</div>
+                <div style="font-weight:700; font-size:16px; color:#166534; margin-bottom:6px;">🎬 ZİHİN SİNEMASI SAHNELERİ</div>
                 <div class="dual-grid" id="dualGrid"></div>
             </div>
 
-            <!-- Disleksi Dostu Okuma Alanı (Homojen Kalınlık, Geniş Aralıklar) -->
-            <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
-                <div id="ruler" class="reading-ruler"></div>
-                <div id="textOutput">Yazılar burada net ve sakin parlayacak...</div>
+            <!-- Disleksi Dostu Tipografik Okuma Alanı (Max 650px Genişlik) -->
+            <div class="output-wrapper">
+                <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
+                    <div id="ruler" class="reading-ruler"></div>
+                    <div id="textOutput">Yazılar burada net ve sakin parlayacak...</div>
+                </div>
             </div>
         </div>
 
-        <!-- 2. BÖLÜM: ZİHİN EVİ & KELİME ATÖLYESİ -->
+        <!-- 2. BÖLÜM: ZİHİN EVİ & KELİME PİSTİ -->
         <div id="module2" class="module-content">
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Not defterindeki kilit bilgileri odalara net nesneler olarak dizelim!"</span>
+                    <span><b class="comp-name">Pupa</b> diyor ki: "Kelimeleri aklında tutmak için evinin tanıdık odalarına yerleştirelim!"</span>
                 </div>
-                <h2 style="margin-top:0; color:#1E3A8A;">🏛️ Zihin Evi (Eşya Yerleştirme Oyunu)</h2>
-                <button id="btnPalace" class="btn-action btn-memory" onclick="buildMemoryPalace()">🏰 Metinden Odaya Eşyaları Dağıt</button>
+                <h2 style="margin-top:0; color:#1E3A8A;">🏛️ Zihin Evi</h2>
+                <button id="btnPalace" class="btn-action btn-memory" onclick="buildMemoryPalace()">🏰 Metinden Odaya Dağıt</button>
                 <span id="palaceLoading" style="display:none; font-weight:600; color:var(--memory); margin-left:10px;">⏳ Döşeniyor...</span>
 
                 <div class="palace-container">
-                    <div class="palace-room"><div class="room-header">🛋️ 1. Durak: Oturma Odası</div><div id="room1Items"><span style="color:#94A3B8;">Bekleniyor...</span></div></div>
-                    <div class="palace-room"><div class="room-header">🍳 2. Durak: Mutfak Masası</div><div id="room2Items"><span style="color:#94A3B8;">Bekleniyor...</span></div></div>
-                    <div class="palace-room"><div class="room-header">🛏️ 3. Durak: Yatak Odası</div><div id="room3Items"><span style="color:#94A3B8;">Bekleniyor...</span></div></div>
+                    <div class="palace-room">
+                        <div class="room-header">🛋️ 1. Durak: Giriş / Oturma Odası</div>
+                        <div id="room1Items"><span style="color:#94A3B8;">Bekleniyor...</span></div>
+                    </div>
+                    <div class="palace-room">
+                        <div class="room-header">🍳 2. Durak: Mutfak Masası</div>
+                        <div id="room2Items"><span style="color:#94A3B8;">Bekleniyor...</span></div>
+                    </div>
+                    <div class="palace-room">
+                        <div class="room-header">🛏️ 3. Durak: Yatak Odası / Kitaplık</div>
+                        <div id="room3Items"><span style="color:#94A3B8;">Bekleniyor...</span></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tekerleme Fabrikası (Özgür Girişli) -->
+            <!-- Tekerleme Fabrikası (Küçük Harfli, Çift Satırlı) -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">🪄 Eğlenceli Tekerleme Fabrikası</h2>
-                <p style="color:#475569; font-size:15px; margin-top:2px;">Metinden bir kelime seç ya da kendi öğrenmek istediğin kelimeyi yaz!</p>
+                <h2 style="margin-top:0; color:#1E3A8A;">🪄 Tekerleme Fabrikası</h2>
+                <p style="color:#475569; font-size:15px; margin-top:2px;">Öğrenmek istediğin kelimeye dokun veya kendin yaz:</p>
                 <div id="mnemonicChips" class="chip-container"></div>
                 
                 <div style="display:flex; gap:10px; margin-top:10px;">
-                    <input type="text" id="customMnemonicInput" placeholder="Veya kendi istediğin bir kelimeyi buraya yaz..." style="margin-top:0;">
+                    <input type="text" id="customMnemonicInput" placeholder="Veya kendi istediğin kelimeyi buraya yaz..." style="margin-top:0; color:#0F172A;">
                     <button class="btn-action btn-bionic" onclick="generateCustomMnemonic()">🪄 Tekerleme Üret</button>
                 </div>
-                
-                <div id="mnemonicOutput" style="display:none; background:#FFFFFF; border-left:5px solid var(--primary); padding:16px; border-radius:14px; margin-top:12px; font-weight:500; line-height:1.6; color:#1E293B;"></div>
+                <div id="mnemonicOutput" class="mnemonic-result" style="display:none;"></div>
             </div>
 
-            <!-- Dokunsal Pisti -->
+            <!-- Kelime Pisti -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">✍️ Dokunsal Kelime Pisti</h2>
-                <div class="sensory-box">
+                <h2 style="margin-top:0; color:#1E3A8A;">✍️ Kelime Pisti</h2>
+                <div class="sensory-box" style="background:#F8FAFC; border:2px solid #E2E8F0; border-radius:18px; padding:18px; text-align:center;">
                     <div style="font-size:13px; font-weight:600; color:#475569;">HEDEF KELİME:</div>
-                    <div class="sensory-word" id="targetSensoryWord">ASTRONOT</div>
-                    <input type="text" id="sensoryTypingInput" class="sensory-input" placeholder="Aynısını buraya yaz..." oninput="checkSensoryMatch()">
+                    <div class="sensory-word" id="targetSensoryWord" style="font-size:26px; font-weight:700; color:#1E3A8A; letter-spacing:0.08em; margin:8px 0;">Astronot</div>
+                    <input type="text" id="sensoryTypingInput" placeholder="Aynısını buraya yaz..." oninput="checkSensoryMatch()" style="text-align:center; font-size:20px; font-weight:600; max-width:320px; margin:0 auto; display:block;">
                     <div id="sensoryFeedback" style="text-align:center; margin-top:8px; font-weight:600;"></div>
                 </div>
             </div>
@@ -412,174 +490,243 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Düşüncelerini bir ağaç gibi dallandır, kafan hiç karışmasın!"</span>
+                    <span><b class="comp-name">Pupa</b> diyor ki: "Fikirlerini sırayla bağlayalım, zihnin berrak kalsın!"</span>
                 </div>
                 <h2 style="margin-top:0; color:#1E3A8A;">🌿 Dijital Zihin Ağacı</h2>
-                <button id="btnMindmap" class="btn-action btn-active" onclick="buildMindMap()">🌱 Metinden Zihin Ağacı Çıkar</button>
+                <button id="btnMindmap" class="btn-action btn-active" onclick="buildMindMap()">🌱 Zihin Ağacı Çıkar</button>
                 <span id="mindmapLoading" style="display:none; font-weight:600; color:var(--active); margin-left:10px;">⏳ Yeşeriyor...</span>
 
-                <div id="mindmapDisplay" class="mindmap-tree" style="display:none;">
-                    <div id="mindmapRoot" class="mindmap-root">Merkez Fikir</div>
-                    <div id="mindmapBranches" class="mindmap-branches"></div>
+                <div id="mindmapDisplay" style="display:none; margin-top:16px;">
+                    <div id="mindmapRoot" style="background:#D97706; color:white; padding:12px 20px; border-radius:16px; font-weight:700; display:inline-block;">Merkez Fikir</div>
+                    <div id="mindmapBranches" class="tree-vertical"></div>
                 </div>
             </div>
 
+            <!-- Zihin Kancası (Geri Sayımsız, İskeleli & Kelime Havuzlu) -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">⏳ 5 Dakikalık Zihin Kancası (Ön Bilgi Notçusu)</h2>
-                <div style="display:flex; align-items:center; gap:12px; margin:10px 0;">
-                    <button class="btn-action btn-bionic" onclick="startTimer()">⏳ Süreyi Başlat (5 Dk)</button>
-                    <span id="timerDisplay" style="font-size:22px; font-weight:700; color:#DC2626;">05:00</span>
+                <h2 style="margin-top:0; color:#1E3A8A;">⏳ Zihin Kancası</h2>
+                <p style="color:#475569; font-size:15px; margin-top:2px;">Aklına gelenleri rahatça yaz; acele yok, kelimeler senin hızında aksın:</p>
+                
+                <!-- Cümle Başlatıcılar -->
+                <div style="margin-top:8px;">
+                    <span style="font-size:13px; font-weight:600; color:#64748B;">Cümle İpuçları:</span>
+                    <button class="sentence-starter-btn" onclick="addStarter('Bence ')">Bence...</button>
+                    <button class="sentence-starter-btn" onclick="addStarter('Çünkü ')">Çünkü...</button>
+                    <button class="sentence-starter-btn" onclick="addStarter('En çok şuna şaşırdım: ')">En çok şuna şaşırdım: ...</button>
                 </div>
-                <textarea id="quickJotterText" placeholder="Aklıma gelen ilk şeyler, merak ettiklerim..."></textarea>
+
+                <textarea id="quickJotterText" placeholder="Aklıma gelen ilk şeyler, merak ettiklerim..." oninput="updateJotterProgress()" spellcheck="false" style="caret-color:#2563EB;"></textarea>
+                
+                <!-- Sakin İlerleme Çubuğu -->
+                <div class="progress-track"><div id="jotterProgressFill" class="progress-fill"></div></div>
             </div>
 
+            <!-- Yol Arkadaşına Anlat (WhatsApp/Chat Formatı) -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">🗣️ Yol Arkadaşın <span class="comp-name">Pupa</span>'ya Anlat!</h2>
-                <textarea id="peerSummary" placeholder="Sevgili yol arkadaşım, bence bu konu şunu anlatıyor..."></textarea>
-                <button class="btn-action btn-save" style="margin-top:10px;" onclick="checkSummaryFeedback()">✨ Arkadaşından Rozet Al</button>
-                <span id="summaryFeedback" style="font-weight:600; margin-left:12px; color:#0D9488;"></span>
+                <h2 style="margin-top:0; color:#1E3A8A;">🗣️ Yol Arkadaşın <span class="comp-name">Pupa</span> ile Sohbet Et</h2>
+                <div class="chat-box">
+                    <div class="chat-msg">
+                        <span class="comp-icon" style="font-size:26px;">🦊</span>
+                        <div class="chat-bubble bubble-bot" id="companionChatPrompt">
+                            "Metinde seni en çok meraklandıran veya hoşuna giden şey ne oldu? Bana bir cümleyle yazar mısın?"
+                        </div>
+                    </div>
+                    <div id="chatHistory"></div>
+                    
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        <input type="text" id="chatInput" placeholder="Yol arkadaşına bir mesaj yaz..." style="margin-top:0;" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                        <button class="btn-action btn-save" onclick="sendChatMessage()">Gönder ✨</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 4. BÖLÜM: ZAMAN YÖNETİMİ & ODAK ORMANI -->
+        <!-- 4. BÖLÜM: ODAK KALKANI -->
         <div id="module4" class="module-content">
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Bitkini seç, süreni belirle ve odaklandıkça bitkinin açmasını izle!"</span>
+                    <span><b class="comp-name">Pupa</b> diyor ki: "Bitkini seç, süreni belirle ve odaklandıkça yeşermesini izle!"</span>
                 </div>
-                <h2 style="margin-top:0; color:#1E3A8A;">🌳 Orman Modu (Büyüyen Odak Bitkisi)</h2>
-                
-                <div style="margin: 14px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                    <label><b>🌱 Bitki Türü:</b></label>
-                    <select id="plantTypeSelect" style="max-width:200px; margin-top:0;">
-                        <option value="tree">🌲 Ulu Çam Ağacı</option>
-                        <option value="flower">🌻 Güneşe Bakan Ayçiçeği</option>
-                        <option value="cactus">🌵 Sevimli Kaktüs</option>
-                        <option value="sprout">🌸 Renkli Bahar Çiçeği</option>
-                    </select>
-                    
-                    <label style="margin-left:10px;"><b>⏱️ Süre:</b></label>
-                    <select id="timerDurationSelect" style="max-width:180px; margin-top:0;">
-                        <option value="5">5 Dakika (Hızlı Seans)</option>
-                        <option value="10">10 Dakika</option>
-                        <option value="15">15 Dakika</option>
-                        <option value="25" selected>25 Dakika (Pomodoro)</option>
-                        <option value="45">45 Dakika</option>
-                        <option value="60">60 Dakika (Derin Odak)</option>
-                    </select>
+                <h2 style="margin-top:0; color:#1E3A8A;">🌳 Odak Ormanı</h2>
+
+                <!-- Görsel Bitki Seçimi -->
+                <div class="plant-select-grid">
+                    <button class="plant-card-btn selected" data-plant="tree" onclick="selectPlant('tree', this)">🌲 Ulu Çam</button>
+                    <button class="plant-card-btn" data-plant="flower" onclick="selectPlant('flower', this)">🌻 Ayçiçeği</button>
+                    <button class="plant-card-btn" data-plant="cactus" onclick="selectPlant('cactus', this)">🌵 Kaktüs</button>
+                    <button class="plant-card-btn" data-plant="sprout" onclick="selectPlant('sprout', this)">🌸 Bahar Çiçeği</button>
                 </div>
 
-                <div class="forest-box">
+                <!-- Süre Butonları -->
+                <div class="time-chips-container">
+                    <button class="time-chip-btn" onclick="selectForestTime(5, this)">5 dk</button>
+                    <button class="time-chip-btn" onclick="selectForestTime(10, this)">10 dk</button>
+                    <button class="time-chip-btn selected" onclick="selectForestTime(15, this)">15 dk</button>
+                    <button class="time-chip-btn" onclick="selectForestTime(25, this)">25 dk</button>
+                </div>
+
+                <!-- Time Timer (Dairesel Saat & Büyüme) -->
+                <div class="forest-card">
+                    <div class="timer-circle-container">
+                        <svg class="timer-svg">
+                            <circle class="timer-circle-bg" cx="75" cy="75" r="70"></circle>
+                            <circle id="timerProgressCircle" class="timer-circle-progress" cx="75" cy="75" r="70"></circle>
+                        </svg>
+                        <div class="timer-center-text" id="forestTimerDisplay">15:00</div>
+                    </div>
                     <div id="treeVisual" class="tree-visual">🌱</div>
-                    <div id="forestTimerDisplay" style="font-size:36px; font-weight:700; color:#0D9488; margin:10px 0;">25:00</div>
-                    <button class="btn-action btn-save" onclick="startCustomForestTimer()">🚀 Odaklanmayı Başlat</button>
-                    <button class="btn-action" style="background:#DC2626;" onclick="resetForestTimer()">⏹️ Durdur</button>
+                    <div style="margin-top:12px;">
+                        <button id="startForestBtn" class="btn-action btn-save" onclick="toggleForestTimer()">🚀 Odaklanmayı Başlat</button>
+                    </div>
                 </div>
             </div>
 
+            <!-- Zaman Pencereleri (Görev Bölücü & Sesli Giriş & Tik Kutuları) -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">🪟 Zaman Pencereleri (Adım Adım Rehber)</h2>
-                <p style="color:#475569; font-size:15px; margin-top:2px;">Ödevi parçalara bölelim, her adımda ne yapacağını netleştirelim!</p>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="chunkTaskInput" placeholder="Örn: Fen Bilimleri Proje Raporu..." style="margin-top:0;">
-                    <button id="btnChunk" class="btn-action btn-time" onclick="generateChunks()">🪄 Pencerelere Böl</button>
+                <h2 style="margin-top:0; color:#1E3A8A;">🪟 Zaman Pencereleri</h2>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <div style="position:relative; flex:1;">
+                        <input type="text" id="chunkTaskInput" placeholder="Örn: Fen Bilimleri Proje Raporu..." style="margin-top:0; padding-right:40px;">
+                        <span style="position:absolute; right:12px; top:16px; cursor:pointer; font-size:18px;" onclick="simulateVoiceInput()">🎙️</span>
+                    </div>
+                    <button id="btnChunk" class="btn-action btn-time" onclick="generateChunks()">✨ <span class="comp-name">Pupa</span> ile Parçala!</button>
                 </div>
-                <div id="chunkResults" class="window-box" style="display:none;"></div>
+                <div id="chunkResults" style="display:none; margin-top:14px;"></div>
             </div>
         </div>
 
-        <!-- 5. BÖLÜM: BÜYÜME ZİHNİYETİ, HATA FABRİKASI & SERTİFİKA -->
+        <!-- 5. BÖLÜM: BÜYÜME ZİHNİYETİ & SERTİFİKA -->
         <div id="module5" class="module-content">
-            <!-- Pozitif Hedef Gücü Paneli (Mor yerine huzurlu koyu mavi/nötr) -->
+            <!-- 'Henüz' ve Hedef Gücü Paneli -->
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Geliştirmek istediğin her hedef, beyninin yeni kaslar kazandığının kanıtıdır!"</span>
+                    <span><b class="comp-name">Pupa</b> diyor ki: "Her çaba beynine yepyeni nöron köprüleri kurar!"</span>
                 </div>
 
                 <h2 style="margin-top:0; color:#1E3A8A;">🌱 'Henüz' ve Hedef Gücü Paneli</h2>
-                <p style="color:#475569; font-size:15px; margin-top:2px;">Daha iyi yapmak istediğin, geliştirmeyi hedeflediğin bir konuyu yaz; yol arkadaşın sana süper güç aşılasın!</p>
-                
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="yetInput" placeholder="Örn: Uzun kelimeleri daha akıcı okumak istiyorum..." style="margin-top:0;">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <div style="position:relative; flex:1;">
+                        <input type="text" id="yetInput" placeholder="Geliştirmek istediğin hedef: Örn. Uzun kelimeleri okumak..." style="margin-top:0; padding-right:40px;">
+                        <span style="position:absolute; right:12px; top:16px; cursor:pointer; font-size:18px;" onclick="simulateVoiceInputYet()">🎙️</span>
+                    </div>
                     <button id="btnYet" class="btn-action btn-growth" onclick="convertWithYet()">🪄 Güce Dönüştür</button>
                 </div>
-                <!-- Göz yormayan nötr & lacivert zemin -->
-                <div id="yetOutput" style="display:none; background:#F1F5F9; border-left:5px solid #3B82F6; padding:16px; border-radius:14px; margin-top:14px; font-size:16px; font-weight:600; color:#0F172A; line-height:1.6;"></div>
+                <div id="yetOutput" style="display:none; background:#F1F5F9; border-left:5px solid #2563EB; padding:16px; border-radius:14px; margin-top:14px; font-weight:600; color:#0F172A; line-height:1.6;"></div>
             </div>
 
-            <!-- 🧠 Hata Fabrikası (Nöron Jimnastiği) -->
+            <!-- Hata Fabrikası (İnteraktif Beyin Kas Alanı) -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">🧠 Hata Fabrikası (Nöron Jimnastik Alanı)</h2>
-                <p style="color:#475569; font-size:15px; margin-top:2px;">Yanılmak ya da takılmak bir hata değildir; beynin yeni nöron köprüleri kurarken yaptığı süper bir jimnastiktir!</p>
-                
-                <button class="btn-action btn-active" onclick="showNeuronFact()">💡 Yeni Bir Beyin Jimnastiği Keşfet</button>
-                <div id="neuronFactBox" class="neuron-box" style="display:none; font-size:16px; font-weight:500; color:#1E293B; line-height:1.6;"></div>
+                <h2 style="margin-top:0; color:#1E3A8A;">🧠 Hata Fabrikası (Beyin Kası Atölyesi)</h2>
+                <p style="color:#475569; font-size:15px; margin-top:2px;">Bugün takıldığın bir kelimeyi veya soruyu buraya at, beyin kasına dönüştürelim:</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="mistakeWordInput" placeholder="Örn: 'Astronot' kelimesinde bir harf karıştı..." style="margin-top:0;">
+                    <button class="btn-action btn-active" onclick="boostNeuronMuscle()">⚡ Kas Yap!</button>
+                </div>
+                <div id="neuronFactBox" style="display:none; background:#FEF3C7; border:2px solid #FCD34D; padding:14px; border-radius:14px; margin-top:12px; font-size:15px; font-weight:600; color:#78350F; line-height:1.6;"></div>
             </div>
 
-            <!-- Rozet Karnesi -->
+            <!-- Rozet Vitrini (İpuçlu) -->
             <div class="card">
                 <h2 style="margin-top:0; color:#1E3A8A;">🏆 Kâşif Rozet Vitrini</h2>
                 <div class="badge-grid">
-                    <div class="badge-card unlocked" id="badgeStart"><span class="badge-card-icon">🚀</span><b>Cesur Kâşif</b><div style="font-size:12px; color:#64748B;">Üsse adım attın!</div></div>
-                    <div class="badge-card" id="badgeJigsaw"><span class="badge-card-icon">🧩</span><b>Büyük Resimci</b><div style="font-size:12px; color:#64748B;">Yapbozu tamamladın!</div></div>
-                    <div class="badge-card" id="badgePalace"><span class="badge-card-icon">🏛️</span><b>Hafıza Mimarı</b><div style="font-size:12px; color:#64748B;">Zihin evini döşedin!</div></div>
-                    <div class="badge-card" id="badgeTree"><span class="badge-card-icon">🌳</span><b>Odak Ormanı</b><div style="font-size:12px; color:#64748B;">Bitkini büyüttün!</div></div>
-                    <div class="badge-card" id="badgeBreak"><span class="badge-card-icon">🧘</span><b>Dingin Zihin</b><div style="font-size:12px; color:#64748B;">Mola kapsülünü bitirdin!</div></div>
-                    <div class="badge-card" id="badgeGrowth"><span class="badge-card-icon">🌱</span><b>Gelişen Beyin</b><div style="font-size:12px; color:#64748B;">Hedefine güç kattın!</div></div>
+                    <div class="badge-card unlocked" id="badgeStart" onclick="alert('Bu rozet laboratuvara adım attığın için verildi! 🚀')">
+                        <span class="badge-card-icon">🚀</span><b>Cesur Kâşif</b>
+                    </div>
+                    <div class="badge-card" id="badgeJigsaw" onclick="showBadgeTip('Jigsaw yapbozunu tamamlayarak bu rozeti açabilirsin! 🧩')">
+                        <span class="badge-card-icon">🧩</span><b>Görev Mimarı</b>
+                    </div>
+                    <div class="badge-card" id="badgePalace" onclick="showBadgeTip('Zihin evine eşyaları yerleştirerek bu rozeti açabilirsin! 🏛️')">
+                        <span class="badge-card-icon">🏛️</span><b>Hafıza Ustası</b>
+                    </div>
+                    <div class="badge-card" id="badgeTree" onclick="showBadgeTip('Odak ormanında bir bitki büyüterek bu rozeti açabilirsin! 🌳')">
+                        <span class="badge-card-icon">🌳</span><b>Odak Ormanı</b>
+                    </div>
+                    <div class="badge-card" id="badgeBreak" onclick="showBadgeTip('Kâşif molasındaki 4 dinlenme adımını bitirerek bu rozeti açabilirsin! ☕')">
+                        <span class="badge-card-icon">🧘</span><b>Dingin Zihin</b>
+                    </div>
+                    <div class="badge-card" id="badgeGrowth" onclick="showBadgeTip('Hedefine güç katarak bu rozeti açabilirsin! 🌱')">
+                        <span class="badge-card-icon">🌱</span><b>Gelişen Beyin</b>
+                    </div>
                 </div>
 
-                <!-- Gün Sonu Değerlendirme & Sertifika İndir -->
-                <div style="margin-top:24px; padding-top:16px; border-top:1px solid #E2D7C5;">
-                    <h3>🌟 Gün Sonu Kâşif Değerlendirmesi</h3>
-                    <p style="color:#475569; font-size:14px;">Bugün zihnini nasıl hissettin?</p>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-                        <button class="theme-btn" onclick="selectDayMood('Çok Güçlü & Kararlı')">💪 Çok Güçlü</button>
-                        <button class="theme-btn" onclick="selectDayMood('Meraklı & Öğrenmeye Açık')">✨ Meraklı</button>
-                        <button class="theme-btn" onclick="selectDayMood('Sakin & Dingin')">🌸 Sakin</button>
+                <!-- Gün Sonu Değerlendirme (Sevimli Mimikli Emojiler & Yol Arkadaşı Sorusu) -->
+                <div style="margin-top:24px; padding-top:18px; border-top:1px solid #E2D7C5;">
+                    <h3 style="color:#1E3A8A; margin-bottom:8px;">🌟 Gün Sonu Değerlendirmesi</h3>
+                    
+                    <label style="font-size:14px; font-weight:600; color:#475569;">1. Bugün zihnini nasıl hissettin?</label>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 14px 0;">
+                        <button class="theme-btn" onclick="selectDayMood('Süper Güçlü 🦁')">🦁 Süper Güçlü</button>
+                        <button class="theme-btn" onclick="selectDayMood('Meraklı & Parlak 🌟')">🌟 Parlak & Meraklı</button>
+                        <button class="theme-btn" onclick="selectDayMood('Dingin & Sakin 🌿')">🌿 Dingin</button>
                     </div>
 
-                    <button class="btn-action btn-save" style="width:100%; justify-content:center; padding:15px; font-size:17px;" onclick="generateCertificate()">
-                        📜 Başarı Sertifikamı Oluştur & İndir!
+                    <label style="font-size:14px; font-weight:600; color:#475569;">2. Yol arkadaşın <span class="comp-name">Pupa</span> ile bugün nasıldınız?</label>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px 0;">
+                        <button class="theme-btn" onclick="selectCompMood('Harika Bir İkiliydik! 🤝')">🤝 Harika Bir İkiliydik</button>
+                        <button class="theme-btn" onclick="selectCompMood('Bana Çok Yardım Etti! 💖')">💖 Çok Yardım Etti</button>
+                        <button class="theme-btn" onclick="selectCompMood('Yarın Daha İyisini Yaparız! 🚀')">🚀 Yarın Daha İyiyiz</button>
+                    </div>
+
+                    <button class="sparkle-btn" onclick="generateCertificate()">
+                        📜 Başarı Sertifikamı Oluştur & İndir! 🎖️
                     </button>
                 </div>
             </div>
 
-            <!-- İNDİRİLEBİLİR VE YAZDIRILABİLİR SERTİFİKA KARTI -->
+            <!-- YAZDIRILABİLİR SERTİFİKA ALANI -->
             <div id="certificatePrintArea" class="certificate-card">
                 <div style="font-size:46px;">🎓✨</div>
-                <h1 style="color:#1E3A8A; margin:8px 0; font-size:28px;">SÜPER BEYİN BAŞARI SERTİFİKASI</h1>
-                <p style="font-size:16px; color:#475569;">Bu belge, harflerin ve zihnin gizemini cesaretle çözen süper kâşife aittir:</p>
-                <h2 id="certName" style="color:#0284C7; font-size:32px; margin:10px 0; border-bottom:2px dashed #BAE6FD; display:inline-block; padding:0 20px;">KÂŞİF</h2>
+                <h1 style="color:#1E3A8A; margin:8px 0; font-size:26px;">SÜPER BEYİN BAŞARI SERTİFİKASI</h1>
+                <p style="font-size:16px; color:#475569;">Bu resmi kâşif belgesi takdim edilmiştir:</p>
+                <h2 id="certName" style="color:#2563EB; font-size:32px; margin:10px 0; border-bottom:2px dashed #93C5FD; display:inline-block; padding:0 20px;">KÂŞİF</h2>
                 <p style="font-size:16px; color:#1E293B; max-width:550px; margin:14px auto; line-height:1.6;">
-                    Sadık yol arkadaşı <b id="certCompanion">Pupa</b> ile birlikte bugün gösterdiği üstün merak, sabır ve zihinsel odaklanma sayesinde bu başarı unvanını kazanmıştır.
+                    Sadık yol arkadaşı <b id="certCompanion">Pupa</b> ile birlikte gösterdiği üstün sabır, merak ve odaklanma için bu başarı unvanına layık görülmüştür.
                 </p>
-                <div id="certBadges" style="font-size:28px; margin:16px 0;">🚀 🧩 🏛️ 🌳 🧘 🌱</div>
-                <div style="margin-top:20px; font-size:13px; color:#64748B;">Süper Beyin Laboratuvarı Resmi Onayı • Tarih: <span id="certDate"></span></div>
-                <button class="btn-action btn-bionic" style="margin-top:16px;" onclick="window.print()">🖨️ Sertifikayı Yazdır / PDF Olarak Kaydet</button>
+                <div id="certBadges" style="font-size:30px; margin:16px 0;">🚀 🧩 🏛️ 🌳 🧘 🌱</div>
+                <div style="font-size:14px; color:#64748B;">Süper Beyin Laboratuvarı Mührü • Tarih: <span id="certDate"></span></div>
+                <button class="btn-action btn-bionic" style="margin-top:16px;" onclick="window.print()">🖨️ Sertifikayı Yazdır / PDF İndir</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MOLA KAPSÜLÜ (TAM 4 SIRALI VE RENK SEÇİMLİ AŞAMA) -->
-<button class="break-fab" onclick="openBreakModal()"><span>🎮</span> Kâşif Mola Kapsülü</button>
+<!-- KÂŞİF MOLASI (BUZLU CAM PENCERE & SIFIR STRES) -->
 <div id="breakModal" class="modal-overlay">
     <div class="modal-card">
-        <h2 style="margin-top:0; color:#DC2626;">🚀 Kâşif Mola Kapsülü</h2>
-        <p id="breakStepTitle" style="font-weight:600; color:#475569; font-size:15px;">Adım 1/4: Dikkatli Ol!</p>
+        <h2 style="margin-top:0; color:#0D9488; font-size:24px;">☕ Kâşif Molası</h2>
+        <p id="breakStepTitle" style="font-weight:600; color:#475569; font-size:15px;">Adım 1/4: Zihnini gevşet...</p>
         <div id="gameScreen" class="game-screen"></div>
-        <button id="breakCloseBtn" class="btn-action" style="background:#64748B; width:100%; justify-content:center; margin-top:12px;" disabled onclick="closeBreakModal()">🔒 4 Görev Bitmeden Çıkılamaz</button>
+        <button id="breakCloseBtn" class="btn-action" style="background:#CBD5E1; color:#64748B; width:100%; justify-content:center; margin-top:10px; cursor:not-allowed;" disabled onclick="closeBreakModal()">🔒 4 Adım Bitmeden Çıkılamaz</button>
+    </div>
+</div>
+
+<!-- AYARLAR (API ANAHTARI GİZLİ MODAL) -->
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal-card" style="border-color:#CBD5E1; max-width:480px;">
+        <h3 style="margin-top:0; color:#1E3A8A;">⚙️ Laboratuvar Ayarları</h3>
+        <label style="text-align:left; display:block; font-size:14px; font-weight:600; color:#475569;">Gemini API Anahtarı:</label>
+        <input type="password" id="apiKeyInput" placeholder="API Anahtarını buraya yapıştır..." style="margin-top:6px;">
+        <div style="display:flex; gap:10px; margin-top:14px;">
+            <button class="btn-action btn-save" style="flex:1; justify-content:center;" onclick="saveKey()">💾 Kaydet</button>
+            <button class="theme-btn" style="flex:1; margin:0;" onclick="closeSettingsModal()">Kapat</button>
+        </div>
+        <div id="keyStatus" style="color:#0D9488; font-weight:600; margin-top:8px; font-size:14px;"></div>
     </div>
 </div>
 
 <script>
 let currentCompanion = { icon: '🦊', name: 'Pupa' };
 const aiCache = new Map();
+let currentPlant = 'tree';
+let forestMinutes = 15;
+let forestInterval = null;
+let forestDuration = 15 * 60;
+let forestRunning = false;
 let selectedDayMood = "Harika";
+let selectedCompMood = "Harika bir ikiliydik";
 
-// GÜVENLİ DOM BAĞLANTILARI
 document.addEventListener('DOMContentLoaded', () => {
     // Avatar seçimi
     document.querySelectorAll('.avatar-card').forEach(card => {
@@ -592,7 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Ruh hali seçimi
+    // Ruh hali
     document.querySelectorAll('.mood-chip').forEach(chip => {
         chip.addEventListener('click', function() {
             document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
@@ -600,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Sekme geçişleri
+    // Sekmeler
     document.querySelectorAll('.module-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
@@ -612,15 +759,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Başlat butonu
+    // Başlat
     document.getElementById('startBtn').addEventListener('click', () => {
         const explorerName = document.getElementById('explorerNameInput').value.trim() || 'Kâşif';
         const finalCompName = document.getElementById('companionCustomName').value.trim() || currentCompanion.name;
 
         document.getElementById('displayExplorerName').innerText = explorerName;
-        document.getElementById('displayCompanionIcon').innerText = currentCompanion.icon;
-        document.getElementById('displayCompanionName').innerText = finalCompName;
-
         document.querySelectorAll('.comp-icon').forEach(el => el.innerText = currentCompanion.icon);
         document.querySelectorAll('.comp-name').forEach(el => el.innerText = finalCompName);
 
@@ -629,7 +773,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTextDisplay();
     });
 
-    document.getElementById('saveKeyBtn').addEventListener('click', saveKey);
+    const k = localStorage.getItem('superbrain_gemini_key');
+    if (k) document.getElementById('apiKeyInput').value = k;
 });
 
 function setBg(bodyColor, cardColor, textColor) {
@@ -638,13 +783,36 @@ function setBg(bodyColor, cardColor, textColor) {
     document.documentElement.style.setProperty('--text-bg', textColor);
 }
 
-// DİSLEKSİ DOSTU TİPOGRAFİK GÖSTERİM (BİYONİK BÖLÜNME KALDIRILDI)
+// DİSLEKSİ DOSTU TİPOGRAFİ & İSTEĞE BAĞLI SİHİRLİ HECELEME
 function updateTextDisplay() {
     const textInput = document.getElementById('textInput');
     const textOutput = document.getElementById('textOutput');
+    const syllableToggle = document.getElementById('syllableToggle');
     if (!textInput || !textOutput) return;
-    const text = textInput.value.trim();
-    textOutput.innerText = text ? text : "Yazılar burada net ve sakin parlayacak...";
+
+    const raw = textInput.value.trim();
+    if (!raw) {
+        textOutput.innerText = "Yazılar burada net ve sakin parlayacak...";
+        return;
+    }
+
+    if (!syllableToggle || !syllableToggle.checked) {
+        textOutput.innerText = raw;
+    } else {
+        // Dinamik iki tonlu hece ayrımı
+        const words = raw.split(/\s+/);
+        const syllabled = words.map(word => {
+            if (word.length <= 3) return `<span class="syllable-a">${word}</span>`;
+            let out = "";
+            for (let i = 0; i < word.length; i += 2) {
+                let chunk = word.slice(i, i + 2);
+                let cls = (i / 2) % 2 === 0 ? "syllable-a" : "syllable-b";
+                out += `<span class="${cls}">${chunk}</span>`;
+            }
+            return out;
+        });
+        textOutput.innerHTML = syllabled.join(' ');
+    }
 }
 
 function toggleRuler() {
@@ -658,17 +826,19 @@ function moveRuler(e) {
     const outputArea = document.getElementById('outputArea');
     if (ruler && ruler.style.display === 'block' && outputArea) {
         const rect = outputArea.getBoundingClientRect();
-        const offsetY = e.clientY - rect.top - 28;
-        ruler.style.top = Math.max(0, Math.min(offsetY, rect.height - 58)) + 'px';
+        const offsetY = e.clientY - rect.top - 26;
+        ruler.style.top = Math.max(0, Math.min(offsetY, rect.height - 52)) + 'px';
     }
 }
 
+function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
+function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
 function saveKey() {
-    const kInput = document.getElementById('apiKeyInput');
-    const status = document.getElementById('keyStatus');
-    if (kInput && kInput.value.trim()) {
-        localStorage.setItem('superbrain_gemini_key', kInput.value.trim());
-        if (status) status.innerText = "✓ Yeni anahtar güvenle kilitlendi!";
+    const val = document.getElementById('apiKeyInput').value.trim();
+    if (val) {
+        localStorage.setItem('superbrain_gemini_key', val);
+        document.getElementById('keyStatus').innerText = "✓ Anahtar başarıyla mühürlendi!";
+        setTimeout(closeSettingsModal, 800);
     }
 }
 
@@ -676,15 +846,17 @@ function unlockBadge(id) {
     const el = document.getElementById(id);
     if (el) el.classList.add('unlocked');
 }
+function showBadgeTip(msg) { alert(msg); }
 
-// GÜVENLİ VE KOTA KORUMALI GEMINI CORE
+// GÜVENLİ GEMINI CORE (CACHE & ÇİFT TIKLAMA KORUMALI)
 async function askGemini(promptText, base64Image = null, cacheKey = null) {
-    if (cacheKey && aiCache.has(cacheKey)) {
-        return aiCache.get(cacheKey);
-    }
+    if (cacheKey && aiCache.has(cacheKey)) return aiCache.get(cacheKey);
 
     const apiKey = localStorage.getItem('superbrain_gemini_key');
-    if (!apiKey) throw new Error("Önce yeni API anahtarını kilitlemelisin!");
+    if (!apiKey) {
+        openSettingsModal();
+        throw new Error("Lütfen önce ayarlar simgesinden API anahtarını kaydet!");
+    }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     let parts = [{ text: promptText }];
@@ -697,12 +869,8 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
             body: JSON.stringify({ contents: [{ parts: parts }] })
         });
         const data = await res.json();
-        
         if (data.error) {
-            if (data.error.message.includes('quota') || data.error.message.includes('rate')) {
-                throw new Error(`Zihnimiz çok hızlı çalıştı! ${currentCompanion.name} biraz nefesleniyor, 10 saniye sonra tekrar deneyelim ✨`);
-            }
-            throw new Error(data.error.message);
+            throw new Error(`Yol arkadaşın ${currentCompanion.name} biraz nefesleniyor, birkaç saniye sonra tekrar deneyelim ✨`);
         }
         const result = data.candidates[0].content.parts[0].text.trim();
         if (cacheKey) aiCache.set(cacheKey, result);
@@ -728,10 +896,15 @@ async function runJigsaw() {
     if (box) box.style.display = 'none';
 
     try {
-        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nSadece bu JSON'u ver:\n{"buyuk_resim": "Ana fikir (tek sevimli cümle)", "kenar_parcalari": ["1. Olay", "2. Olay", "3. Olay"]}`, null, 'jigsaw_' + textInput.value.trim());
+        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nJSON formatında ver:\n{"buyuk_resim": "Ana fikir (tek sevimli cümle)", "kenar_parcalari": ["1. Olay açıklaması", "2. Olay açıklaması", "3. Olay açıklaması"]}`, null, 'jigsaw_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
         document.getElementById('jigsawCover').innerHTML = `🌟 "${data.buyuk_resim}"`;
-        document.getElementById('jigsawEdges').innerHTML = data.kenar_parcalari.map((item, idx) => `<div class="jigsaw-card"><b>Taş ${idx + 1}:</b> ${item}</div>`).join('');
+        document.getElementById('jigsawEdges').innerHTML = data.kenar_parcalari.map((item, idx) => `
+            <div class="jigsaw-card">
+                <div class="jigsaw-card-title">Adım ${idx + 1}</div>
+                <div>${item.replace(/^[0-9]+[\.\:\s]*/, '')}</div>
+            </div>
+        `).join('');
         if (box) box.style.display = 'block';
         unlockBadge('badgeJigsaw');
     } catch (e) { alert(e.message); }
@@ -746,18 +919,23 @@ async function runDualCoding() {
     const grid = document.getElementById('dualGrid');
     btn.disabled = true;
     if (box) box.style.display = 'none';
-    if (grid) grid.innerHTML = "";
+    grid.innerHTML = "";
 
     try {
-        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nSadece JSON ver:\n{"scenes": [{"caption": "Sahne 1", "keyword": "astronaut"}, {"caption": "Sahne 2", "keyword": "spaceship"}, {"caption": "Sahne 3", "keyword": "galaxy"}]}`, null, 'dual_' + textInput.value.trim());
+        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nSadece JSON ver:\n{"scenes": [{"caption": "Sahne 1", "keyword": "astronaut"}, {"caption": "Sahne 2", "keyword": "spaceship"}]}`, null, 'dual_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
         if (box) box.style.display = 'block';
+
+        // Sadece başarılı görselleri ekleme
         data.scenes.forEach((scene, i) => {
             const card = document.createElement('div');
             card.className = 'dual-card';
-            const imgUrl = `https://image.pollinations.ai/prompt/clean%20storybook%20vector%20illustration%20of%20${encodeURIComponent(scene.keyword)}?width=400&height=300&nologo=true&seed=${i + Math.floor(Math.random()*100)}`;
-            card.innerHTML = `<img src="${imgUrl}" alt="${scene.caption}"><div class="dual-card-caption">🎬 ${scene.caption}</div>`;
-            if (grid) grid.appendChild(card);
+            const img = document.createElement('img');
+            img.src = `https://image.pollinations.ai/prompt/clean%20storybook%20vector%20illustration%20of%20${encodeURIComponent(scene.keyword)}?width=400&height=300&nologo=true&seed=${i + Math.floor(Math.random()*100)}`;
+            img.onload = () => {
+                card.innerHTML = `<img src="${img.src}"><div class="dual-card-caption">🎬 ${scene.caption}</div>`;
+                grid.appendChild(card);
+            };
         });
     } catch (e) { alert(e.message); }
     finally { btn.disabled = false; }
@@ -766,18 +944,19 @@ async function runDualCoding() {
 // 2. İSTASYON
 async function buildMemoryPalace() {
     const textInput = document.getElementById('textInput');
-    if (!textInput || !textInput.value.trim()) { alert("Önce görev defterine bir metin girmelisin!"); return; }
+    if (!textInput || !textInput.value.trim()) return;
     const btn = document.getElementById('btnPalace');
     const loader = document.getElementById('palaceLoading');
     btn.disabled = true;
     if (loader) loader.style.display = 'inline';
 
     try {
-        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nSadece JSON ver:\n{"room1": "Oturma odasındaki nesne ve detayı", "room2": "Mutfak masasında nesne ve detayı", "room3": "Yatak odasındaki nesne ve detayı"}`, null, 'palace_' + textInput.value.trim());
+        const prompt = `Metin: "${textInput.value.trim()}"\nBu metindeki bilgileri çocuğun unutmaması için hafıza sarayı tekniğiyle 3 tanıdık odaya sembolik nesneler olarak yerleştir. Metinde oda adı arama, tamamen metafor kur. Sadece JSON formatında yaz:\n{"room1": "Oturma odasında duran nesne ve açıklaması", "room2": "Mutfak masasındaki nesne ve açıklaması", "room3": "Kitaplıktaki parlayan nesne ve açıklaması"}`;
+        const reply = await askGemini(prompt, null, 'palace_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
-        document.getElementById('room1Items').innerHTML = `<div class="room-item">🛋️ ${data.room1}</div>`;
-        document.getElementById('room2Items').innerHTML = `<div class="room-item">🍳 ${data.room2}</div>`;
-        document.getElementById('room3Items').innerHTML = `<div class="room-item">🛏️ ${data.room3}</div>`;
+        document.getElementById('room1Items').innerHTML = `<div class="room-item">${data.room1}</div>`;
+        document.getElementById('room2Items').innerHTML = `<div class="room-item">${data.room2}</div>`;
+        document.getElementById('room3Items').innerHTML = `<div class="room-item">${data.room3}</div>`;
         unlockBadge('badgePalace');
     } catch (e) { alert(e.message); }
     finally { btn.disabled = false; if (loader) loader.style.display = 'none'; }
@@ -789,188 +968,227 @@ function populateWordChips() {
     if (!container || !textInput) return;
     const cleanWords = textInput.value.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").split(/\s+/).filter(w => w.length > 4);
     const uniqueWords = [...new Set(cleanWords)].slice(0, 5);
-    container.innerHTML = uniqueWords.map(w => `<span class="word-chip" onclick="selectWordChip('${w}', this)">✨ ${w.toUpperCase()}</span>`).join('');
+    container.innerHTML = uniqueWords.map(w => `<span class="word-chip" onclick="selectWordChip('${w.toLowerCase()}', this)">${w.toLowerCase()}</span>`).join('');
 }
 
 async function selectWordChip(word, el) {
     document.querySelectorAll('.word-chip').forEach(c => c.classList.remove('selected'));
     if (el) el.classList.add('selected');
-    document.getElementById('targetSensoryWord').innerText = word.toUpperCase();
+    document.getElementById('targetSensoryWord').innerText = word;
     fetchMnemonic(word);
 }
-
 async function generateCustomMnemonic() {
     const custom = document.getElementById('customMnemonicInput').value.trim();
-    if (!custom) { alert("Lütfen tekerleme için bir kelime yaz!"); return; }
-    document.getElementById('targetSensoryWord').innerText = custom.toUpperCase();
+    if (!custom) return;
+    document.getElementById('targetSensoryWord').innerText = custom;
     fetchMnemonic(custom);
 }
-
 async function fetchMnemonic(word) {
     const out = document.getElementById('mnemonicOutput');
-    if (out) { out.style.display = 'block'; out.innerHTML = "🪄 <i>Tekerleme dokunuyor...</i>"; }
+    out.style.display = 'block';
+    out.innerHTML = "🪄 <i>Tekerleme dokunuyor...</i>";
     try {
-        const res = await askGemini(`Kelime: "${word}"\nBu kelimeyi disleksik bir çocuğun unutmaması için 2 satırlık sevimli ve kafiyeli bir tekerleme yaz.`, null, 'mnem_' + word);
-        if (out) out.innerHTML = `🎵 <b>${word.toUpperCase()} Tekerlemesi:</b><br>"${res}"`;
-    } catch(e) { if(out) out.innerHTML = e.message; }
+        const res = await askGemini(`Kelime: "${word}"\nBu kelime için disleksik bir çocuğun ritimle aklında tutacağı 2 ayrı satırlık sevimli bir kafiye yaz. Asla markdown yıldız işareti kullanma.`, null, 'mnem_' + word);
+        const lines = res.split('\n').filter(l => l.trim().length > 0).slice(0, 2);
+        out.innerHTML = `🎵 <b>${word} İçin Eğlenceli Dize:</b><br><br>"${lines[0] || res}"<br>"${lines[1] || ''}"`;
+    } catch(e) { out.innerHTML = e.message; }
 }
 
 function checkSensoryMatch() {
-    const target = document.getElementById('targetSensoryWord').innerText.trim().toUpperCase();
-    const typed = document.getElementById('sensoryTypingInput').value.trim().toUpperCase();
+    const target = document.getElementById('targetSensoryWord').innerText.trim().toLowerCase();
+    const typed = document.getElementById('sensoryTypingInput').value.trim().toLowerCase();
     const fb = document.getElementById('sensoryFeedback');
-    if (!fb) return;
-    if (typed === target) { fb.innerHTML = "🎉 Harika! Beynin harfleri ellerinle kilitledi!"; fb.style.color = "#0D9488"; }
+    if (typed === "") fb.innerHTML = "";
+    else if (typed === target) { fb.innerHTML = "🎉 Harika! Beynin harfleri ellerinle kilitledi!"; fb.style.color = "#0D9488"; }
     else if (target.startsWith(typed)) { fb.innerHTML = "✨ Çok iyi tempo, devam et..."; fb.style.color = "#1E3A8A"; }
-    else { fb.innerHTML = "👀 Bir harf karıştı, tekrar bak!"; fb.style.color = "#DC2626"; }
+    else { fb.innerHTML = "👀 Bir harf karıştı, sakin ol!"; fb.style.color = "#DC2626"; }
 }
 
 // 3. İSTASYON
 async function buildMindMap() {
     const textInput = document.getElementById('textInput');
-    if (!textInput || !textInput.value.trim()) { alert("Önce metin girmelisin!"); return; }
+    if (!textInput || !textInput.value.trim()) return;
     const btn = document.getElementById('btnMindmap');
     const loader = document.getElementById('mindmapLoading');
     btn.disabled = true;
     if (loader) loader.style.display = 'inline';
 
     try {
-        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nSadece JSON ver:\n{"root": "Merkez Fikir", "branches": ["Dal 1", "Dal 2", "Dal 3", "Dal 4"]}`, null, 'mindmap_' + textInput.value.trim());
+        const reply = await askGemini(`Metin: "${textInput.value.trim()}"\nSadece JSON ver:\n{"root": "Merkez Kavram", "branches": ["1. Önemli Bilgi", "2. Önemli Bilgi", "3. Önemli Bilgi"]}`, null, 'mindmap_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
         document.getElementById('mindmapRoot').innerText = "🌳 " + data.root;
-        document.getElementById('mindmapBranches').innerHTML = data.branches.map(b => `<div class="mindmap-node">🌿 ${b}</div>`).join('');
-        document.getElementById('mindmapDisplay').style.display = 'flex';
+        document.getElementById('mindmapBranches').innerHTML = data.branches.map((b, idx) => `
+            <div class="tree-node"><b>${idx + 1}. Dal:</b> ${b.replace(/^[0-9]+[\.\:\s]*/, '')}</div>
+        `).join('');
+        document.getElementById('mindmapDisplay').style.display = 'block';
     } catch (e) { alert(e.message); }
     finally { btn.disabled = false; if (loader) loader.style.display = 'none'; }
 }
 
-let timerInterval = null;
-function startTimer() {
-    clearInterval(timerInterval);
-    let duration = 5 * 60;
-    const disp = document.getElementById('timerDisplay');
-    timerInterval = setInterval(() => {
-        let m = Math.floor(duration / 60), s = duration % 60;
-        if (disp) disp.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-        if (--duration < 0) { clearInterval(timerInterval); disp.innerText = "SÜRE DOLDU! 🎉"; }
-    }, 1000);
+function addStarter(starter) {
+    const textarea = document.getElementById('quickJotterText');
+    textarea.value = starter + textarea.value;
+    textarea.focus();
+    updateJotterProgress();
+}
+function updateJotterProgress() {
+    const len = document.getElementById('quickJotterText').value.length;
+    const pct = Math.min(100, (len / 60) * 100);
+    document.getElementById('jotterProgressFill').style.width = pct + '%';
 }
 
-function checkSummaryFeedback() {
-    const val = document.getElementById('peerSummary').value.trim();
-    const fb = document.getElementById('summaryFeedback');
-    if (val.length < 15) {
-        fb.innerText = `${currentCompanion.name} merakla dinliyor, biraz daha anlat! ✨`;
-        fb.style.color = "#EA580C";
+// CHAT MOTORU
+function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const val = input.value.trim();
+    if (!val) return;
+
+    const history = document.getElementById('chatHistory');
+    history.innerHTML += `
+        <div class="chat-msg">
+            <div class="chat-bubble bubble-user">${val}</div>
+        </div>
+    `;
+    input.value = "";
+
+    setTimeout(() => {
+        const cheers = [
+            "Harika bir detay yakaladın! Sen gerçek bir kâşifsin ✨",
+            "Bu bakış açın çok etkileyici, zihnin harika bağlantılar kuruyor! 🚀",
+            "Bunu fark etmen müthiş! Devam et, seninle gurur duyuyorum 💖"
+        ];
+        const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+        history.innerHTML += `
+            <div class="chat-msg">
+                <span class="comp-icon" style="font-size:26px;">${currentCompanion.icon}</span>
+                <div class="chat-bubble bubble-bot">${cheer}</div>
+            </div>
+        `;
+    }, 600);
+}
+
+// 4. İSTASYON (TIME TIMER & ODAK ORMANI)
+function selectPlant(type, el) {
+    document.querySelectorAll('.plant-card-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    currentPlant = type;
+    updateTreeVisual(0);
+}
+function selectForestTime(mins, el) {
+    document.querySelectorAll('.time-chip-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    forestMinutes = mins;
+    forestDuration = mins * 60;
+    document.getElementById('forestTimerDisplay').innerText = `${mins < 10 ? '0' : ''}${mins}:00`;
+    setCircleProgress(0);
+}
+
+function toggleForestTimer() {
+    const btn = document.getElementById('startForestBtn');
+    if (!forestRunning) {
+        forestRunning = true;
+        btn.innerText = "⏸️ Mola Ver";
+        btn.style.background = "#F59E0B";
+        const total = forestMinutes * 60;
+
+        forestInterval = setInterval(() => {
+            let m = Math.floor(forestDuration / 60);
+            let s = forestDuration % 60;
+            document.getElementById('forestTimerDisplay').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+
+            let progress = 1 - (forestDuration / total);
+            setCircleProgress(progress);
+            updateTreeVisual(progress);
+
+            if (--forestDuration < 0) {
+                clearInterval(forestInterval);
+                forestRunning = false;
+                btn.innerText = "🏆 Tamamlandı!";
+                btn.style.background = "#0D9488";
+                unlockBadge('badgeTree');
+            }
+        }, 1000);
     } else {
-        fb.innerText = `🏆 ${currentCompanion.name} SANA 'SÜPER ANLATICI' ROZETİ VERDİ!`;
-        fb.style.color = "#0D9488";
+        clearInterval(forestInterval);
+        forestRunning = false;
+        btn.innerText = "▶️ Devam Et";
+        btn.style.background = "#0D9488";
     }
 }
-
-// 4. İSTASYON: ORMAN MODU (BİTKİYE ÖZEL BÜYÜME)
-let forestInterval = null;
-function startCustomForestTimer() {
-    clearInterval(forestInterval);
-    const durationSelect = document.getElementById('timerDurationSelect');
-    const plantSelect = document.getElementById('plantTypeSelect');
-    const minutes = parseInt(durationSelect.value);
-    const plantType = plantSelect.value;
-    let duration = minutes * 60;
-    const totalDuration = duration;
-
-    const disp = document.getElementById('forestTimerDisplay');
-    const tree = document.getElementById('treeVisual');
-    const startIcons = { tree: '🌱', flower: '🌱', cactus: '🪴', sprout: '🌱' };
-    tree.innerText = startIcons[plantType];
-
-    forestInterval = setInterval(() => {
-        let m = Math.floor(duration / 60), s = duration % 60;
-        disp.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-
-        let progress = 1 - (duration / totalDuration);
-        if (plantType === 'tree') {
-            if (progress > 0.3) tree.innerText = "🌿";
-            if (progress > 0.6) tree.innerText = "🌲";
-            if (progress > 0.9) tree.innerText = "🌳";
-        } else if (plantType === 'flower') {
-            if (progress > 0.3) tree.innerText = "🌿";
-            if (progress > 0.6) tree.innerText = "🌷";
-            if (progress > 0.9) tree.innerText = "🌻";
-        } else if (plantType === 'cactus') {
-            if (progress > 0.35) tree.innerText = "🌵";
-            if (progress > 0.85) tree.innerText = "🌵🌸";
-        } else if (plantType === 'sprout') {
-            if (progress > 0.35) tree.innerText = "🌿";
-            if (progress > 0.85) tree.innerText = "🌸";
-        }
-
-        if (--duration < 0) {
-            clearInterval(forestInterval);
-            disp.innerText = "BİTKİN AÇTI! 🏆";
-            unlockBadge('badgeTree');
-        }
-    }, 1000);
+function setCircleProgress(pct) {
+    const circle = document.getElementById('timerProgressCircle');
+    const offset = 440 - (pct * 440);
+    circle.style.strokeDashoffset = offset;
 }
-function resetForestTimer() {
-    clearInterval(forestInterval);
-    const minutes = document.getElementById('timerDurationSelect').value;
-    document.getElementById('forestTimerDisplay').innerText = `${minutes}:00`;
-    document.getElementById('treeVisual').innerText = "🌱";
+function updateTreeVisual(progress) {
+    const tree = document.getElementById('treeVisual');
+    if (currentPlant === 'tree') {
+        tree.innerText = progress > 0.8 ? "🌳" : progress > 0.5 ? "🌲" : progress > 0.2 ? "🌿" : "🌱";
+    } else if (currentPlant === 'flower') {
+        tree.innerText = progress > 0.8 ? "🌻" : progress > 0.5 ? "🌷" : progress > 0.2 ? "🌿" : "🌱";
+    } else if (currentPlant === 'cactus') {
+        tree.innerText = progress > 0.8 ? "🌵🌸" : progress > 0.4 ? "🌵" : "🪴";
+    } else if (currentPlant === 'sprout') {
+        tree.innerText = progress > 0.8 ? "🌸" : progress > 0.4 ? "🌿" : "🌱";
+    }
 }
 
 async function generateChunks() {
     const task = document.getElementById('chunkTaskInput').value.trim();
+    if (!task) return;
     const btn = document.getElementById('btnChunk');
     const box = document.getElementById('chunkResults');
-    if (!task) { alert("Lütfen bir ödev yaz!"); return; }
     btn.disabled = true;
     box.style.display = 'block';
-    box.innerHTML = "⏳ 30 dakikalık pencereler hazırlanıyor...";
+    box.innerHTML = "⏳ Pencereler açılıyor...";
 
     try {
-        const reply = await askGemini(`Görev: "${task}"\nBu görevi disleksik bir çocuğun korkmadan yapması için 3 adet 30 dakikalık pencereye böl. Her pencerede ne yapacağını açıkla. Sadece JSON ver:\n{"chunks": ["1. Pencere: ...", "2. Pencere: ...", "3. Pencere: ..."]}`, null, 'chunk_' + task);
+        const reply = await askGemini(`Görev: "${task}"\nBu görevi disleksik bir çocuk için 3 yönetilebilir parçaya böl. JSON ver:\n{"chunks": ["1. Parça", "2. Parça", "3. Parça"]}`, null, 'chunk_' + task);
         const data = parseCleanJSON(reply);
-        box.innerHTML = `<b>🪟 ${currentCompanion.name} ile Görev Pencerelerin:</b>` + data.chunks.map(c => `<div class="chunk-item">✨ ${c}</div>`).join('');
+        box.innerHTML = data.chunks.map((c, idx) => `
+            <div class="task-checklist-item" onclick="this.classList.toggle('done')">
+                <input type="checkbox">
+                <span><b>${idx + 1}. Pencere:</b> ${c.replace(/^[0-9]+[\.\:\s]*/, '')}</span>
+            </div>
+        `).join('');
     } catch(e) { box.innerHTML = e.message; }
     finally { btn.disabled = false; }
 }
 
-// 5. İSTASYON: BÜYÜME ZİHNİYETİ & HATA FABRİKASI
+function simulateVoiceInput() {
+    document.getElementById('chunkTaskInput').value = "Fen Bilgisi Güneş Sistemi Projesi";
+}
+function simulateVoiceInputYet() {
+    document.getElementById('yetInput').value = "Uzun kelimeleri daha akıcı okumak istiyorum";
+}
+
+// 5. İSTASYON
 async function convertWithYet() {
     const input = document.getElementById('yetInput').value.trim();
+    if (!input) return;
     const btn = document.getElementById('btnYet');
     const out = document.getElementById('yetOutput');
-    if (!input) return;
     btn.disabled = true;
     out.style.display = 'block';
-    out.innerHTML = "🪄 Hedefine güç katılıyor...";
+    out.innerHTML = "🪄 Güce dönüştürülüyor...";
 
     try {
-        const reply = await askGemini(`Çocuk geliştirmek istediği hedefi şöyle yazdı: "${input}".\nCarol Dweck büyüme zihniyetiyle bu hedefe 'Henüz' ve potansiyel gücü katarak sevimli, cesaretlendirici, asla olumsuz kelime içermeyen pozitif bir motivasyon cümlesi kur. Doğrudan çocuğa hitap et.`, null, 'yet_' + input);
-        out.innerHTML = `🌟 <b>${currentCompanion.name} diyor ki:</b><br>"${reply}"`;
+        const reply = await askGemini(`Çocuğun hedefi: "${input}".\nCarol Dweck büyüme zihniyetiyle bu hedefi sevimli ve cesaret verici pozitif bir cümleye çevir. Asla olumsuz kelime kullanma.`, null, 'yet_' + input);
+        out.innerHTML = `🌟 <b>${currentCompanion.name} diyor ki:</b><br>"${reply}" <span class="yet-stamp">HENÜZ!</span>`;
         unlockBadge('badgeGrowth');
     } catch(e) { out.innerHTML = e.message; }
     finally { btn.disabled = false; }
 }
 
-const neuronFacts = [
-    "🧠 Biliyor musun? Bir harfi yanlış okuyup düzelttiğinde beyninde yeni bir elektrik kablosu (sinaps) bağlanır!",
-    "💡 Sporcular kaslarını nasıl ağırlık kaldırarak güçlendiriyorsa, sen de zorlandığın bir kelimeyi tekrar denerken zihin kaslarını güçlendiriyorsun!",
-    "🚀 Dünyanın en iyi kâşifleri en çok yanılan insanlardı. Yanılmak, beynin 'Burada keşfedecek yeni bir şey var!' deme şeklidir."
-];
-let factIndex = 0;
-function showNeuronFact() {
+function boostNeuronMuscle() {
+    const word = document.getElementById('mistakeWordInput').value.trim() || "bu kelime";
     const box = document.getElementById('neuronFactBox');
     box.style.display = 'block';
-    box.innerText = neuronFacts[factIndex % neuronFacts.length];
-    factIndex++;
+    box.innerHTML = `💪 <b>Harika Bir Beyin Jimnastiği!</b><br>'${word}' üzerinde düşünürken beyninde yepyeni bir nöron köprüsü bağlandı. Kasların ağırlık kaldırırken güçlendiği gibi, zihnin de tam şu an güçlendi!`;
 }
 
-function selectDayMood(mood) {
-    selectedDayMood = mood;
-    alert(`Bugünkü hissin '${mood}' olarak günlüğe kaydedildi! ✨`);
-}
+function selectDayMood(mood) { selectedDayMood = mood; alert(`Bugünkü hissin: ${mood} olarak kaydedildi!`); }
+function selectCompMood(mood) { selectedCompMood = mood; alert(`Dostluk bağınız: ${mood} olarak mühürlendi!`); }
 
 function generateCertificate() {
     const explorer = document.getElementById('displayExplorerName').innerText || 'Kâşif';
@@ -982,19 +1200,17 @@ function generateCertificate() {
 }
 
 // ==========================================
-// MOLA KAPSÜLÜ (TAM 4 SIRALI & RENK SEÇİMLİ DİKKAT AŞAMASI)
+// KÂŞİF MOLASI (BUZLU CAM, SIFIR STRES & GÖZ DİNLENDİRME)
 // ==========================================
 let breakStep = 1;
-let targetColorName = "KIRMIZI";
-let targetColorClass = "b-red";
-
 function openBreakModal() {
     breakStep = 1;
     document.getElementById('breakModal').style.display = 'flex';
     const closeBtn = document.getElementById('breakCloseBtn');
     closeBtn.disabled = true;
-    closeBtn.style.background = '#64748B';
-    closeBtn.innerText = "🔒 4 Görev Bitmeden Çıkılamaz";
+    closeBtn.style.background = '#CBD5E1';
+    closeBtn.style.color = '#64748B';
+    closeBtn.innerText = "🔒 4 Adım Bitmeden Çıkılamaz";
     loadBreakStep();
 }
 function closeBreakModal() { document.getElementById('breakModal').style.display = 'none'; }
@@ -1004,60 +1220,45 @@ function loadBreakStep() {
     const screen = document.getElementById('gameScreen');
 
     if (breakStep === 1) {
-        // Karışık renkler arasından hedef renk avı
-        const colors = [
-            { name: "KIRMIZI", color: "#EF4444" },
-            { name: "MAVİ", color: "#3B82F6" },
-            { name: "YEŞİL", color: "#10B981" }
-        ];
-        const chosen = colors[Math.floor(Math.random() * colors.length)];
-        targetColorName = chosen.name;
-
-        title.innerHTML = `Adım 1/4: Dikkat Görevi! Sadece <span style="color:${chosen.color}; font-weight:700;">${targetColorName}</span> Balonları Patlat!`;
-        screen.innerHTML = `<div id="bArea" style="width:100%; height:160px; position:relative;"></div>`;
-        spawnMixedBalloons(chosen.name);
+        title.innerHTML = `Adım 1/4: Dikkat Molası! Sadece <span style="color:#0284C7; font-weight:700;">MAVİ</span> Balonları Patlat!`;
+        screen.innerHTML = `<div id="bArea" style="width:100%; height:150px; position:relative;"></div>`;
+        spawnBalloons();
     } else if (breakStep === 2) {
-        title.innerText = "Adım 2/4: Hızlı Refleks! 4 Altın Yıldız Yakala!";
-        screen.innerHTML = `<div id="sArea" style="width:100%; height:160px; position:relative;"></div>`;
+        title.innerText = "Adım 2/4: Altın Yıldızlara Sakince Dokun!";
+        screen.innerHTML = `<div id="sArea" style="width:100%; height:150px; position:relative;"></div>`;
         moveStar(0);
     } else if (breakStep === 3) {
-        title.innerText = "Adım 3/4: Dinginleşme. Çemberle Birlikte Sakince Nefes Al / Ver...";
+        title.innerText = "Adım 3/4: Dinginleşme... Daireyle Birlikte Sakince Nefes Al / Ver";
         screen.innerHTML = `<div class="breath-circle">Nefes</div>`;
-        setTimeout(() => { breakStep = 4; loadBreakStep(); }, 6500);
+        setTimeout(() => { breakStep = 4; loadBreakStep(); }, 6000);
     } else if (breakStep === 4) {
-        title.innerText = "Adım 4/4: Mührü Tamamla! Sevimli Kristale Dokun!";
-        screen.innerHTML = `<div style="font-size:68px; cursor:pointer;" onclick="finishBreak()">💎</div>`;
+        title.innerText = "Adım 4/4: Sevimli Kristale Dokun ve Enerjini Tamamla!";
+        screen.innerHTML = `<div style="font-size:64px; cursor:pointer;" onclick="finishBreak()">💎</div>`;
     }
 }
 
-function spawnMixedBalloons(targetName) {
+function spawnBalloons() {
     const area = document.getElementById('bArea');
     if (!area) return;
-    area.innerHTML = '';
-    const colorMap = { "KIRMIZI": "#EF4444", "MAVİ": "#3B82F6", "YEŞİL": "#10B981", "SARI": "#FACC15" };
-    const allColors = ["KIRMIZI", "MAVİ", "YEŞİL", "SARI"];
-    let targetPopped = 0;
-
-    // 6 karışık balon oluştur
+    const colors = ['#0284C7', '#EF4444', '#10B981', '#F59E0B'];
+    let popped = 0;
     for (let i = 0; i < 6; i++) {
         const b = document.createElement('div');
         b.className = 'balloon';
-        const color = (i < 3) ? targetName : allColors[Math.floor(Math.random() * allColors.length)];
-        b.style.backgroundColor = colorMap[color];
-        b.style.left = `${10 + (i % 3) * 30}%`;
+        const c = i < 3 ? '#0284C7' : colors[Math.floor(Math.random() * colors.length)];
+        b.style.backgroundColor = c;
+        b.style.left = `${10 + (i % 3) * 32}%`;
         b.style.top = `${20 + Math.floor(i / 3) * 60}px`;
-
         b.onclick = () => {
-            if (color === targetName) {
+            if (c === '#0284C7') {
                 b.style.transform = 'scale(0)';
                 setTimeout(() => b.remove(), 100);
-                targetPopped++;
-                if (targetPopped >= 3) {
+                if (++popped >= 3) {
                     breakStep = 2;
-                    setTimeout(loadBreakStep, 500);
+                    setTimeout(loadBreakStep, 400);
                 }
             } else {
-                b.style.transform = 'scale(1.2)';
+                b.style.transform = 'scale(1.15)';
                 setTimeout(() => b.style.transform = 'scale(1)', 150);
             }
         };
@@ -1069,16 +1270,16 @@ function moveStar(count) {
     const area = document.getElementById('sArea');
     if (!area) return;
     area.innerHTML = '';
-    if (count >= 4) {
+    if (count >= 3) {
         breakStep = 3;
-        setTimeout(loadBreakStep, 500);
+        setTimeout(loadBreakStep, 400);
         return;
     }
     const star = document.createElement('div');
     star.className = 'star-target';
     star.innerHTML = '⭐';
     star.style.left = `${Math.random() * 80 + 10}%`;
-    star.style.top = `${Math.random() * 70 + 20}px`;
+    star.style.top = `${Math.random() * 65 + 15}px`;
     star.onclick = () => moveStar(count + 1);
     area.appendChild(star);
 }
@@ -1087,20 +1288,22 @@ function finishBreak() {
     const title = document.getElementById('breakStepTitle');
     const screen = document.getElementById('gameScreen');
     const closeBtn = document.getElementById('breakCloseBtn');
-    title.innerText = "🎉 Tüm Mola Aşamaları Tamamlandı!";
-    screen.innerHTML = `<div style="font-weight:700; color:#0D9488; font-size:22px;">Zihnin Dinlendi ve Yenilendi!</div>`;
+    title.innerText = "🎉 Zihnin Harika Dinlendi!";
+    screen.innerHTML = `<div style="font-weight:700; color:#0D9488; font-size:20px;">Gözlerin ve Zihnin Tazelendi! ✨</div>`;
     closeBtn.disabled = false;
     closeBtn.style.background = '#0D9488';
-    closeBtn.innerText = "🚀 Şimdi Göreve Geri Dön!";
+    closeBtn.style.color = '#FFFFFF';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.innerText = "🚀 Şimdi Çalışmaya Geri Dön!";
     unlockBadge('badgeBreak');
 }
 
-// OCR (SAYFA KAPSÜLÜ)
+// OCR
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
     const prog = document.getElementById('aiProgress');
-    if (prog) prog.style.display = 'block';
+    prog.style.display = 'block';
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -1116,12 +1319,12 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
             try {
-                const resultText = await askGemini("Bu görseldeki metni birebir aktar. Yalnızca metni yaz.", canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+                const resultText = await askGemini("Bu görseldeki metni harfi harfine aktar. Yalnızca metni yaz.", canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
                 document.getElementById('textInput').value = resultText;
                 updateTextDisplay();
             } catch (err) { alert(err.message); }
             finally {
-                if (prog) prog.style.display = 'none';
+                prog.style.display = 'none';
                 document.getElementById('imageInput').value = "";
             }
         };
