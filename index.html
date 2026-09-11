@@ -201,8 +201,19 @@
         .dual-card img { width: 100%; height: 320px; object-fit: cover; }
         .dual-card-caption { padding: 14px; font-weight: 600; font-size: 15px; color: #9A3412; }
 
-        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI */
+        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI & PARÇA SAYFALAMA */
         .output-wrapper { max-width: 650px; margin: 16px 0; }
+        .chunk-controls-bar {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+            background: #E2E8F0; padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; color: #334155;
+        }
+        .chunk-nav-btn {
+            background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 4px 10px; border-radius: 8px;
+            cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; color: #1E293B;
+        }
+        .chunk-nav-btn:hover { background: #F1F5F9; border-color: var(--primary); }
+        .chunk-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
         .output-container {
             position: relative; background-color: var(--text-bg); padding: 24px 26px;
             border-radius: 18px; font-size: 21px; line-height: 2.3;
@@ -220,7 +231,7 @@
         .syllable-a { color: #1E3A8A; font-weight: 600; }
         .syllable-b { color: #0F172A; font-weight: 600; }
 
-        /* MODÜL 2: ALT SEKME (ADIM ADIM AKIŞ) */
+        /* MODÜL 2: ALT SEKME */
         .sub-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #E2D7C5; padding-bottom: 10px; }
         .sub-tab-btn {
             background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 8px 16px; border-radius: 12px;
@@ -248,7 +259,7 @@
             border-radius: 14px; margin-top: 14px; font-weight: 500; line-height: 1.8; color: #0F172A; font-size: 16px; text-align: left;
         }
 
-        /* KELİME PİSTİ (HARF BLOKLARI) */
+        /* KELİME PİSTİ */
         .letter-slots-container { display: flex; gap: 8px; justify-content: center; margin: 16px 0; flex-wrap: wrap; }
         .letter-slot {
             width: 44px; height: 50px; border: 2.5px solid #CBD5E1; border-radius: 10px;
@@ -280,7 +291,6 @@
         }
         .sentence-starter-btn:hover { background: #F1F5F9; border-color: var(--primary); }
 
-        /* BELİRGİN MİKROFON BUTONU */
         .voice-action-btn {
             background: #EFF6FF; border: 2px solid #93C5FD; color: #1E40AF; padding: 8px 14px;
             border-radius: 14px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;
@@ -531,7 +541,7 @@
                 </div>
                 <div id="aiProgress" style="display:none; color:var(--primary); font-size:13px; font-weight:600; text-align:center; margin-bottom:8px;">✨ Sayfa kristalize ediliyor...</div>
 
-                <textarea id="textInput" oninput="updateTextDisplay()" placeholder="Fotoğraf yüklemediysen sorun değil! Metnini buraya yazabilir veya yapıştırabilirsin...">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong.</textarea>
+                <textarea id="textInput" oninput="resetAndDisplayChunks()" placeholder="Fotoğraf yüklemediysen sorun değil! Metnini buraya yazabilir veya yapıştırabilirsin...">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong. Working in space takes courage and daily practice.</textarea>
 
                 <!-- Okuma Yardımcıları -->
                 <div style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap;">
@@ -543,8 +553,16 @@
                     </label>
                 </div>
 
-                <!-- DİSLEKSİ DOSTU OKUMA ALANI (MAX 650PX, SOLA DAYALI) -->
+                <!-- DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI & METİN BÖLME KONTROLLERİ -->
                 <div class="output-wrapper">
+                    <!-- Parça / Sayfalama Çubuğu (Metin uzunsa otomatik açılır) -->
+                    <div id="chunkBar" class="chunk-controls-bar" style="display:none;">
+                        <button class="chunk-nav-btn" id="btnPrevChunk" onclick="changeChunk(-1)">◀ Önceki Parça</button>
+                        <span id="chunkIndicator">Parça: 1 / 1</span>
+                        <button class="chunk-nav-btn" id="btnNextChunk" onclick="changeChunk(1)">Sonraki Parça ▶</button>
+                        <button class="chunk-nav-btn" style="margin-left:8px;" onclick="toggleFullTextMode()">Tümünü Göster</button>
+                    </div>
+
                     <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
                         <div id="ruler" class="reading-ruler"></div>
                         <div class="text-content-layer" id="textOutput">Yazılar burada net ve sakin parlayacak...</div>
@@ -687,7 +705,7 @@
                 </div>
             </div>
 
-            <!-- BİRLEŞİK ZİHİN KANCASI & SOHBET (ZENGİN İSKELELİ & BELİRGİN MİKROFONLU) -->
+            <!-- BİRLEŞİK ZİHİN KANCASI & SOHBET -->
             <div class="card">
                 <h2 style="margin-top:0; color:#1E3A8A;">💬 Yol Arkadaşın <span class="comp-name">Pupa</span> ile Zihin Kancası</h2>
                 <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblChatDesc">Metinde seni en çok meraklandıran şeyi yol arkadaşına anlat:</p>
@@ -899,7 +917,7 @@
     </div>
 </div>
 
-<!-- KÂŞİF MOLASI (YUMUŞAK VE ŞEFKATLİ) -->
+<!-- KÂŞİF MOLASI -->
 <div id="breakModal" class="modal-overlay">
     <div class="modal-card">
         <h2 style="margin-top:0; color:#0D9488; font-size:22px;">☕ Kâşif Molası</h2>
@@ -913,7 +931,7 @@
     </div>
 </div>
 
-<!-- AYARLAR (API ANAHTARI GİZLİ PENCERE) -->
+<!-- AYARLAR -->
 <div id="settingsModal" class="modal-overlay">
     <div class="modal-card" style="border-color:#CBD5E1; max-width:460px;">
         <h3 style="margin-top:0; color:#1E3A8A;">⚙️ Ebeveyn / Öğretmen Ayarları</h3>
@@ -942,6 +960,11 @@ let selectedCompMood = "🤝 Harika Bir İkiliydik";
 let currentTrackWord = "astronot";
 let typedTrackLetters = [];
 let speechRecognizer = null;
+
+// METİN BÖLME (CHUNKING) DURUMU
+let textChunks = [];
+let currentChunkIndex = 0;
+let isFullTextMode = false;
 
 function playSuccessTone() {
     try {
@@ -1004,7 +1027,6 @@ function selectLang(lang, el) {
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
 
-    // Dinamik Arayüz Çevirisi
     if (lang === 'en') {
         document.getElementById('onboardTitle').innerText = "🚀 Welcome to the Explorer Base!";
         document.getElementById('onboardSub').innerText = "Ready to solve letters and ignite your mind on this journey?";
@@ -1050,7 +1072,6 @@ function startJourney() {
     document.querySelectorAll('.comp-icon').forEach(el => el.innerText = currentCompanion.icon);
     document.querySelectorAll('.comp-name').forEach(el => el.innerText = finalCompName);
 
-    // Duygu durumuna göre özel Pupa karşılaması
     const greetingEl = document.getElementById('companionDynamicGreeting');
     if (userSelectedMood === 'tired' || userSelectedMood === 'foggy') {
         greetingEl.innerHTML = `<b class="comp-name">${finalCompName}</b> diyor ki: "Bugün acelemiz yok kâşif! Çok sakin, yavaş ve dinlenerek ilerleyeceğiz. Sen zaten harikasın!"`;
@@ -1060,7 +1081,7 @@ function startJourney() {
 
     document.getElementById('onboardingScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
-    updateTextDisplay();
+    resetAndDisplayChunks();
     setupTrackWord(currentTrackWord);
 }
 
@@ -1097,22 +1118,71 @@ function cleanMarkdown(text) {
     return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
 }
 
-function updateTextDisplay() {
+// METNİ ANLAM BÜTÜNLÜĞÜYLE PARÇALAMA (CHUNKING) MOTORU
+function resetAndDisplayChunks() {
     const textInput = document.getElementById('textInput');
-    const textOutput = document.getElementById('textOutput');
-    const syllableToggle = document.getElementById('syllableToggle');
-    if (!textInput || !textOutput) return;
-
     const raw = cleanMarkdown(textInput.value.trim());
+    currentChunkIndex = 0;
+    isFullTextMode = false;
+
     if (!raw) {
-        textOutput.innerText = currentLang === 'en' ? "Your words will shine softly and clearly here..." : "Yazılar burada net ve sakin parlayacak...";
+        textChunks = [];
+        updateTextDisplay();
         return;
     }
 
-    if (!syllableToggle || !syllableToggle.checked) {
-        textOutput.innerText = raw;
+    // Metin 350 karakterden uzunsa veya 3'ten fazla cümle içeriyorsa lokmalara böl
+    if (raw.length > 320) {
+        const sentences = raw.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [raw];
+        textChunks = [];
+        let currentChunk = "";
+
+        sentences.forEach(s => {
+            if ((currentChunk + s).length > 280 && currentChunk.length > 0) {
+                textChunks.push(currentChunk.trim());
+                currentChunk = s;
+            } else {
+                currentChunk += s;
+            }
+        });
+        if (currentChunk.trim()) textChunks.push(currentChunk.trim());
     } else {
-        const words = raw.split(/\s+/);
+        textChunks = [raw];
+    }
+
+    updateTextDisplay();
+}
+
+function updateTextDisplay() {
+    const textOutput = document.getElementById('textOutput');
+    const chunkBar = document.getElementById('chunkBar');
+    const syllableToggle = document.getElementById('syllableToggle');
+    if (!textOutput) return;
+
+    if (textChunks.length === 0) {
+        textOutput.innerText = currentLang === 'en' ? "Your words will shine softly and clearly here..." : "Yazılar burada net ve sakin parlayacak...";
+        if (chunkBar) chunkBar.style.display = 'none';
+        return;
+    }
+
+    // Parça çubuğunu göster/gizle
+    if (textChunks.length > 1) {
+        chunkBar.style.display = 'flex';
+        document.getElementById('chunkIndicator').innerText = isFullTextMode 
+            ? "Tam Metin Modu" 
+            : `Parça: ${currentChunkIndex + 1} / ${textChunks.length}`;
+        document.getElementById('btnPrevChunk').disabled = isFullTextMode || currentChunkIndex === 0;
+        document.getElementById('btnNextChunk').disabled = isFullTextMode || currentChunkIndex === textChunks.length - 1;
+    } else {
+        chunkBar.style.display = 'none';
+    }
+
+    const displayText = isFullTextMode ? textChunks.join(" ") : textChunks[currentChunkIndex];
+
+    if (!syllableToggle || !syllableToggle.checked) {
+        textOutput.innerText = displayText;
+    } else {
+        const words = displayText.split(/\s+/);
         const syllabled = words.map(word => {
             if (word.length <= 3) return `<span class="syllable-a">${word}</span>`;
             let out = "";
@@ -1125,6 +1195,21 @@ function updateTextDisplay() {
         });
         textOutput.innerHTML = syllabled.join(' ');
     }
+}
+
+function changeChunk(direction) {
+    const newIdx = currentChunkIndex + direction;
+    if (newIdx >= 0 && newIdx < textChunks.length) {
+        currentChunkIndex = newIdx;
+        isFullTextMode = false;
+        updateTextDisplay();
+        playSuccessTone();
+    }
+}
+
+function toggleFullTextMode() {
+    isFullTextMode = !isFullTextMode;
+    updateTextDisplay();
 }
 
 function toggleRuler() {
@@ -1778,7 +1863,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             try {
                 const resultText = await askGemini("Bu görseldeki metni harfi harfine aktar. Yalnızca metni yaz.", canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
                 document.getElementById('textInput').value = resultText;
-                updateTextDisplay();
+                resetAndDisplayChunks();
             } catch (err) { alert(err.message); }
             finally {
                 prog.style.display = 'none';
