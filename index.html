@@ -202,7 +202,7 @@
             font-size: 14px; font-weight: 700; color: #334155;
         }
 
-        /* SOLA YASLI, ALT ALTA 2 DÖNÜŞTÜRÜCÜ KART */
+        /* DÖNÜŞTÜRÜCÜ KARTLAR */
         .tool-action-card {
             background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 18px;
             padding: 16px 20px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center;
@@ -242,23 +242,47 @@
         .dual-card img { width: 100%; height: 320px; object-fit: cover; }
         .dual-card-caption { padding: 14px; font-weight: 600; font-size: 15px; color: #9A3412; }
 
-        /* MODÜL 2: ALT SEKME */
-        .sub-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #E2D7C5; padding-bottom: 10px; }
-        .sub-tab-btn {
-            background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 8px 16px; border-radius: 12px;
-            cursor: pointer; font-weight: 600; font-size: 14px; font-family: inherit; color: #475569; min-height: 44px;
+        /* MODÜL 2: KADEMELİ GÖREV ZİNCİRİ (STEPPED WIZARD) */
+        .station-pipeline {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #FFFFFF; border: 2px solid #E2D7C5; border-radius: 20px;
+            padding: 12px 20px; margin-bottom: 18px; gap: 8px; flex-wrap: wrap;
         }
-        .sub-tab-btn.active { background: #334155; color: white; border-color: #334155; }
+        .station-step {
+            display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px;
+            color: #64748B; cursor: pointer; padding: 8px 14px; border-radius: 14px;
+            transition: all 0.2s;
+        }
+        .station-step.active {
+            background: #EFF6FF; color: #1E40AF; border: 2px solid #93C5FD;
+        }
+        .station-step.completed {
+            color: #15803D; background: #F0FDF4;
+        }
+        .station-step.locked {
+            opacity: 0.5; cursor: not-allowed;
+        }
+        .station-arrow { font-size: 16px; color: #94A3B8; }
+
         .sub-content { display: none; }
         .sub-content.active { display: block; }
 
-        /* ZİHİN EVİ */
-        .palace-header-row {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+        /* ZİHİN EVİ - MERKEZİ GÖZ ÖNÜNDEKİ ODALARA DAĞIT BUTONU */
+        .palace-action-banner {
+            background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 2px dashed #93C5FD;
+            border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px;
         }
-        .palace-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+        .btn-palace-hero {
+            background: linear-gradient(135deg, #0284C7, #0369A1); color: white; border: none;
+            padding: 16px 32px; border-radius: 20px; font-size: 18px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3); font-family: inherit; transition: transform 0.2s;
+            display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-palace-hero:hover { transform: scale(1.03); }
+
+        .palace-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
         .palace-room { background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 16px; padding: 18px; text-align: center; }
-        .palace-room-icon { font-size: 48px; margin: 10px 0; }
+        .palace-room-icon { font-size: 52px; margin: 8px 0; }
         .palace-cue { background: #F8FAFC; border-left: 4px solid var(--memory); color: #0F172A; padding: 10px; border-radius: 6px; font-size: 14px; font-weight: 500; text-align: left; line-height: 1.5; }
 
         /* TEKERLEME */
@@ -373,6 +397,9 @@
             transition: all 0.2s;
         }
         .next-bridge-btn:hover { border-color: #1D4ED8; transform: translateX(3px); background: #EFF6FF; }
+        .next-bridge-btn:disabled {
+            border-color: #CBD5E1; color: #94A3B8; background: #F8FAFC; cursor: not-allowed; transform: none; box-shadow: none;
+        }
 
         /* SERTİFİKA */
         .certificate-card {
@@ -587,7 +614,6 @@
 
                 <!-- SOLA YASLI, ALT ALTA 2 DÖNÜŞTÜRÜCÜ KART -->
                 <div style="margin-top:20px;">
-                    <!-- 1. Dönüştürücü: Parçalara Ayır -->
                     <div class="tool-action-card">
                         <div class="tool-action-info">
                             <div class="tool-action-title">🧩 1. Kâşif Adımı: Parçalara Ayır</div>
@@ -598,7 +624,6 @@
                         </button>
                     </div>
 
-                    <!-- 2. Dönüştürücü: Zihin Sineması -->
                     <div class="tool-action-card">
                         <div class="tool-action-info">
                             <div class="tool-action-title">🎬 2. Kâşif Adımı: Zihin Sineması</div>
@@ -634,61 +659,71 @@
             </div>
         </div>
 
-        <!-- 2. BÖLÜM: ZİHİN EVİ & KELİME PİSTİ (ADIM ADIM REHBERLİ AKIŞ) -->
+        <!-- 2. BÖLÜM: ZİHİN EVİ & KELİME PİSTİ (KADEMELİ İSTASYON ZİNCİRİ) -->
         <div id="module2" class="module-content">
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "3 adımı sırayla keşfet, kelimeler zihninde parlasın!"</span>
+                    <span><b class="comp-name">Pupa</b> diyor ki: "3 istasyonu sırayla tamamla, zihnine mühürle ve kapıyı aç!"</span>
                 </div>
 
-                <div class="sub-nav">
-                    <button class="sub-tab-btn active" id="tabBtn1" onclick="switchSubTab('subPalace', this)">1. Odaları Gez 🏛️</button>
-                    <button class="sub-tab-btn" id="tabBtn2" onclick="switchSubTab('subMnemonic', this)">2. Tekerleme Söyle 🪄</button>
-                    <button class="sub-tab-btn" id="tabBtn3" onclick="switchSubTab('subTrack', this)">3. Kelimeyi Kilitle ✍️</button>
-                </div>
-
-                <!-- 1. Alt Adım: Odalar -->
-                <div id="subPalace" class="sub-content active">
-                    <!-- ODALARA DAĞIT BUTONU BAŞLIĞIN HEMEN YANINDA VE BELİRGİN -->
-                    <div class="palace-header-row">
-                        <h3 style="margin:0; color:#1E3A8A; font-size:18px;">🏛️ Zihin Evi Odaları</h3>
-                        <button id="btnPalace" class="btn-action-large btn-jigsaw-style" onclick="buildMemoryPalace()">
-                            🏰 Odalara Dağıt
-                        </button>
+                <!-- Kademeli Görev Zinciri (Oklarla Bağlı) -->
+                <div class="station-pipeline">
+                    <div class="station-step active" id="stepPill1" onclick="switchPipelineStep(1)">
+                        <span>1. Odaları Gez 🏛️</span> <span id="checkStep1"></span>
                     </div>
-                    <span id="palaceLoading" style="display:none; font-weight:600; color:var(--memory);">⏳ Odalar döşeniyor...</span>
+                    <div class="station-arrow">➔</div>
+                    <div class="station-step locked" id="stepPill2" onclick="switchPipelineStep(2)">
+                        <span>2. Tekerleme Söyle 🪄</span> <span id="checkStep2">🔒</span>
+                    </div>
+                    <div class="station-arrow">➔</div>
+                    <div class="station-step locked" id="stepPill3" onclick="switchPipelineStep(3)">
+                        <span>3. Kelimeyi Kilitle ✍️</span> <span id="checkStep3">🔒</span>
+                    </div>
+                </div>
+
+                <!-- 1. İSTASYON: ODALAR -->
+                <div id="subPalace" class="sub-content active">
+                    <!-- GÖZ ÖNÜNDE, MERKEZİ BUTONLU EYLEM ALANI -->
+                    <div class="palace-action-banner">
+                        <div style="font-size:15px; font-weight:700; color:#1E3A8A; margin-bottom:10px;">
+                            🏰 Metindeki bilgileri zihninde unutulmaz eşyalar yapıp evinin odalarına dağıtalım mı?
+                        </div>
+                        <button id="btnPalaceHero" class="btn-palace-hero" onclick="buildMemoryPalace()">
+                            ✨ Metinden Odalara Eşyaları Dağıt!
+                        </button>
+                        <div id="palaceLoading" style="display:none; font-weight:600; color:var(--memory); margin-top:8px;">⏳ Odalar döşeniyor...</div>
+                    </div>
 
                     <div class="palace-container">
                         <div class="palace-room">
                             <div class="room-header">🛋️ 1. Durak: Oturma Odası</div>
                             <div class="palace-room-icon" id="room1Icon">🛋️</div>
-                            <div class="palace-cue" id="room1Cue">Metindeki ilk ana fikir eşyası bekleniyor...</div>
+                            <div class="palace-cue" id="room1Cue">Önce yukarıdaki 'Metinden Odalara Dağıt' butonuna dokunmalısın!</div>
                         </div>
                         <div class="palace-room">
                             <div class="room-header">🍳 2. Durak: Mutfak Masası</div>
                             <div class="palace-room-icon" id="room2Icon">🍳</div>
-                            <div class="palace-cue" id="room2Cue">Önemli detay eşyası bekleniyor...</div>
+                            <div class="palace-cue" id="room2Cue">Eşyalar bekleniyor...</div>
                         </div>
                         <div class="palace-room">
                             <div class="room-header">🛏️ 3. Durak: Kitaplık</div>
                             <div class="palace-room-icon" id="room3Icon">📚</div>
-                            <div class="palace-cue" id="room3Cue">Sonuç eşyası bekleniyor...</div>
+                            <div class="palace-cue" id="room3Cue">Eşyalar bekleniyor...</div>
                         </div>
                     </div>
 
-                    <!-- Sıradaki Adıma Geçiren Köprü -->
-                    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-                        <button class="btn-action-large btn-dual-style" onclick="switchSubTab('subMnemonic', document.getElementById('tabBtn2'))">
-                            Sonraki Adıma Geç: Tekerleme Söyle 🪄 ➔
+                    <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                        <button id="btnProceedToMnemonic" class="btn-action-large btn-dual-style" style="opacity:0.5; cursor:not-allowed;" disabled onclick="proceedToStep(2)">
+                            2. İstasyon: Tekerleme Söyle'ye Geç 🪄 ➔
                         </button>
                     </div>
                 </div>
 
-                <!-- 2. Alt Adım: Tekerleme -->
+                <!-- 2. İSTASYON: TEKERLEME -->
                 <div id="subMnemonic" class="sub-content">
-                    <h3 style="margin:0; color:#1E3A8A;">🎵 Tekerleme Fabrikası</h3>
-                    <p style="color:#475569; font-size:14px; margin-top:2px;">Kelimene dokun veya kendin yaz:</p>
+                    <h3 style="margin:0 0 8px 0; color:#1E3A8A;">🎵 2. İstasyon: Tekerleme Fabrikası</h3>
+                    <p style="color:#475569; font-size:14px; margin-top:0;">Öğrenmek istediğin kelimeye dokun veya kendin yaz, tekerlemeyi dinle:</p>
                     <div id="mnemonicChips" class="chip-container"></div>
                     
                     <div style="display:flex; gap:10px; margin-top:10px;">
@@ -697,18 +732,17 @@
                     </div>
                     <div id="mnemonicOutput" class="mnemonic-result" style="display:none;"></div>
 
-                    <!-- Sıradaki Adıma Geçiren Köprü -->
-                    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-                        <button class="btn-action-large btn-dual-style" onclick="switchSubTab('subTrack', document.getElementById('tabBtn3'))">
-                            Sonraki Adıma Geç: Kelimeyi Kilitle ✍️ ➔
+                    <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                        <button id="btnProceedToTrack" class="btn-action-large btn-dual-style" style="opacity:0.5; cursor:not-allowed;" disabled onclick="proceedToStep(3)">
+                            3. İstasyon: Kelimeyi Kilitle'ye Geç ✍️ ➔
                         </button>
                     </div>
                 </div>
 
-                <!-- 3. Alt Adım: Kelime Pisti -->
+                <!-- 3. İSTASYON: KELİME PİSTİ -->
                 <div id="subTrack" class="sub-content">
-                    <h3 style="margin:0; color:#1E3A8A;">✍️ Kelime Pisti</h3>
-                    <p style="color:#475569; font-size:14px;">Hedef kelimeyi klavyeden tuşla, kutucuklar dolsun:</p>
+                    <h3 style="margin:0 0 8px 0; color:#1E3A8A;">✍️ 3. İstasyon: Kelime Pisti</h3>
+                    <p style="color:#475569; font-size:14px; margin-top:0;">Hedef kelimeyi klavyeden tuşla, harf kutucuklarını mühürle:</p>
                     
                     <div style="text-align:center;">
                         <div id="targetWordDisplay" style="font-size:26px; font-weight:700; color:#1E3A8A; letter-spacing:0.06em;">astronot</div>
@@ -721,10 +755,10 @@
                         <div id="trackFeedback" style="margin-top:12px; font-weight:700;"></div>
                     </div>
 
-                    <!-- Modül 3'e Geçiş Köprüsü -->
+                    <!-- TÜM ADIMLAR BİTMEDEN AÇILMAYAN GÜVENLİ KÖPRÜ -->
                     <div class="next-bridge-container">
-                        <button class="next-bridge-btn" onclick="goToModule(3)">
-                            🌿 <span id="bridge2">Tüm Adımlar Tamam: Zihin Ağacına İlerle</span> ➔
+                        <button id="bridgeToModule3Btn" class="next-bridge-btn" disabled onclick="goToModule(3)">
+                            🔒 3 İstasyonu Tamamlayınca Kapı Açılacak!
                         </button>
                     </div>
                 </div>
@@ -739,7 +773,6 @@
                     <span><b class="comp-name">Pupa</b> diyor ki: "Düşüncelerini bir ağaç gibi dallandır, her şey berraklaşsın!"</span>
                 </div>
                 
-                <!-- Başlık kaldırıldı, yerine sola yaslı büyük belirgin buton konuldu -->
                 <div style="margin-bottom:10px;">
                     <button id="btnMindmap" class="btn-action-large btn-jigsaw-style" onclick="buildMindMap()">
                         🌱 <span id="btnMindmapText">Metinden Zihin Ağacı Çıkar</span>
@@ -758,7 +791,6 @@
                 <h2 style="margin-top:0; color:#1E3A8A;">💬 Yol Arkadaşın <span class="comp-name">Pupa</span> ile Zihin Kancası</h2>
                 <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblChatDesc">Metinde seni en çok meraklandıran şeyi yol arkadaşına anlat:</p>
                 
-                <!-- Genişletilmiş Zengin Cümle İskeleleri -->
                 <div style="margin-bottom:8px;">
                     <button class="sentence-starter-btn" onclick="addChatStarter('Bence ')">Bence...</button>
                     <button class="sentence-starter-btn" onclick="addChatStarter('Çünkü ')">Çünkü...</button>
@@ -780,7 +812,6 @@
                     <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap;">
                         <input type="text" id="chatInput" placeholder="Mesajını yaz veya sesle konuş..." style="margin-top:0; flex:1;" onkeypress="if(event.key==='Enter') sendChatMessage()">
                         
-                        <!-- Belirgin Mikrofon Butonu -->
                         <button class="voice-action-btn" id="voiceBtn" onclick="toggleSpeechToText()">
                             🎙️ <span>Sesinle Konuş (Dilersen Sesle Yaz)</span>
                         </button>
@@ -904,7 +935,7 @@
                     <div class="badge-card" id="badgeJigsaw" onclick="showBadgeTip('Metni adımlara ayırdığında açılır! 🧩')">
                         <span class="badge-card-icon">🧩</span><b>Görev Mimarı</b>
                     </div>
-                    <div class="badge-card" id="badgePalace" onclick="showBadgeTip('Zihin evinde odaları gezdiğinde açılır! 🏛️')">
+                    <div class="badge-card" id="badgePalace" onclick="showBadgeTip('Zihin evinde 3 istasyonu bitirdiğinde açılır! 🏛️')">
                         <span class="badge-card-icon">🏛️</span><b>Hafıza Ustası</b>
                     </div>
                     <div class="badge-card" id="badgeTree" onclick="showBadgeTip('Odak ormanında 1 tohum büyüttüğünde açılır! 🌳')">
@@ -1010,6 +1041,9 @@ let speechRecognizer = null;
 let textChunks = [];
 let currentChunkIndex = 0;
 
+// MODÜL 2 ADIM TAMAMLANMA TAKİBİ
+let m2CompletedSteps = { 1: false, 2: false, 3: false };
+
 function playSuccessTone() {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1093,9 +1127,10 @@ function selectLang(lang, el) {
         document.getElementById('textInput').placeholder = "No photo? No problem! Type or paste your story here...";
         document.getElementById('lblRuler').innerText = "Laser Focus Window";
         document.getElementById('lblSyllable').innerText = "Magic Syllables";
+        document.getElementById('btnJigsawText').innerText = "Break into Steps";
+        document.getElementById('btnDualText').innerText = "Visualize in Mind";
         document.getElementById('btnMindmapText').innerText = "Grow Mind Tree from Text";
         document.getElementById('bridge1').innerText = "Enter Memory House";
-        document.getElementById('bridge2').innerText = "All Steps Done: Grow Mind Tree";
         document.getElementById('bridge3').innerText = "Plant Seeds in Focus Forest";
         document.getElementById('bridge4').innerText = "Fly to Trophy Room";
         document.getElementById('headerExplorerPrefix').innerText = "Explorer";
@@ -1160,7 +1195,7 @@ function cleanMarkdown(text) {
     return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
 }
 
-// METNİ ANLAM BÜTÜNLÜĞÜYLE PARÇALAMA
+// METNİ PARÇALAMA
 function resetAndDisplayChunks() {
     const textInput = document.getElementById('textInput');
     const raw = cleanMarkdown(textInput.value.trim());
@@ -1386,21 +1421,41 @@ async function runDualCoding() {
     finally { btn.disabled = false; }
 }
 
-// 2. İSTASYON
-function switchSubTab(subId, el) {
-    document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+// 2. İSTASYON: KADEMELİ GÖREV PİPELİNE'I
+function switchPipelineStep(step) {
+    if (step === 2 && !m2CompletedSteps[1]) {
+        alert("Önce 1. İstasyon olan 'Odaları Gez'i tamamlamalısın! 🛋️");
+        return;
+    }
+    if (step === 3 && !m2CompletedSteps[2]) {
+        alert("Önce 2. İstasyon olan 'Tekerleme Söyle'yi tamamlamalısın! 🎵");
+        return;
+    }
+
+    [1, 2, 3].forEach(s => {
+        const pill = document.getElementById(`stepPill${s}`);
+        if (pill) pill.classList.remove('active');
+    });
+    document.getElementById(`stepPill${step}`).classList.add('active');
+
     document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
-    if (el) el.classList.add('active');
-    document.getElementById(subId).classList.add('active');
+    if (step === 1) document.getElementById('subPalace').classList.add('active');
+    if (step === 2) document.getElementById('subMnemonic').classList.add('active');
+    if (step === 3) document.getElementById('subTrack').classList.add('active');
+}
+
+function proceedToStep(step) {
+    switchPipelineStep(step);
+    window.scrollTo({ top: document.querySelector('.station-pipeline').offsetTop - 20, behavior: 'smooth' });
 }
 
 async function buildMemoryPalace() {
     const textInput = document.getElementById('textInput');
     if (!textInput || !textInput.value.trim()) return;
-    const btn = document.getElementById('btnPalace');
+    const btn = document.getElementById('btnPalaceHero');
     const loader = document.getElementById('palaceLoading');
     btn.disabled = true;
-    loader.style.display = 'inline';
+    loader.style.display = 'block';
 
     try {
         const prompt = currentLang === 'en'
@@ -1417,6 +1472,21 @@ async function buildMemoryPalace() {
         document.getElementById('room3Icon').innerText = data.room3_icon || "📚";
         document.getElementById('room3Cue').innerText = cleanMarkdown(data.room3_cue);
         
+        // 1. Adım Tamamlandı
+        m2CompletedSteps[1] = true;
+        document.getElementById('checkStep1').innerText = "✓";
+        document.getElementById('stepPill1').classList.add('completed');
+        
+        // 2. Adımın Kilidini Aç
+        const p2 = document.getElementById('stepPill2');
+        p2.classList.remove('locked');
+        document.getElementById('checkStep2').innerText = "";
+        
+        const btnNext = document.getElementById('btnProceedToMnemonic');
+        btnNext.disabled = false;
+        btnNext.style.opacity = "1";
+        btnNext.style.cursor = "pointer";
+
         unlockBadge('badgePalace');
         playSuccessTone();
     } catch (e) { alert(e.message); }
@@ -1460,6 +1530,22 @@ async function fetchMnemonic(word) {
         const res = await askGemini(prompt, null, 'mnem_' + word);
         const lines = res.split('\n').filter(l => l.trim().length > 0).slice(0, 2);
         out.innerHTML = `🎵 <b>${cleanMarkdown(word)}:</b><br><br>"${cleanMarkdown(lines[0] || res)}"<br>"${cleanMarkdown(lines[1] || '')}"`;
+        
+        // 2. Adım Tamamlandı
+        m2CompletedSteps[2] = true;
+        document.getElementById('checkStep2').innerText = "✓";
+        document.getElementById('stepPill2').classList.add('completed');
+
+        // 3. Adımın Kilidini Aç
+        const p3 = document.getElementById('stepPill3');
+        p3.classList.remove('locked');
+        document.getElementById('checkStep3').innerText = "";
+
+        const btnNext = document.getElementById('btnProceedToTrack');
+        btnNext.disabled = false;
+        btnNext.style.opacity = "1";
+        btnNext.style.cursor = "pointer";
+
         playSuccessTone();
     } catch(e) { out.innerHTML = e.message; }
 }
@@ -1506,7 +1592,19 @@ function handleTrackInput(inputEl) {
 
         if (typedTrackLetters.length === currentTrackWord.length) {
             playSuccessTone();
-            document.getElementById('trackFeedback').innerHTML = `🎉 Harika! Beynin harfleri ellerinle kilitledi! <br><button class="btn-action-large btn-jigsaw-style" style="margin-top:8px;" onclick="goToModule(3)">Zihin Ağacına İlerle ➔</button>`;
+            m2CompletedSteps[3] = true;
+            document.getElementById('checkStep3').innerText = "✓";
+            document.getElementById('stepPill3').classList.add('completed');
+
+            document.getElementById('trackFeedback').innerHTML = `🎉 Harika! Beynin harfleri ellerinle kilitledi!`;
+            
+            // Tüm 3 İstasyon Bitince Modül 3 Köprüsünü Aç
+            const bridgeBtn = document.getElementById('bridgeToModule3Btn');
+            bridgeBtn.disabled = false;
+            bridgeBtn.innerHTML = `🌿 3 İstasyon da Tamamlandı: Zihin Ağacına İlerle ➔`;
+            bridgeBtn.style.background = "#EFF6FF";
+            bridgeBtn.style.borderColor = "#2563EB";
+            bridgeBtn.style.color = "#1E40AF";
         }
     } else {
         const slot = document.getElementById(`slot_${curIndex}`);
