@@ -24,13 +24,12 @@
             margin: 0;
             padding: 20px;
             color: #2D3748;
-            transition: background-color 0.3s ease;
         }
         .container { max-width: 960px; margin: 0 auto; padding-bottom: 90px; }
 
         /* GİRİŞ EKRANI */
         #onboardingScreen {
-            max-width: 680px; margin: 20px auto; background: var(--card-bg);
+            max-width: 680px; margin: 30px auto; background: var(--card-bg);
             border-radius: 26px; padding: 30px; border: 2px solid #EADBCA;
             box-shadow: 0 12px 36px rgba(0,0,0,0.06); text-align: center;
             display: block;
@@ -44,7 +43,7 @@
             border-color: var(--primary); background: #F3F0FF; transform: translateY(-2px);
             box-shadow: 0 4px 14px rgba(91, 75, 196, 0.15);
         }
-        .avatar-card.selected { border-width: 3px; }
+        .avatar-card.selected { border-width: 3px; border-color: var(--primary); }
         .avatar-icon { font-size: 50px; display: block; margin-bottom: 6px; }
 
         .mood-grid { display: flex; gap: 10px; justify-content: center; margin: 12px 0 20px 0; flex-wrap: wrap; }
@@ -117,7 +116,6 @@
             font-size: 15px; font-weight: 600; color: #1E3A8A;
         }
 
-        /* Jigsaw & Dual Panelleri */
         .jigsaw-box, .dual-box { display: none; border-radius: 20px; padding: 22px; margin-top: 18px; }
         .jigsaw-box { background: #F0F6FD; border: 2px solid #BFDBFE; }
         .jigsaw-hero { background: #FFFFFF; border: 2px dashed #93C5FD; padding: 16px; border-radius: 14px; font-weight: 700; color: #1E3A8A; }
@@ -129,35 +127,29 @@
         .dual-card img { width: 100%; height: 180px; object-fit: cover; }
         .dual-card-caption { padding: 10px; font-weight: 700; font-size: 14px; color: #065F46; }
 
-        /* Roma Odası */
         .palace-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
         .palace-room { background: #FFFFFF; border: 2px dashed #E2D7C5; border-radius: 18px; padding: 16px; }
         .room-header { font-weight: 800; font-size: 15px; color: #1E3A8A; margin-bottom: 10px; }
         .room-item { background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E; padding: 10px 14px; border-radius: 12px; font-size: 15px; font-weight: 700; }
 
-        /* Kelime Çipleri */
         .chip-container { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
         .word-chip { background: #FFFFFF; border: 2px solid #CBD5E0; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 14px; transition: all 0.2s; }
         .word-chip:hover, .word-chip.selected { background: #1E3A8A; color: white; border-color: #1E3A8A; }
 
-        /* Dokunsal Pisti */
         .sensory-box { background: #FFFBEB; border: 2px solid #FDE68A; border-radius: 18px; padding: 18px; text-align: center; }
         .sensory-word { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #1E3A8A; margin: 10px 0; }
         .sensory-input { text-align: center; font-size: 22px; font-weight: 700; letter-spacing: 4px; background: #FFFFFF; }
 
-        /* Zihin Haritası Ağacı */
         .mindmap-tree { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 16px; }
         .mindmap-root { background: #F39C12; color: white; padding: 14px 24px; border-radius: 24px; font-size: 18px; font-weight: 800; box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3); }
         .mindmap-branches { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; width: 100%; }
         .mindmap-node { background: #FFFFFF; border: 2px solid #FCD34D; padding: 12px 18px; border-radius: 18px; font-weight: 700; font-size: 15px; color: #78350F; }
 
-        /* Orman Modu */
         .forest-box { text-align: center; background: #E8F8F5; border: 2px solid #A3E4D7; border-radius: 20px; padding: 24px; margin-top: 16px; }
         .tree-visual { font-size: 72px; margin: 10px 0; transition: transform 0.5s ease; }
         .window-box { background: #EBF5FB; border: 2px solid #AED6F1; border-radius: 18px; padding: 20px; margin-top: 16px; }
         .chunk-item { background: #FFFFFF; border-left: 5px solid #2D9CDB; padding: 12px 16px; border-radius: 12px; margin-top: 10px; font-weight: 600; font-size: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); line-height: 1.5; }
 
-        /* Okuma Masası */
         .output-container {
             position: relative; background-color: var(--text-bg); padding: 26px;
             border-radius: 20px; font-size: 25px; line-height: 2.3;
@@ -176,7 +168,6 @@
             border-radius: 16px; margin-top: 12px; text-align: center;
         }
 
-        /* MOLA KAPSÜLÜ */
         .break-fab {
             position: fixed; bottom: 24px; left: 24px;
             background: linear-gradient(135deg, #FF7675, #D63031);
@@ -288,10 +279,10 @@
 
         <!-- MODÜL SEKME BUTONLARI -->
         <div class="module-nav">
-            <button class="module-tab active" onclick="switchModule('module1')">📖 1. Okuma & Zihin</button>
-            <button class="module-tab" onclick="switchModule('module2')">🏛️ 2. Zihin Evi</button>
-            <button class="module-tab" onclick="switchModule('module3')">🌿 3. Zihin Ağacı</button>
-            <button class="module-tab" onclick="switchModule('module4')">⏳ 4. Odak Kalkanı</button>
+            <button class="module-tab active" onclick="switchModule('module1', this)">📖 1. Okuma & Zihin</button>
+            <button class="module-tab" onclick="switchModule('module2', this)">🏛️ 2. Zihin Evi</button>
+            <button class="module-tab" onclick="switchModule('module3', this)">🌿 3. Zihin Ağacı</button>
+            <button class="module-tab" onclick="switchModule('module4', this)">⏳ 4. Odak Kalkanı</button>
         </div>
 
         <!-- 1. BÖLÜM -->
@@ -565,13 +556,11 @@ function startJourney() {
     applyBionic();
 }
 
-function switchModule(modId) {
+function switchModule(modId, tabEl) {
     document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.module-content').forEach(c => c.classList.remove('active'));
     
-    // event.target yerine güvenli bulma
-    const clickedTab = event ? event.currentTarget : null;
-    if (clickedTab) clickedTab.classList.add('active');
+    if (tabEl) tabEl.classList.add('active');
     
     const targetMod = document.getElementById(modId);
     if (targetMod) targetMod.classList.add('active');
