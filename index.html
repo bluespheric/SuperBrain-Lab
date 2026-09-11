@@ -33,6 +33,7 @@
             max-width: 680px; margin: 20px auto; background: var(--card-bg);
             border-radius: 26px; padding: 30px; border: 2px solid #EADBCA;
             box-shadow: 0 12px 36px rgba(0,0,0,0.06); text-align: center;
+            display: block;
         }
         .avatar-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0; }
         .avatar-card {
@@ -150,7 +151,7 @@
         .mindmap-branches { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; width: 100%; }
         .mindmap-node { background: #FFFFFF; border: 2px solid #FCD34D; padding: 12px 18px; border-radius: 18px; font-weight: 700; font-size: 15px; color: #78350F; }
 
-        /* Orman Modu (Modül 4) */
+        /* Orman Modu */
         .forest-box { text-align: center; background: #E8F8F5; border: 2px solid #A3E4D7; border-radius: 20px; padding: 24px; margin-top: 16px; }
         .tree-visual { font-size: 72px; margin: 10px 0; transition: transform 0.5s ease; }
         .window-box { background: #EBF5FB; border: 2px solid #AED6F1; border-radius: 18px; padding: 20px; margin-top: 16px; }
@@ -519,27 +520,35 @@ let currentMood = '🚀 Enerji Dolu';
 
 function selectCompanion(icon, name, el) {
     document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
+    if (el) el.classList.add('selected');
     currentCompanion = { icon, name };
-    document.getElementById('companionCustomName').value = name;
+    const customInput = document.getElementById('companionCustomName');
+    if (customInput) customInput.value = name;
 }
 
 function selectMood(mood, el) {
     document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
+    if (el) el.classList.add('selected');
     currentMood = mood;
 }
 
 function startJourney() {
-    const explorerName = document.getElementById('explorerNameInput').value.trim() || 'Kâşif';
-    const finalCompName = document.getElementById('companionCustomName').value.trim() || currentCompanion.name;
+    const explorerNameInput = document.getElementById('explorerNameInput');
+    const companionCustomName = document.getElementById('companionCustomName');
+    
+    const explorerName = explorerNameInput && explorerNameInput.value.trim() ? explorerNameInput.value.trim() : 'Kâşif';
+    const finalCompName = companionCustomName && companionCustomName.value.trim() ? companionCustomName.value.trim() : currentCompanion.name;
 
-    document.getElementById('displayExplorerName').innerText = explorerName;
-    document.getElementById('displayCompanionIcon').innerText = currentCompanion.icon;
-    document.getElementById('displayCompanionName').innerText = finalCompName;
-    document.getElementById('companionChatName').innerText = finalCompName;
+    const dispExplorer = document.getElementById('displayExplorerName');
+    const dispIcon = document.getElementById('displayCompanionIcon');
+    const dispCompName = document.getElementById('displayCompanionName');
+    const chatName = document.getElementById('companionChatName');
 
-    // Tüm modüllerdeki yardımcı rehber alanlarına aktar
+    if (dispExplorer) dispExplorer.innerText = explorerName;
+    if (dispIcon) dispIcon.innerText = currentCompanion.icon;
+    if (dispCompName) dispCompName.innerText = finalCompName;
+    if (chatName) chatName.innerText = finalCompName;
+
     ['1', '2', '3', '4'].forEach(id => {
         const iconEl = document.getElementById(`h${id}Icon`);
         const nameEl = document.getElementById(`h${id}Name`);
@@ -547,8 +556,11 @@ function startJourney() {
         if (nameEl) nameEl.innerText = finalCompName;
     });
 
-    document.getElementById('onboardingScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
+    const onboarding = document.getElementById('onboardingScreen');
+    const mainApp = document.getElementById('mainApp');
+    
+    if (onboarding) onboarding.style.display = 'none';
+    if (mainApp) mainApp.style.display = 'block';
 
     applyBionic();
 }
@@ -556,8 +568,13 @@ function startJourney() {
 function switchModule(modId) {
     document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.module-content').forEach(c => c.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById(modId).classList.add('active');
+    
+    // event.target yerine güvenli bulma
+    const clickedTab = event ? event.currentTarget : null;
+    if (clickedTab) clickedTab.classList.add('active');
+    
+    const targetMod = document.getElementById(modId);
+    if (targetMod) targetMod.classList.add('active');
 
     if (modId === 'module2') populateWordChips();
 }
@@ -569,10 +586,16 @@ function setBg(bodyColor, cardColor, textColor) {
 }
 
 function applyBionic() {
-    const text = document.getElementById('textInput').value;
-    const ratio = document.getElementById('bionicRange').value / 100;
+    const textInput = document.getElementById('textInput');
+    const textOutput = document.getElementById('textOutput');
+    const range = document.getElementById('bionicRange');
+    
+    if (!textInput || !textOutput || !range) return;
+    
+    const text = textInput.value;
+    const ratio = range.value / 100;
     if (!text.trim()) {
-        document.getElementById('textOutput').innerHTML = "Yazılar burada parlayacak...";
+        textOutput.innerHTML = "Yazılar burada parlayacak...";
         return;
     }
     const words = text.split(/\s+/);
@@ -581,37 +604,44 @@ function applyBionic() {
         const mid = Math.ceil(word.length * ratio);
         return `<span class="bionic-bold">${word.slice(0, mid)}</span>${word.slice(mid)}`;
     });
-    document.getElementById('textOutput').innerHTML = transformed.join(' ');
+    textOutput.innerHTML = transformed.join(' ');
 }
 
 function toggleRuler() {
-    document.getElementById('ruler').style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
+    const ruler = document.getElementById('ruler');
+    const toggle = document.getElementById('rulerToggle');
+    if (ruler && toggle) {
+        ruler.style.display = toggle.checked ? 'block' : 'none';
+    }
 }
 function moveRuler(e) {
     const ruler = document.getElementById('ruler');
-    if (ruler.style.display === 'block') {
-        const rect = document.getElementById('outputArea').getBoundingClientRect();
+    const outputArea = document.getElementById('outputArea');
+    if (ruler && ruler.style.display === 'block' && outputArea) {
+        const rect = outputArea.getBoundingClientRect();
         const offsetY = e.clientY - rect.top - 28;
         ruler.style.top = Math.max(0, Math.min(offsetY, rect.height - 58)) + 'px';
     }
 }
 
 function saveKey() {
-    const k = document.getElementById('apiKeyInput').value.trim();
-    if (k) {
-        localStorage.setItem('superbrain_gemini_key', k);
-        document.getElementById('keyStatus').innerText = "✓ Anahtar mühürlendi!";
+    const kInput = document.getElementById('apiKeyInput');
+    const status = document.getElementById('keyStatus');
+    if (kInput && kInput.value.trim()) {
+        localStorage.setItem('superbrain_gemini_key', kInput.value.trim());
+        if (status) status.innerText = "✓ Anahtar mühürlendi!";
     }
 }
 window.onload = () => {
     const k = localStorage.getItem('superbrain_gemini_key');
-    if (k) {
-        document.getElementById('apiKeyInput').value = k;
-        document.getElementById('keyStatus').innerText = "✓ Anahtar hazır!";
+    const kInput = document.getElementById('apiKeyInput');
+    const status = document.getElementById('keyStatus');
+    if (k && kInput) {
+        kInput.value = k;
+        if (status) status.innerText = "✓ Anahtar hazır!";
     }
 };
 
-// GEMINI CORE
 async function askGemini(promptText, base64Image = null) {
     const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) throw new Error("Önce anahtarı kilitlemelisin!");
@@ -632,6 +662,5 @@ async function askGemini(promptText, base64Image = null) {
     return data.candidates[0].content.parts[0].text.trim();
 }
 
-// 🛡️ KESİN ÇÖZÜMLÜ GÜVENLİ JSON AYRIŞTIRICI
 function parseCleanJSON(raw) {
     let clean = raw.replace(/```json/gi, '').replace(/
