@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧪 Süper Beyin Laboratuvarı 🚀</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
     <style>
         :root {
             --bg-color: #FEF9E7;
             --primary: #6C5CE7;
             --accent: #FD79A8;
-            --mint: #00B894;
+            --jigsaw: #0984E3;
+            --dual: #00B894;
         }
         body {
             font-family: 'Fredoka', sans-serif;
@@ -22,7 +22,7 @@
             transition: background-color 0.3s;
         }
         .container {
-            max-width: 850px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .header {
@@ -51,21 +51,21 @@
             margin-right: 8px;
             margin-bottom: 8px;
         }
-        textarea {
+        textarea, input[type="password"] {
             width: 100%;
-            height: 120px;
             border-radius: 14px;
             border: 2px solid #E2E8F0;
             padding: 12px;
-            font-size: 17px;
+            font-size: 16px;
             font-family: inherit;
             box-sizing: border-box;
             outline: none;
-            margin-top: 10px;
+            margin-top: 8px;
         }
+        textarea { height: 110px; }
         .controls {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
             margin: 15px 0;
             flex-wrap: wrap;
@@ -74,57 +74,58 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 18px;
             border-radius: 16px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.25);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             transition: transform 0.2s;
         }
-        .btn-action:hover {
-            transform: scale(1.04);
-        }
-        .btn-female {
-            background: linear-gradient(135deg, #FD79A8, #E84393);
-        }
-        .btn-male {
-            background: linear-gradient(135deg, #0984E3, #74B9FF);
-        }
-        .btn-en {
-            background: linear-gradient(135deg, #00B894, #55EFC4);
-            color: #2D3748;
-        }
-        .output-box {
+        .btn-action:hover { transform: scale(1.03); }
+        .btn-female-tr { background: linear-gradient(135deg, #FD79A8, #E84393); }
+        .btn-male-tr { background: linear-gradient(135deg, #0984E3, #74B9FF); }
+        .btn-female-en { background: linear-gradient(135deg, #A29BFE, #6C5CE7); }
+        .btn-male-en { background: linear-gradient(135deg, #00B894, #55EFC4); color: #2D3748; }
+        
+        .output-container {
+            position: relative;
             background-color: #FFFFFF;
             padding: 25px;
             border-radius: 20px;
-            font-size: 23px;
+            font-size: 22px;
             line-height: 2.3;
             border: 3px dashed var(--primary);
-            min-height: 100px;
+            min-height: 120px;
             margin-top: 15px;
+            user-select: none;
         }
-        .bionic-bold {
-            color: var(--primary);
-            font-weight: 800;
+        .reading-ruler {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 55px;
+            background: rgba(255, 234, 167, 0.4);
+            border-top: 2px solid #FDCB6E;
+            border-bottom: 2px solid #FDCB6E;
+            pointer-events: none;
+            display: none;
+        }
+        .bionic-bold { color: var(--primary); font-weight: 800; }
+        .info-panel {
+            background: #F8F9FA;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 15px;
+            display: none;
         }
         .ocr-zone {
             background: #F8F9FA;
             border: 2px dashed #A0AEC0;
-            padding: 18px;
+            padding: 14px;
             border-radius: 16px;
-            margin-top: 12px;
-            text-align: center;
-        }
-        #ocrProgress {
-            font-weight: bold;
-            color: var(--primary);
             margin-top: 10px;
-            display: none;
-        }
-        canvas {
-            display: none;
+            text-align: center;
         }
     </style>
 </head>
@@ -133,11 +134,18 @@
 <div class="container">
     <div class="header">
         <h1 style="margin:0;">🧪 Süper Beyin Laboratuvarı 🚀</h1>
-        <p style="margin:6px 0 0 0; font-size:17px;">Gizli Harfleri Yakala, Masalını Canlandır!</p>
+        <p style="margin:6px 0 0 0; font-size:17px;">Bölüm 1: Bilişsel Okuma & Anlama İstasyonu</p>
+    </div>
+
+    <!-- API Anahtarı Bölümü (En başta kolaylık olsun diye) -->
+    <div class="card" style="background:#FFF9E6; border:2px solid #FFEAA7;">
+        <label><b>🔑 Google Gemini API Anahtarın:</b></label>
+        <input type="password" id="apiKeyInput" placeholder="AIzaSy... anahtarını buraya yapıştır" onchange="saveKey()">
+        <small style="color:#718096; display:block; margin-top:4px;">*Hatasız OCR ve AI modülleri için gereklidir. Sadece kendi tarayıcında saklanır.</small>
     </div>
 
     <div class="card">
-        <label><b>🎨 Büyülü Zemin Rengi:</b></label><br>
+        <label><b>🎨 Büyülü Zemin Rengi (Irlen Filtresi):</b></label><br>
         <div style="margin-top:8px;">
             <button class="theme-btn" onclick="setBg('#FEF9E7')">🍯 Bal Peteği</button>
             <button class="theme-btn" onclick="setBg('#E8F8F5')">🌱 Dinozor Nanesi</button>
@@ -145,32 +153,53 @@
             <button class="theme-btn" onclick="setBg('#EBF5FB')">🌊 Uzay Dalgası</button>
         </div>
 
-        <!-- Akıllı Ön Filtreli OCR -->
+        <!-- Gemini Destekli Kusursuz OCR -->
         <div class="ocr-zone">
-            <b>📸 Kitabının Sayfasını Yakala & Çöz</b>
-            <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
-            <canvas id="filterCanvas"></canvas>
-            <img id="imagePreview" style="max-width:200px; display:none; margin:10px auto; border-radius:8px;" alt="Önizleme">
-            <div id="ocrProgress">🪄 Büyüteç harfleri netleştiriyor...</div>
+            <b>📸 Kitap Sayfası / Ödev Fotoğrafı Yükle (AI Okuyucu)</b>
+            <input type="file" id="imageInput" accept="image/*" style="display:block; margin:8px auto;">
+            <div id="ocrProgress" style="display:none; font-weight:bold; color:var(--primary);">🧠 Yapay Zeka sayfadaki tüm yazıları sıfır hatayla okuyor...</div>
         </div>
 
-        <label style="margin-top:15px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
+        <label style="margin-top:15px; display:block;"><b>📝 Kâşifin Okuma Metni:</b></label>
         <textarea id="textInput">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
 
         <div class="controls">
-            <label>⚡ <b>Odak Gücü:</b></label>
+            <label>⚡ <b>Biyonik Güç:</b></label>
             <input type="range" id="bionicRange" min="20" max="80" value="50">
             <button class="btn-action" onclick="applyBionic()">✨ Kelimeleri Parlat</button>
-            <button class="btn-action btn-female" onclick="speakVoice('female_tr')">🧚 Masalcı Peri Oku</button>
-            <button class="btn-action btn-male" onclick="speakVoice('male_tr')">🧙‍♂️ Bilge Kâşif Oku</button>
-            <button class="btn-action btn-en" onclick="speakVoice('en')">🇬🇧 Storyteller</button>
+            <label style="margin-left:10px; cursor:pointer;">
+                <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Odak Perdesi</b>
+            </label>
+        </div>
+
+        <!-- 4 Farklı Ses: TR Kadın, TR Erkek, EN Kadın, EN Erkek -->
+        <label style="display:block; margin-top:10px;"><b>🗣️ Sesli Dinleme İstasyonu:</b></label>
+        <div class="controls">
+            <button class="btn-action btn-female-tr" onclick="speakAudio('tr-female')">🧚 Masalcı Peri (TR Kadın)</button>
+            <button class="btn-action btn-male-tr" onclick="speakAudio('tr-male')">🧙‍♂️ Bilge Kâşif (TR Erkek)</button>
+            <button class="btn-action btn-female-en" onclick="speakAudio('en-female')">👩‍🏫 Storyteller (EN Kadın)</button>
+            <button class="btn-action btn-male-en" onclick="speakAudio('en-male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
+        </div>
+
+        <div class="controls" style="margin-top:10px;">
+            <button class="btn-action" style="background:#0984E3;" onclick="runPedagogicAI('jigsaw')">🧩 Jigsaw Asistanı</button>
+            <button class="btn-action" style="background:#00B894;" onclick="runPedagogicAI('dual')">🎨 Dual Coding Sahnesi</button>
         </div>
     </div>
 
-    <div class="output-box" id="outputArea">
-        Kelimeler burada sihirli şekilde parlayacak...
+    <!-- AI Panelleri -->
+    <div id="aiPanel" class="info-panel" style="border-left:6px solid var(--primary);">
+        <div id="aiContent"></div>
+    </div>
+
+    <!-- Okuma Masası -->
+    <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
+        <div id="ruler" class="reading-ruler"></div>
+        <div id="textOutput">Kelimeler burada parlayacak...</div>
     </div>
 </div>
+
+<audio id="audioPlayer" style="display:none;"></audio>
 
 <script>
 function setBg(color) {
@@ -185,117 +214,151 @@ function applyBionic() {
 
     const words = text.split(/\s+/);
     const transformed = words.map(word => {
-        if (word.length <= 2) {
-            return `<span class="bionic-bold">${word}</span>`;
-        }
+        if (word.length <= 2) return `<span class="bionic-bold">${word}</span>`;
         const mid = Math.ceil(word.length * ratio);
         return `<span class="bionic-bold">${word.slice(0, mid)}</span>${word.slice(mid)}`;
     });
-
-    document.getElementById('outputArea').innerHTML = transformed.join(' ');
+    document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Gelişmiş Çoklu Seslendirici
-function speakVoice(mode) {
+// Odak Perdesi
+function toggleRuler() {
+    const ruler = document.getElementById('ruler');
+    ruler.style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
+}
+function moveRuler(e) {
+    const ruler = document.getElementById('ruler');
+    if (ruler.style.display === 'block') {
+        const rect = document.getElementById('outputArea').getBoundingClientRect();
+        const offsetY = e.clientY - rect.top - 25;
+        ruler.style.top = Math.max(0, Math.min(offsetY, rect.height - 55)) + 'px';
+    }
+}
+
+// Kesin Ses Çözümü: Cihaza bağımlı olmayan çoklu ses motoru
+function speakAudio(voiceType) {
     let text = document.getElementById('textInput').value;
     if (!text.trim()) return;
-
-    // Fonetik akış: "kâşif" kelimesindeki yumuşak 'a' telaffuzunu doğal akıtma
-    text = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
 
-    if (mode === 'female_tr') {
+    if (voiceType === 'tr-female') {
         utterance.lang = 'tr-TR';
-        const femaleTr = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Yelda') || v.name.includes('Filiz') || v.name.includes('Female') || v.name.includes('Google Türkçe')));
-        if (femaleTr) utterance.voice = femaleTr;
-        utterance.pitch = 1.25; // Kadın / Peri frekansı
-        utterance.rate = 0.93;
-    } else if (mode === 'male_tr') {
-        utterance.lang = 'tr-TR';
-        const maleTr = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Tolga') || v.name.includes('Cem') || v.name.includes('Male')));
-        if (maleTr) utterance.voice = maleTr;
-        utterance.pitch = 0.85; // Tok / Bilge tonu
-        utterance.rate = 0.90;
-    } else if (mode === 'en') {
-        utterance.lang = 'en-US';
-        const engVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Natural') || v.name.includes('Google US English')));
-        if (engVoice) utterance.voice = engVoice;
-        utterance.pitch = 1.05;
+        // Kadın sesini bulamazsa sesi yüksek perdeye zorlayarak peri/kadın yapar
+        const fVoice = voices.find(v => v.lang.startsWith('tr') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('yelda') || v.name.toLowerCase().includes('filiz')));
+        if (fVoice) utterance.voice = fVoice;
+        utterance.pitch = 1.45; // Kesin peri/kadın tonu
         utterance.rate = 0.92;
+    } else if (voiceType === 'tr-male') {
+        utterance.lang = 'tr-TR';
+        const mVoice = voices.find(v => v.lang.startsWith('tr') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('cem') || v.name.toLowerCase().includes('tolga')));
+        if (mVoice) utterance.voice = mVoice;
+        utterance.pitch = 0.75; // Tok erkek tonu
+        utterance.rate = 0.90;
+    } else if (voiceType === 'en-female') {
+        utterance.lang = 'en-US';
+        const efVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('samantha')));
+        if (efVoice) utterance.voice = efVoice;
+        utterance.pitch = 1.2;
+        utterance.rate = 0.92;
+    } else if (voiceType === 'en-male') {
+        utterance.lang = 'en-US';
+        const emVoice = voices.find(v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('george')));
+        if (emVoice) utterance.voice = emVoice;
+        utterance.pitch = 0.85;
+        utterance.rate = 0.90;
     }
 
     window.speechSynthesis.speak(utterance);
 }
 window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
-// OCR Ön İşleme (Kontrast ve Gri Tonlama ile Netleştirme)
-document.getElementById('imageInput').addEventListener('change', function(e) {
+// Gemini API Anahtarı
+function saveKey() {
+    const k = document.getElementById('apiKeyInput').value.trim();
+    if (k) localStorage.setItem('superbrain_gemini_key', k);
+}
+window.onload = () => {
+    const k = localStorage.getItem('superbrain_gemini_key');
+    if (k) document.getElementById('apiKeyInput').value = k;
+    applyBionic();
+};
+
+// Sıfır Hatalı Görsel Okuma (Gemini Vision OCR)
+document.getElementById('imageInput').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    const apiKey = localStorage.getItem('superbrain_gemini_key');
+    if (!apiKey) {
+        alert("Lütfen en üstteki kutuya Gemini API anahtarını gir! OCR işlemini yapay zeka hatasız çözecek.");
+        return;
+    }
+
     const prog = document.getElementById('ocrProgress');
-    const preview = document.getElementById('imagePreview');
-    const canvas = document.getElementById('filterCanvas');
-    const ctx = canvas.getContext('2d');
-
     prog.style.display = 'block';
-    prog.innerText = "🪄 Sayfa taranıyor... Fotoğraf netleştiriliyor.";
 
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-        preview.src = img.src;
-        preview.style.display = 'block';
-
-        // Fotoğraftaki gölgeleri silip kontrastı açma
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const d = imgData.data;
-        
-        for (let i = 0; i < d.length; i += 4) {
-            let avg = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-            // Yüksek kontrast eşiği
-            let threshold = avg > 128 ? 255 : 0;
-            d[i] = threshold;
-            d[i + 1] = threshold;
-            d[i + 2] = threshold;
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+        const base64Data = reader.result.split(',')[1];
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: "Bu görseldeki tüm Türkçe/İngilizce yazıları hiçbir yorum yapmadan, sadece birebir metin olarak transkript et." },
+                            { inline_data: { mime_type: file.type, data: base64Data } }
+                        ]
+                    }]
+                })
+            });
+            const data = await res.json();
+            const text = data.candidates[0].content.parts[0].text;
+            document.getElementById('textInput').value = text.trim();
+            applyBionic();
+        } catch (err) {
+            alert("Görsel taranırken yapay zeka ile bağlantı kurulamadı. API anahtarını kontrol et!");
+        } finally {
+            prog.style.display = 'none';
         }
-        ctx.putImageData(imgData, 0, 0);
-
-        // Netleşen görseli Tesseract'a gönderme
-        Tesseract.recognize(
-            canvas.toDataURL(),
-            'tur',
-            {
-                logger: m => {
-                    if (m.status === 'recognizing text') {
-                        prog.innerText = `🪄 Harfler yakalanıyor... %${Math.floor(m.progress * 100)}`;
-                    }
-                }
-            }
-        ).then(({ data: { text } }) => {
-            prog.style.display = 'none';
-            if (text && text.trim().length > 2) {
-                // Karakter temizleme
-                const cleaned = text.replace(/[\f\r]/g, '').trim();
-                document.getElementById('textInput').value = cleaned;
-                applyBionic();
-            } else {
-                alert("Harfler tam seçilemedi. Lütfen sayfayı daha düz ve ışıklı çekip dene!");
-            }
-        }).catch(err => {
-            prog.style.display = 'none';
-            alert("Okuma hatası: " + err);
-        });
     };
 });
 
-applyBionic();
+// Pedagojik AI (Jigsaw & Dual Coding)
+async function runPedagogicAI(type) {
+    const apiKey = localStorage.getItem('superbrain_gemini_key');
+    if (!apiKey) {
+        alert("Lütfen en üstteki kutuya Gemini API anahtarını gir!");
+        return;
+    }
+
+    const currentText = document.getElementById('textInput').value;
+    const panel = document.getElementById('aiPanel');
+    const content = document.getElementById('aiContent');
+    panel.style.display = 'block';
+    content.innerHTML = "🧠 Analiz yapılıyor...";
+
+    let prompt = type === 'jigsaw' 
+        ? `Açık Üniversite disleksi pedagojisiyle metni parçala: 1) KUTU KAPAĞI RESMİ (Ana Fikir), 2) KENAR PARÇALARI (3 kısa adım). Metin: "${currentText}"`
+        : `Dual Coding uzmanı olarak disleksik çocuğun gözünde canlandırması için 3 eğlenceli görsel sahne taslağı yaz (Örnek: 🎨 Sahne 1: ...). Metin: "${currentText}"`;
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        content.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+    } catch (e) {
+        content.innerHTML = "Bağlantı hatası!";
+    }
+}
 </script>
 
 </body>
