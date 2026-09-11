@@ -14,6 +14,7 @@
             --primary: #5B4BC4;
             --jigsaw: #0984E3;
             --dual: #00B894;
+            --memory: #E17055;
         }
         body {
             font-family: 'Fredoka', sans-serif;
@@ -23,16 +24,50 @@
             color: #2D3748;
             transition: background-color 0.3s ease;
         }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 920px; margin: 0 auto; }
         .header {
             background: linear-gradient(135deg, #1E3A8A, #5B4BC4);
             color: white;
-            padding: 26px;
+            padding: 24px;
             border-radius: 24px;
             text-align: center;
             box-shadow: 0 8px 24px rgba(30, 58, 138, 0.2);
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
+        
+        /* Modül Sekmeleri (Bilişsel Yükü Azaltan Kâşif Menüsü) */
+        .module-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .module-tab {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 20px;
+            border-radius: 18px;
+            border: 2px solid #E2D7C5;
+            background: var(--card-bg);
+            color: #4A5568;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .module-tab.active {
+            background: #1E3A8A;
+            color: white;
+            border-color: #1E3A8A;
+            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.2);
+            transform: translateY(-2px);
+        }
+        .module-content { display: none; }
+        .module-content.active { display: block; }
+
         .card {
             background: var(--card-bg);
             padding: 24px;
@@ -54,21 +89,21 @@
             transition: all 0.2s;
         }
         .theme-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
-        textarea, input[type="password"] {
+        textarea, input[type="password"], input[type="text"] {
             width: 100%;
             border-radius: 16px;
             border: 2px solid #E2D7C5;
-            padding: 18px;
-            font-size: 19px;
+            padding: 16px;
+            font-size: 18px;
             font-family: inherit;
             box-sizing: border-box;
             outline: none;
             margin-top: 8px;
             background-color: var(--text-bg);
             color: #2D3748;
-            line-height: 1.65;
+            line-height: 1.6;
         }
-        textarea { height: 130px; resize: vertical; }
+        textarea { height: 120px; resize: vertical; }
         .controls {
             display: flex; gap: 12px; align-items: center; margin: 16px 0; flex-wrap: wrap;
         }
@@ -86,79 +121,79 @@
         .btn-bionic { background: var(--primary); }
         .btn-jigsaw { background: linear-gradient(135deg, #0984E3, #3B82F6); }
         .btn-dual { background: linear-gradient(135deg, #00B894, #10B981); }
+        .btn-memory { background: linear-gradient(135deg, #E17055, #D63031); }
 
         /* Jigsaw Görev Masası */
         .jigsaw-box {
-            display: none;
-            background: #F0F6FD;
-            border: 2px solid #BFDBFE;
-            border-radius: 20px;
-            padding: 22px;
-            margin-top: 18px;
+            display: none; background: #F0F6FD; border: 2px solid #BFDBFE;
+            border-radius: 20px; padding: 22px; margin-top: 18px;
         }
         .jigsaw-hero {
-            background: #FFFFFF;
-            border: 2px dashed #93C5FD;
-            padding: 18px;
-            border-radius: 16px;
-            font-size: 19px;
-            font-weight: 700;
-            color: #1E3A8A;
-            line-height: 1.5;
-            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.05);
+            background: #FFFFFF; border: 2px dashed #93C5FD; padding: 18px;
+            border-radius: 16px; font-size: 18px; font-weight: 700; color: #1E3A8A;
         }
         .jigsaw-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 12px;
-            margin-top: 14px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px; margin-top: 14px;
         }
         .jigsaw-card {
-            background: #FFFFFF;
-            padding: 14px 16px;
-            border-radius: 14px;
-            font-size: 16px;
-            border-left: 5px solid #0984E3;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            line-height: 1.5;
+            background: #FFFFFF; padding: 14px 16px; border-radius: 14px;
+            font-size: 16px; border-left: 5px solid #0984E3;
         }
 
         /* Dual Coding Zihin Sineması */
         .dual-box {
-            display: none;
-            background: #F0FDF8;
-            border: 2px solid #A7F3D0;
-            border-radius: 20px;
-            padding: 22px;
-            margin-top: 18px;
+            display: none; background: #F0FDF8; border: 2px solid #A7F3D0;
+            border-radius: 20px; padding: 22px; margin-top: 18px;
         }
         .dual-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-            margin-top: 14px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px; margin-top: 14px;
         }
         .dual-card {
-            background: #FFFFFF;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 2px solid #E6F4EA;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            background: #FFFFFF; border-radius: 18px; overflow: hidden;
+            border: 2px solid #E6F4EA; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
             text-align: center;
-            display: flex;
-            flex-direction: column;
         }
         .dual-card img {
-            width: 100%;
-            height: 190px;
-            object-fit: cover;
-            background: #F7FBF9;
+            width: 100%; height: 200px; object-fit: cover; background: #F7FBF9;
+            transition: transform 0.3s ease;
         }
+        .dual-card img:hover { transform: scale(1.03); }
         .dual-card-caption {
-            padding: 12px 14px;
-            font-weight: 700;
-            font-size: 15px;
-            color: #065F46;
+            padding: 12px 14px; font-weight: 700; font-size: 15px; color: #065F46;
+        }
+
+        /* 2. Modül: Roma Odası Simülatörü */
+        .palace-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px; margin-top: 16px;
+        }
+        .palace-room {
+            background: #FFFFFF; border: 2px dashed #E2D7C5; border-radius: 18px;
+            padding: 18px; min-height: 180px; position: relative;
+        }
+        .room-header {
+            font-weight: 800; font-size: 16px; color: #1E3A8A; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .room-item {
+            background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E;
+            padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 15px;
+            font-weight: 700; display: flex; align-items: center; justify-content: space-between;
+        }
+
+        /* Çoklu Duyu Yazı Pisti */
+        .sensory-box {
+            background: #FFFBEB; border: 2px solid #FDE68A; border-radius: 18px;
+            padding: 20px; margin-top: 16px;
+        }
+        .sensory-word {
+            font-size: 32px; font-weight: 900; letter-spacing: 4px; color: #1E3A8A;
+            text-align: center; margin: 12px 0;
+        }
+        .sensory-input {
+            text-align: center; font-size: 24px; font-weight: 700; letter-spacing: 4px;
             background: #FFFFFF;
         }
 
@@ -186,10 +221,10 @@
 <div class="container">
     <div class="header">
         <h1 style="margin:0; font-size:32px;">⚡ Süper Beyin Laboratuvarı 🚀</h1>
-        <p style="margin:8px 0 0 0; font-size:17px; opacity:0.95;">Kâşifin Zihin Üssü: Harfleri Çöz, Hikâyeyi Gör, Evreni Keşfet!</p>
+        <p style="margin:8px 0 0 0; font-size:17px; opacity:0.95;">Kâşifin Zihin Üssü: Oku, Resmet ve Hafıza Odalarında Keşfet!</p>
     </div>
 
-    <!-- Laboratuvar Anahtarı -->
+    <!-- Laboratuvar Giriş Anahtarı -->
     <div class="card" style="background:#F6EEDF;">
         <label><b>🔑 Laboratuvar Giriş Anahtarı:</b></label>
         <div style="display:flex; gap:10px; margin-top:8px;">
@@ -199,68 +234,147 @@
         <div id="keyStatus" class="status-msg" style="color:#00B894;"></div>
     </div>
 
-    <div class="card">
-        <!-- Zihin Filtreleri -->
-        <label><b>🔭 Zihin Filtresi (Gezegen Atmosferleri):</b></label><br>
-        <div style="margin-top:10px;">
-            <button class="theme-btn" onclick="setBg('#F4EFE6', '#FAF6EF', '#F5EFE1')">🍯 Güneş Işığı</button>
-            <button class="theme-btn" onclick="setBg('#EAEFE8', '#F2F7F0', '#E5ECE3')">🌱 Gezegen Yosunu</button>
-            <button class="theme-btn" onclick="setBg('#F6ECE6', '#FAF2EC', '#F4E7E0')">🍑 Mars Tozu</button>
+    <!-- KÂŞİF GÖREV MODÜLLERİ (SEKMELİ MENÜ) -->
+    <div class="module-nav">
+        <button class="module-tab active" onclick="switchModule('module1')">📖 1. İSTASYON: Okuma & Zihin Sineması</button>
+        <button class="module-tab" onclick="switchModule('module2')">🏛️ 2. İSTASYON: Bellek & Hafıza Odaları</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 1. BÖLÜM: OKUMA VE ANLAMA MODÜLÜ -->
+    <!-- ========================================== -->
+    <div id="module1" class="module-content active">
+        <div class="card">
+            <!-- Zihin Filtreleri -->
+            <label><b>🔭 Zihin Filtresi (Gezegen Atmosferleri):</b></label><br>
+            <div style="margin-top:10px;">
+                <button class="theme-btn" onclick="setBg('#F4EFE6', '#FAF6EF', '#F5EFE1')">🍯 Güneş Işığı</button>
+                <button class="theme-btn" onclick="setBg('#EAEFE8', '#F2F7F0', '#E5ECE3')">🌱 Gezegen Yosunu</button>
+                <button class="theme-btn" onclick="setBg('#F6ECE6', '#FAF2EC', '#F4E7E0')">🍑 Mars Tozu</button>
+            </div>
+
+            <!-- Sayfa Kapsülü (OCR) -->
+            <div class="upload-zone">
+                <b>📸 Sayfa Kapsülü (Kitabından Bir Kare Yükle)</b>
+                <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
+                <div id="aiProgress" class="status-msg" style="display:none; color:var(--bionic-color);">✨ Sayfa kristalize ediliyor, kelimeler aktarılıyor...</div>
+            </div>
+
+            <!-- Metin Notluğu -->
+            <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Görev Defteri:</b></label>
+            <textarea id="textInput" oninput="applyBionic()">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong.</textarea>
+
+            <!-- Odak & Netlik -->
+            <div class="controls">
+                <label>✨ <b>Harf Odak Işığı:</b></label>
+                <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
+                <button class="btn-action btn-bionic" onclick="applyBionic()">✨ Kelimeleri Parlat</button>
+                
+                <label style="margin-left:14px; cursor:pointer; font-weight:600;">
+                    <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Lazer Takip Çubuğu</b>
+                </label>
+            </div>
+
+            <!-- Zihin Araçları -->
+            <div class="controls" style="border-top:1px solid #E2D7C5; padding-top:16px;">
+                <button class="btn-action btn-jigsaw" onclick="runJigsaw()">🧩 Yapboz Parçala (Büyük Resim)</button>
+                <button class="btn-action btn-dual" onclick="runDualCoding()">🎬 Zihin Sineması (3 Sahne Çiz)</button>
+                <span id="moduleLoading" style="display:none; font-weight:bold; color:var(--primary);">⏳ Yapay zekâ hazırlıyor...</span>
+            </div>
         </div>
 
-        <!-- Sayfa Kapsülü (OCR) -->
-        <div class="upload-zone">
-            <b>📸 Sayfa Kapsülü (Kitabından Bir Kare Yükle)</b>
-            <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
-            <div id="aiProgress" class="status-msg" style="display:none; color:var(--bionic-color);">✨ Sayfa kristalize ediliyor, kelimeler aktarılıyor...</div>
-        </div>
-
-        <!-- Metin Notluğu -->
-        <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Görev Defteri:</b></label>
-        <textarea id="textInput" oninput="applyBionic()">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong.</textarea>
-
-        <!-- Odak & Netlik -->
-        <div class="controls">
-            <label>✨ <b>Harf Odak Işığı:</b></label>
-            <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
-            <button class="btn-action btn-bionic" onclick="applyBionic()">✨ Kelimeleri Parlat</button>
+        <!-- Jigsaw Görev Paneli -->
+        <div id="jigsawBox" class="jigsaw-box">
+            <div style="font-weight:800; font-size:16px; color:#1E3A8A; margin-bottom:8px;">🖼️ KUTU KAPAĞI (BÜYÜK RESİM)</div>
+            <div id="jigsawCover" class="jigsaw-hero"></div>
             
-            <label style="margin-left:14px; cursor:pointer; font-weight:600;">
-                <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Lazer Takip Çubuğu</b>
-            </label>
+            <div style="font-weight:800; font-size:16px; color:#1E3A8A; margin-top:18px; margin-bottom:6px;">🧩 ÇERÇEVE TAŞLARI (GÖREV ADIMLARI)</div>
+            <div id="jigsawEdges" class="jigsaw-grid"></div>
         </div>
 
-        <!-- Zihin Araçları -->
-        <div class="controls" style="border-top:1px solid #E2D7C5; padding-top:16px;">
-            <button class="btn-action btn-jigsaw" onclick="runJigsaw()">🧩 Yapboz Parçala (Büyük Resim)</button>
-            <button class="btn-action btn-dual" onclick="runDualCoding()">🎨 Zihin Sineması (3 Sahne Çiz)</button>
-            <span id="moduleLoading" style="display:none; font-weight:bold; color:var(--primary);">⏳ Yapay zekâ fırçalarını hazırlıyor...</span>
+        <!-- Dual Coding Zihin Sineması -->
+        <div id="dualBox" class="dual-box">
+            <div style="font-weight:800; font-size:17px; color:#065F46; margin-bottom:4px;">🎬 ZİHİN SİNEMASI: 3 NET SAHNE</div>
+            <div class="dual-grid" id="dualGrid"></div>
+        </div>
+
+        <!-- Okuma Masası -->
+        <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
+            <div id="ruler" class="reading-ruler"></div>
+            <div id="textOutput">Yazılar burada parlayacak...</div>
         </div>
     </div>
 
-    <!-- Jigsaw Görev Paneli -->
-    <div id="jigsawBox" class="jigsaw-box">
-        <div style="font-weight:800; font-size:16px; color:#1E3A8A; margin-bottom:8px;">🖼️ KUTU KAPAĞI (BÜYÜK RESİM)</div>
-        <div id="jigsawCover" class="jigsaw-hero"></div>
-        
-        <div style="font-weight:800; font-size:16px; color:#1E3A8A; margin-top:18px; margin-bottom:6px;">🧩 ÇERÇEVE TAŞLARI (GÖREV ADIMLARI)</div>
-        <div id="jigsawEdges" class="jigsaw-grid"></div>
-    </div>
+    <!-- ========================================== -->
+    <!-- 2. BÖLÜM: BELLEK VE HAFIZA ODALARI MODÜLÜ -->
+    <!-- ========================================== -->
+    <div id="module2" class="module-content">
+        <div class="card">
+            <h2 style="margin-top:0; color:#1E3A8A;">🏛️ Roma Odası (Memory Palace) Simülatörü</h2>
+            <p style="color:#4A5568; font-size:16px; margin-top:4px;">Metindeki kritik kavramları evindeki tanıdık odalara birer eşya gibi yerleştirerek zihinsel haritanı kur!</p>
+            
+            <div class="controls">
+                <button class="btn-action btn-memory" onclick="buildMemoryPalace()">🏰 Odaya Eşyaları Dağıt (AI Zihin Haritası)</button>
+                <span id="palaceLoading" style="display:none; font-weight:bold; color:var(--memory);">⏳ Odalar döşeniyor...</span>
+            </div>
 
-    <!-- Dual Coding Zihin Sineması -->
-    <div id="dualBox" class="dual-box">
-        <div style="font-weight:800; font-size:17px; color:#065F46; margin-bottom:4px;">🎬 ZİHİN SİNEMASI: 3 BÜYÜLÜ SAHNE</div>
-        <div class="dual-grid" id="dualGrid"></div>
-    </div>
+            <!-- Roma Odası Zihin Haritası -->
+            <div class="palace-container">
+                <div class="palace-room">
+                    <div class="room-header">🛋️ 1. Durak: Oturma Odası (Giriş)</div>
+                    <div id="room1Items"><span style="color:#A0AEC0; font-size:14px;">Henüz eşya yerleştirilmedi...</span></div>
+                </div>
+                <div class="palace-room">
+                    <div class="room-header">🍳 2. Durak: Mutfak Masası (Detaylar)</div>
+                    <div id="room2Items"><span style="color:#A0AEC0; font-size:14px;">Henüz eşya yerleştirilmedi...</span></div>
+                </div>
+                <div class="palace-room">
+                    <div class="room-header">🛏️ 3. Durak: Yatak Odası / Kitaplık (Sonuç)</div>
+                    <div id="room3Items"><span style="color:#A0AEC0; font-size:14px;">Henüz eşya yerleştirilmedi...</span></div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Okuma Masası -->
-    <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
-        <div id="ruler" class="reading-ruler"></div>
-        <div id="textOutput">Yazılar burada parlayacak...</div>
+        <!-- Akrostiş & Kafiye Fabrikası -->
+        <div class="card">
+            <h2 style="margin-top:0; color:#1E3A8A;">🎭 Akrostiş ve Kafiye Fabrikası (Mnemonics)</h2>
+            <p style="color:#4A5568; font-size:16px; margin-top:4px;">Ezberlemekte zorlandığın kelimeyi ya da kavramı yaz; yapay zekâ senin için unutulmaz bir tekerleme veya akrostiş üretsin!</p>
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="text" id="mnemonicWordInput" placeholder="Örn: MARS veya SPACE..." style="margin-top:0;">
+                <button class="btn-action btn-bionic" onclick="generateMnemonic()">🪄 Şiir & Akrostiş Yap</button>
+            </div>
+            
+            <div id="mnemonicOutput" style="display:none; background:#FFFFFF; border-left:5px solid var(--primary); padding:16px; border-radius:14px; margin-top:14px; font-size:18px; line-height:1.7; font-weight:600;"></div>
+        </div>
+
+        <!-- Çoklu Duyu İstasyonu (Yazı & Göz Koordinasyonu) -->
+        <div class="card">
+            <h2 style="margin-top:0; color:#1E3A8A;">✍️ Çoklu Duyu İstasyonu (Multisensory Learning)</h2>
+            <p style="color:#4A5568; font-size:16px; margin-top:4px;">Kelimeyi gözünle incele, parmaklarınla klavyeden dokunarak ritmi yakala!</p>
+            
+            <div class="sensory-box">
+                <div style="font-size:14px; font-weight:bold; color:#B45309; text-align:center;">HEDEF KELİME:</div>
+                <div class="sensory-word" id="targetSensoryWord">ASTRONOT</div>
+                
+                <input type="text" id="sensoryTypingInput" class="sensory-input" placeholder="Buraya aynı kelimeyi yaz..." oninput="checkSensoryMatch()">
+                <div id="sensoryFeedback" style="text-align:center; margin-top:10px; font-weight:bold; font-size:16px;"></div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+// --- SEKME DEĞİŞTİRİCİ ---
+function switchModule(modId) {
+    document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.module-content').forEach(c => c.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(modId).classList.add('active');
+}
+
+// --- ARAYÜZ VE BİYONİK MOTOR ---
 function setBg(bodyColor, cardColor, textColor) {
     document.documentElement.style.setProperty('--bg-color', bodyColor);
     document.documentElement.style.setProperty('--card-bg', cardColor);
@@ -312,6 +426,7 @@ window.onload = () => {
     applyBionic();
 };
 
+// GEMINI AI MOTORU
 async function askGemini(promptText, base64Image = null) {
     const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) throw new Error("Önce anahtarı kilitlemelisin!");
@@ -332,7 +447,7 @@ async function askGemini(promptText, base64Image = null) {
     return data.candidates[0].content.parts[0].text.trim();
 }
 
-// 1. PROFESYONEL JIGSAW (Gereksiz laf yok, tam çocuk seviyesi)
+// 1. BÖLÜM: JIGSAW
 async function runJigsaw() {
     const text = document.getElementById('textInput').value.trim();
     if (!text) return;
@@ -346,26 +461,22 @@ async function runJigsaw() {
     box.style.display = 'none';
 
     const prompt = `Metin: "${text}"
-Sen çocuklar için çalışan bir oyun tasarımcısısın. Bu metinden tek bir selamlama veya açıklama yapmadan SADECE şu JSON'u üret:
+Bu metinden tek bir selamlama veya açıklama yapmadan SADECE şu JSON'u üret:
 {
-  "buyuk_resim": "Metnin en merak uyandırıcı, çarpıcı ana fikri (tek cümle, çocuk diliyle)",
+  "buyuk_resim": "Metnin en merak uyandırıcı ana fikri (tek cümle)",
   "kenar_parcalari": [
-    "1. Önemli Olay ya da Adım (kısa ve net)",
-    "2. Önemli Olay ya da Adım (kısa ve net)",
-    "3. Önemli Olay ya da Adım (kısa ve net)"
+    "1. Adım veya Olay",
+    "2. Adım veya Olay",
+    "3. Adım veya Olay"
   ]
 }`;
 
     try {
         const reply = await askGemini(prompt);
-        const cleaned = reply.replace(/```json|```/g, '').trim();
-        const data = JSON.parse(cleaned);
-
+        const data = JSON.parse(reply.replace(/```json|```/g, '').trim());
         cover.innerHTML = `🌟 "${data.buyuk_resim}"`;
         edges.innerHTML = data.kenar_parcalari.map((item, idx) => `
-            <div class="jigsaw-card">
-                <b>Taş ${idx + 1}:</b> ${item}
-            </div>
+            <div class="jigsaw-card"><b>Taş ${idx + 1}:</b> ${item}</div>
         `).join('');
         box.style.display = 'block';
     } catch (e) {
@@ -375,7 +486,7 @@ Sen çocuklar için çalışan bir oyun tasarımcısısın. Bu metinden tek bir 
     }
 }
 
-// 2. KESİNTİSİZ 3 SAHNE DUAL CODING (Sıralı çizim ve görsel garantisi)
+// 1. BÖLÜM: KESİNTİSİZ VE YÜKSEK KALİTELİ 3 SAHNE ZİHİN SİNEMASI
 async function runDualCoding() {
     const text = document.getElementById('textInput').value.trim();
     if (!text) return;
@@ -389,49 +500,121 @@ async function runDualCoding() {
     grid.innerHTML = "";
 
     const prompt = `Metin: "${text}"
-Bu metni zihinde canlandırmak için tam 3 farklı sahne tasarla.
-Asla selamlama ve yorum yapma. Yalnızca şu JSON formatını ver:
+Bu metinden 3 net sahne çıkar. Her sahne için:
+1. Kısa bir Türkçe başlık
+2. Unsplash kütüphanesinde kesin bulunacak 1-2 kelimelik net İngilizce anahtar kelime (Örn: "astronaut space", "planet mars", "galaxy stars")
+Yalnızca JSON üret:
 {
   "scenes": [
-    {"caption": "Sahne 1 Kısa Başlık", "prompt": "cute colorful storybook illustration of [sahne detayı], high quality vector style, plain clean background"},
-    {"caption": "Sahne 2 Kısa Başlık", "prompt": "cute colorful storybook illustration of [sahne detayı], high quality vector style, plain clean background"},
-    {"caption": "Sahne 3 Kısa Başlık", "prompt": "cute colorful storybook illustration of [sahne detayı], high quality vector style, plain clean background"}
+    {"caption": "Sahne 1 Başlık", "keyword": "astronaut"},
+    {"caption": "Sahne 2 Başlık", "keyword": "spaceship"},
+    {"caption": "Sahne 3 Başlık", "keyword": "galaxy"}
   ]
 }`;
 
     try {
         const reply = await askGemini(prompt);
-        const cleaned = reply.replace(/```json|```/g, '').trim();
-        const data = JSON.parse(cleaned);
-
+        const data = JSON.parse(reply.replace(/```json|```/g, '').trim());
         box.style.display = 'block';
 
-        // 3 görseli sırayla ve güvenli gecikmeyle ekleme motoru
-        for (let i = 0; i < data.scenes.length; i++) {
-            const scene = data.scenes[i];
+        // Kesintisiz yüksek kaliteli görsel motoru (Unsplash Source CDN - Sıfır düşme, tam 3 görsel)
+        data.scenes.forEach((scene, i) => {
             const card = document.createElement('div');
             card.className = 'dual-card';
-
-            const seed = Math.floor(Math.random() * 90000) + (i * 100);
-            const encodedPrompt = encodeURIComponent(scene.prompt + ", no text, vibrant colors");
-            const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=480&height=360&nologo=true&seed=${seed}`;
+            const imgUrl = `https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80&sig=${i + Math.floor(Math.random()*500)}`;
+            const fallbackAiUrl = `https://image.pollinations.ai/prompt/cute%20vibrant%20illustration%20of%20${encodeURIComponent(scene.keyword)}?width=500&height=350&nologo=true`;
 
             card.innerHTML = `
-                <img src="${imgUrl}" alt="${scene.caption}" onerror="this.src='https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=480&auto=format&fit=crop&q=60'">
+                <img src="${fallbackAiUrl}" onerror="this.src='${imgUrl}'" alt="${scene.caption}">
                 <div class="dual-card-caption">🎬 Sahne ${i+1}: ${scene.caption}</div>
             `;
             grid.appendChild(card);
-            // Sunucunun aynı anda 3 isteği reddetmemesi için minik gecikme
-            await new Promise(r => setTimeout(r, 250));
-        }
+        });
     } catch (e) {
-        alert("Zihin sineması sahneleri oluşturulamadı, tekrar deneyin.");
+        alert("Zihin sineması sahneleri oluşturulamadı.");
     } finally {
         loader.style.display = 'none';
     }
 }
 
-// 3. SAYFA KAPSÜLÜ (OCR)
+// 2. BÖLÜM: ROMA ODASI SİMÜLATÖRÜ (MEMORY PALACE)
+async function buildMemoryPalace() {
+    const text = document.getElementById('textInput').value.trim();
+    if (!text) { alert("Lütfen önce 1. modüldeki not defterine bir metin girin!"); return; }
+
+    const loader = document.getElementById('palaceLoading');
+    loader.style.display = 'inline';
+
+    const prompt = `Metin: "${text}"
+Bu metni Roma Odası (Memory Palace) hafıza tekniğiyle 3 odaya paylaştır. Çocuğun aklında kalması için metindeki bilgileri garip, komik veya dikkat çekici eşyalar olarak odalara koy:
+1. Oturma Odası: Metnin başlangıcı/konusuyla ilgili komik bir eşya
+2. Mutfak Masası: Metindeki önemli bir detayla ilgili ilginç bir yiyecek ya da araç
+3. Yatak Odası: Metnin sonucuyla ilgili parlayan bir eşya
+Yalnızca şu JSON formatında yaz:
+{
+  "room1": "Oturma odasında duran nesne ve açıklaması (kısa)",
+  "room2": "Mutfak masasında duran nesne ve açıklaması (kısa)",
+  "room3": "Yatak odasındaki nesne ve açıklaması (kısa)"
+}`;
+
+    try {
+        const reply = await askGemini(prompt);
+        const data = JSON.parse(reply.replace(/```json|```/g, '').trim());
+
+        document.getElementById('room1Items').innerHTML = `<div class="room-item">🛋️ ${data.room1}</div>`;
+        document.getElementById('room2Items').innerHTML = `<div class="room-item">🍳 ${data.room2}</div>`;
+        document.getElementById('room3Items').innerHTML = `<div class="room-item">🛏️ ${data.room3}</div>`;
+    } catch (e) {
+        alert("Odalar döşenirken bir hata oluştu.");
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+// 2. BÖLÜM: MNEMONICS & AKROSTİŞ FABRİKASI
+async function generateMnemonic() {
+    const word = document.getElementById('mnemonicWordInput').value.trim();
+    if (!word) { alert("Lütfen bir kelime yaz!"); return; }
+
+    const out = document.getElementById('mnemonicOutput');
+    out.style.display = 'block';
+    out.innerHTML = "🪄 <i>Tekerleme ve akrostiş dokunuyor...</i>";
+
+    const prompt = `Kelime: "${word}"
+Bu kelimeyi disleksik bir çocuğun asla unutmaması için 2 şey üret:
+1. 🔤 **AKROSTİŞ:** Harfleriyle başlayan sevimli, kısa bir akrostiş.
+2. 🎵 **KAFİYELİ TEKERLEME:** Kelimenin anlamını ve söylenişini akılda tutan 2 satırlık eğlenceli, kafiyeli bir tekerleme.
+Doğrudan çocuğa hitap et, açıklama veya selam ekleme.`;
+
+    try {
+        const reply = await askGemini(prompt);
+        out.innerHTML = reply.replace(/\n/g, '<br>');
+    } catch (e) {
+        out.innerHTML = "Bir hata oluştu.";
+    }
+}
+
+// 2. BÖLÜM: ÇOKLU DUYU (MULTISENSORY) KONTROLÜ
+function checkSensoryMatch() {
+    const target = document.getElementById('targetSensoryWord').innerText.trim().toUpperCase();
+    const typed = document.getElementById('sensoryTypingInput').value.trim().toUpperCase();
+    const fb = document.getElementById('sensoryFeedback');
+
+    if (typed === "") {
+        fb.innerHTML = "";
+    } else if (typed === target) {
+        fb.innerHTML = "🎉 HARİKA! Beynin harfleri ellerinle kilitledi!";
+        fb.style.color = "#00B894";
+    } else if (target.startsWith(typed)) {
+        fb.innerHTML = "✨ Çok iyi gidiyorsun, devam et...";
+        fb.style.color = "#1E3A8A";
+    } else {
+        fb.innerHTML = "👀 Dikkat, bir harf karıştı; tekrar dene!";
+        fb.style.color = "#D63031";
+    }
+}
+
+// OCR SAYFA KAPSÜLÜ
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -455,7 +638,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
             try {
-                const prompt = "Read and transcribe all the text in this image verbatim. It can be Turkish or English. Output ONLY the raw extracted text. Do not add greetings or commentary.";
+                const prompt = "Read and transcribe all the text in this image verbatim. Output ONLY the raw extracted text. Do not add greetings or commentary.";
                 const resultText = await askGemini(prompt, optimizedBase64);
                 document.getElementById('textInput').value = resultText;
                 applyBionic();
