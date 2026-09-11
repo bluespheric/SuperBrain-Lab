@@ -7,10 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Disleksi Dostu Renk Paleti */
-            --bg-color: #F9F6EE; /* Genel açık krem/bej */
-            --text-bg: #FDF4E3; /* Metin kutuları için sıcak bej */
-            --bionic-color: #1E3A8A; /* Vurgulu harfler için Koyu Mavi */
+            --bg-color: #F9F6EE; 
+            --text-bg: #FDF4E3; 
+            --bionic-color: #1E3A8A; 
             --primary: #6C5CE7;
             --accent: #FD79A8;
         }
@@ -22,10 +21,7 @@
             color: #2D3748;
             transition: background-color 0.3s ease;
         }
-        .container {
-            max-width: 880px;
-            margin: 0 auto;
-        }
+        .container { max-width: 880px; margin: 0 auto; }
         .header {
             background: linear-gradient(135deg, #1E3A8A, #6C5CE7);
             color: white;
@@ -54,10 +50,7 @@
             font-family: inherit;
             transition: all 0.2s;
         }
-        .theme-btn:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
+        .theme-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
         textarea, input[type="password"] {
             width: 100%;
             border-radius: 16px;
@@ -74,64 +67,33 @@
         }
         textarea { height: 140px; resize: vertical; }
         .controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin: 16px 0;
-            flex-wrap: wrap;
+            display: flex; gap: 12px; align-items: center; margin: 16px 0; flex-wrap: wrap;
         }
         .btn-action {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 16px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: inherit;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+            background-color: var(--primary); color: white; border: none;
+            padding: 12px 20px; border-radius: 16px; font-size: 15px; font-weight: bold;
+            cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
             transition: transform 0.2s;
         }
         .btn-action:hover { transform: scale(1.03); }
         .btn-save { background: #00B894; }
 
         .output-container {
-            position: relative;
-            background-color: var(--text-bg);
-            padding: 30px;
-            border-radius: 20px;
-            font-size: 26px; 
-            line-height: 2.4;
-            border: 3px dashed #CBD5E0;
-            min-height: 120px;
-            margin-top: 20px;
-            user-select: text;
-            color: #2D3748;
+            position: relative; background-color: var(--text-bg); padding: 30px;
+            border-radius: 20px; font-size: 26px; line-height: 2.4;
+            border: 3px dashed #CBD5E0; min-height: 120px; margin-top: 20px;
+            user-select: text; color: #2D3748;
         }
         .reading-ruler {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: rgba(253, 203, 110, 0.35); /* Yumuşak sarı odak */
-            border-top: 2px solid #FDCB6E;
-            border-bottom: 2px solid #FDCB6E;
-            pointer-events: none;
-            display: none;
+            position: absolute; left: 0; right: 0; height: 60px;
+            background: rgba(253, 203, 110, 0.35); border-top: 2px solid #FDCB6E;
+            border-bottom: 2px solid #FDCB6E; pointer-events: none; display: none;
         }
-        .bionic-bold { 
-            color: var(--bionic-color); /* Koyu Mavi */
-            font-weight: 800; 
-        }
+        .bionic-bold { color: var(--bionic-color); font-weight: 800; }
         .status-msg { margin-top: 8px; font-weight: 600; font-size: 14px; }
         .upload-zone {
-            background: #F8F9FA;
-            border: 2px dashed #CBD5E0;
-            padding: 20px;
-            border-radius: 16px;
-            margin-top: 14px;
-            text-align: center;
+            background: #F8F9FA; border: 2px dashed #CBD5E0; padding: 20px;
+            border-radius: 16px; margin-top: 14px; text-align: center;
         }
     </style>
 </head>
@@ -155,7 +117,7 @@
 
     <div class="card">
         <!-- Sayfa Işığı -->
-        <label><b>🎨 Sayfa Işığı (Gözü Dinlendiren Filtreler):</b></label><br>
+        <label><b>🎨 Sayfa Işığı (Gözü Dinlendiren Zeminler):</b></label><br>
         <div style="margin-top:10px;">
             <button class="theme-btn" onclick="setBg('#FDF4E3')">🍯 Bal Peteği (Bej)</button>
             <button class="theme-btn" onclick="setBg('#E8F8F5')">🌱 Dinozor Nanesi</button>
@@ -167,10 +129,10 @@
         <div class="upload-zone">
             <b>📸 Kitap Sayfasını Yükle (Yapay Zeka Okuyucu)</b>
             <input type="file" id="imageInput" accept="image/*" style="display:block; margin:12px auto;">
-            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--bionic-color);">🪄 Görsel taranıyor, harfler toplanıyor...</div>
+            <div id="aiProgress" class="status-msg" style="display:none; color:var(--bionic-color);">🪄 Süper Beyin AI çalışıyor, lütfen bekle...</div>
         </div>
 
-        <!-- Metin Kutusu (Bej Zemin) -->
+        <!-- Metin Kutusu -->
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
         <textarea id="textInput" oninput="applyBionic()">Bir zamanlar gökyüzünü merak eden bir kâşif varmış. Kâşif her gece yıldızların sırrını çözmek için laboratuvarında çalışırmış.</textarea>
 
@@ -186,7 +148,7 @@
         </div>
     </div>
 
-    <!-- Okuma Masası (Bej Zemin) -->
+    <!-- Okuma Masası -->
     <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
         <div id="ruler" class="reading-ruler"></div>
         <div id="textOutput">Yazılar burada parlayacak...</div>
@@ -194,16 +156,12 @@
 </div>
 
 <script>
+// --- 1. ARAYÜZ VE BİYONİK OKUMA SİSTEMİ ---
 function setBg(color) {
     document.documentElement.style.setProperty('--text-bg', color);
-    if(color === '#FDF4E3') {
-        document.documentElement.style.setProperty('--bg-color', '#F9F6EE');
-    } else {
-        document.documentElement.style.setProperty('--bg-color', color);
-    }
+    document.documentElement.style.setProperty('--bg-color', color === '#FDF4E3' ? '#F9F6EE' : color);
 }
 
-// Biyonik Kelime Dönüştürücü (Koyu Mavi Vurgulu)
 function applyBionic() {
     const text = document.getElementById('textInput').value;
     const ratio = document.getElementById('bionicRange').value / 100;
@@ -221,11 +179,11 @@ function applyBionic() {
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Sihirli Takip Çubuğu
 function toggleRuler() {
     const ruler = document.getElementById('ruler');
     ruler.style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
 }
+
 function moveRuler(e) {
     const ruler = document.getElementById('ruler');
     if (ruler.style.display === 'block') {
@@ -235,16 +193,14 @@ function moveRuler(e) {
     }
 }
 
-// API Anahtarı
 function saveKey() {
     const k = document.getElementById('apiKeyInput').value.trim();
     if (k) {
         localStorage.setItem('superbrain_gemini_key', k);
         document.getElementById('keyStatus').innerText = "✓ Anahtar tarayıcı hafızasına güvenle kaydedildi!";
-    } else {
-        alert("Lütfen geçerli bir anahtar yapıştır.");
     }
 }
+
 window.onload = () => {
     const k = localStorage.getItem('superbrain_gemini_key');
     if (k) {
@@ -254,18 +210,50 @@ window.onload = () => {
     applyBionic();
 };
 
-// GÜÇLENDİRİLMİŞ OCR (Gemini 1.5 Flash Latest - Hata Çözümü)
+// --- 2. MERKEZİ YAPAY ZEKA ÇEKİRDEĞİ (AI CORE) ---
+// Projedeki tüm yapay zeka işlemleri (OCR, Jigsaw, Koç vb.) buradan geçecek!
+async function askGemini(promptText, base64Image = null) {
+    const apiKey = localStorage.getItem('superbrain_gemini_key');
+    if (!apiKey) {
+        throw new Error("Lütfen önce Laboratuvar Anahtarını (API Key) girip kaydedin!");
+    }
+
+    // Google'ın en stabil ve her hesapta çalışan resmi modeli
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    
+    let parts = [{ text: promptText }];
+    
+    if (base64Image) {
+        parts.push({
+            inline_data: { mime_type: "image/jpeg", data: base64Image }
+        });
+    }
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: parts }] })
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+        throw new Error(data.error.message);
+    }
+    
+    if (data.candidates && data.candidates[0].content.parts[0].text) {
+        return data.candidates[0].content.parts[0].text.trim();
+    } else {
+        throw new Error("Beklenmeyen bir cevap geldi, metin bulunamadı.");
+    }
+}
+
+// --- 3. OCR (AI CORE KULLANARAK) ---
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const apiKey = localStorage.getItem('superbrain_gemini_key');
-    if (!apiKey) {
-        alert("Lütfen önce en üstteki alana Laboratuvar Anahtarını (Gemini API) kaydedin!");
-        return;
-    }
-
-    const prog = document.getElementById('ocrProgress');
+    const prog = document.getElementById('aiProgress');
     prog.style.display = 'block';
     prog.innerText = "🪄 Görsel okunuyor, harfler birleştiriliyor...";
 
@@ -292,32 +280,14 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
 
             try {
-                // MODEL İSMİ GÜNCELLENDİ: gemini-1.5-flash-latest
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: "Aşağıdaki görselde bulunan metni eksiksiz, olduğu gibi, yorum veya açıklama katmadan yaz." },
-                                { inline_data: { mime_type: "image/jpeg", data: optimizedBase64 } }
-                            ]
-                        }]
-                    })
-                });
+                // AI Çekirdeğini Çağırıyoruz
+                const prompt = "Aşağıdaki görselde bulunan metni eksiksiz, olduğu gibi, yorum veya açıklama katmadan yaz.";
+                const resultText = await askGemini(prompt, optimizedBase64);
                 
-                const data = await res.json();
-                
-                if (data.error) {
-                    alert("Yapay Zeka API Hatası: " + data.error.message);
-                } else if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    document.getElementById('textInput').value = data.candidates[0].content.parts[0].text.trim();
-                    applyBionic();
-                } else {
-                    alert("Görselde okunabilir net bir metin bulunamadı.");
-                }
+                document.getElementById('textInput').value = resultText;
+                applyBionic();
             } catch (err) {
-                alert("İnternet veya bağlantı hatası oluştu. Lütfen tekrar dene.");
+                alert("Yapay Zeka Hatası: " + err.message);
             } finally {
                 prog.style.display = 'none';
                 document.getElementById('imageInput').value = ""; 
