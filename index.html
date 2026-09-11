@@ -125,7 +125,7 @@
         }
         .word-span:hover { background-color: rgba(108, 92, 231, 0.12); }
         
-        /* NET VE GÖRÜNÜR IŞIK VURGUSU */
+        /* IŞIK TAKİBİ TASARIMI */
         .word-active {
             background-color: #FFEB3B !important;
             color: #D35400 !important;
@@ -168,7 +168,7 @@
     <div class="card" style="padding:18px; background:#F8F9FA;">
         <label><b>🔑 Laboratuvar Anahtarı & Sayfa Okuyucu (Gemini API):</b></label>
         <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
-            <input type="password" id="apiKeyInput" placeholder="API Anahtarı" style="max-width:200px; margin:0;" onchange="saveKey()">
+            <input type="password" id="apiKeyInput" placeholder="API Anahtarı buraya" style="max-width:200px; margin:0;" onchange="saveKey()">
             <input type="file" id="imageInput" accept="image/*">
             <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">AI Sayfayı okuyor...</span>
         </div>
@@ -217,12 +217,12 @@
         </div>
 
         <!-- 4 GARANTİ AI SES BUTONU -->
-        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Yapay Zeka (AI) Ses Asistanları:</b></label>
+        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Stüdyo Sesleri (Amazon Polly AI):</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="playAI('tr', 'female')">🧚 Masalcı Peri (AI Kadın)</button>
-            <button class="btn-action btn-male-tr" onclick="playAI('tr', 'male')">🧙‍♂️ Bilge Kâşif (AI Erkek)</button>
-            <button class="btn-action btn-female-en" onclick="playAI('en', 'female')">👩‍🏫 Storyteller (EN Kadın)</button>
-            <button class="btn-action btn-male-en" onclick="playAI('en', 'male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
+            <button class="btn-action btn-female-tr" onclick="playAI('tr', 'female')">🧚 TR Kadın</button>
+            <button class="btn-action btn-male-tr" onclick="playAI('tr', 'male')">🧙‍♂️ TR Erkek</button>
+            <button class="btn-action btn-female-en" onclick="playAI('en', 'female')">👩‍🏫 EN Kadın</button>
+            <button class="btn-action btn-male-en" onclick="playAI('en', 'male')">👨‍🚀 EN Erkek</button>
             <button class="btn-action" style="background:#E17055;" onclick="stopAudio()">⏹️ Durdur</button>
         </div>
     </div>
@@ -239,6 +239,7 @@
 <script>
 let wordsList = [];
 let activeTimer = null;
+let currentVoiceName = "Filiz";
 
 function setBg(color) {
     document.documentElement.style.setProperty('--bg-color', color);
@@ -268,10 +269,11 @@ function applyBionic() {
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Çubuk
+// Çubuk (YAZIM HATASI BURADAYDI, DÜZELTİLDİ!)
 function toggleRuler() {
-    document.getElementById('ruler').style.display = document.getElementById('rulerToggle'].checked ? 'block' : 'none';
+    document.getElementById('ruler').style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
 }
+
 function moveRuler(e) {
     const ruler = document.getElementById('ruler');
     if (ruler.style.display === 'block') {
@@ -286,7 +288,6 @@ function highlightWord(idx) {
     const target = document.getElementById(`w_${idx}`);
     if (target) {
         target.classList.add('word-active');
-        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
 
@@ -305,62 +306,57 @@ function playAI(lang, gender) {
     const textarea = document.getElementById('textInput');
 
     let textToRead = "";
-    let startIndex = 0;
 
     if (mode === '1') {
         // 1. Mod: Seçilen Parça
         textToRead = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
         if (!textToRead) {
-            textToRead = textarea.value.trim(); // Seçilmediyse tamamı
+            alert("Lütfen önce not defterinden bir kısmı fareyle seç (maviye boya)!");
+            return;
         }
     } else {
-        textToRead = textarea.value.trim();
+        alert("Akıcı (2. Mod) veya Tane Tane (3. Mod) okuma için ses butonlarına değil, doğrudan aşağıdaki masada okumasını istediğin kelimeye tıkla!");
+        return;
     }
 
-    if (!textToRead) return;
-
-    // AI Ses Kodları: Filiz (TR Kadın), Filiz/Kivanc -> Kadın için Filiz, Erkek için Arda/Kivanc
-    let voiceName = "Filiz"; // TR Kadın
-    if (lang === 'tr' && gender === 'male') voiceName = "Kivanc"; // TR Erkek
-    if (lang === 'en' && gender === 'female') voiceName = "Joanna"; // EN Kadın
-    if (lang === 'en' && gender === 'male') voiceName = "Joey"; // EN Erkek
+    // AI Ses Kodları
+    if (lang === 'tr' && gender === 'female') currentVoiceName = "Filiz";
+    if (lang === 'tr' && gender === 'male') currentVoiceName = "Kivanc";
+    if (lang === 'en' && gender === 'female') currentVoiceName = "Joanna";
+    if (lang === 'en' && gender === 'male') currentVoiceName = "Matthew";
 
     const player = document.getElementById('audioPlayer');
-    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voiceName}&text=${encodeURIComponent(textToRead)}`;
+    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${currentVoiceName}&text=${encodeURIComponent(textToRead)}`;
     
     player.src = audioUrl;
-    
-    // Mod 3 (Tane Tane) için ses hızını biraz yavaşlatıyoruz
-    player.playbackRate = (mode === '3') ? 0.75 : 1.0;
+    player.playbackRate = 1.0;
     
     player.play().catch(() => {
-        alert("Ses çalma tarayıcı tarafından engellendi, sayfada bir yere tıklayıp tekrar dene!");
+        alert("Tarayıcın sesi engelledi, sayfada boş bir yere tıklayıp tekrar dene.");
     });
-
-    // Işık Takibi (Eğer mod 2 veya 3 ise kelimeleri aydınlatarak akıt)
-    if (mode === '2' || mode === '3') {
-        startHighlightFlow(0, mode);
-    }
 }
 
 // Masadaki kelimeye tıklandığında (Mod 2 ve Mod 3)
 function wordClicked(idx) {
     const mode = document.querySelector('input[name="readMode"]:checked').value;
+    
     if (mode === '1') {
-        alert("Şu an '1. Mod (Seçileni Oku)' aktif. Kelimeden başlatmak için 2. veya 3. modu seçmelisin.");
+        alert("Şu an '1. Mod (Seçileni Oku)' aktif. Kelimeden ışıkla başlatmak için 2. veya 3. modu seçmelisin.");
         return;
     }
 
+    stopAudio();
     const remainingWords = wordsList.slice(idx);
     if (remainingWords.length === 0) return;
 
-    const textToRead = remainingWords.join(' ');
+    // Metni çok uzunsa çökmemesi için sadece ilk 100 kelimeyi gönder (sonra devam eder)
+    const textToRead = remainingWords.slice(0, 100).join(' ');
     
-    // Ses çal
     const player = document.getElementById('audioPlayer');
-    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Filiz&text=${encodeURIComponent(textToRead)}`;
+    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${currentVoiceName}&text=${encodeURIComponent(textToRead)}`;
+    
     player.src = audioUrl;
-    player.playbackRate = (mode === '3') ? 0.75 : 1.0;
+    player.playbackRate = (mode === '3') ? 0.75 : 1.05;
     player.play();
 
     // Işık takibini tıklanan indexten başlat
@@ -370,7 +366,7 @@ function wordClicked(idx) {
 // Canlı Işık Akış Motoru
 function startHighlightFlow(startIdx, mode) {
     let curr = startIdx;
-    const interval = (mode === '3') ? 700 : 380; // Tane tane: 700ms, Akıcı: 380ms
+    const interval = (mode === '3') ? 750 : 380; // Tane tane: 750ms, Akıcı: 380ms
 
     function step() {
         if (curr < wordsList.length) {
