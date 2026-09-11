@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Süper Beyin Laboratuvarı</title>
-    <link href="[https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap)" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #F4EFE6;
@@ -16,6 +16,7 @@
             --dual: #00B894;
             --memory: #E17055;
             --active: #F39C12;
+            --time-mod: #2D9CDB;
         }
         body {
             font-family: 'Fredoka', sans-serif;
@@ -25,98 +26,50 @@
             color: #2D3748;
             transition: background-color 0.3s ease;
         }
-        .container { max-width: 940px; margin: 0 auto; padding-bottom: 80px; }
+        .container { max-width: 960px; margin: 0 auto; padding-bottom: 90px; }
 
-        /* GİRİŞ EKRANI (ONBOARDING) */
+        /* GİRİŞ EKRANI */
         #onboardingScreen {
-            max-width: 680px;
-            margin: 20px auto;
-            background: var(--card-bg);
-            border-radius: 26px;
-            padding: 30px;
-            border: 2px solid #EADBCA;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.06);
-            text-align: center;
+            max-width: 680px; margin: 20px auto; background: var(--card-bg);
+            border-radius: 26px; padding: 30px; border: 2px solid #EADBCA;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.06); text-align: center;
         }
-        .avatar-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin: 16px 0;
-        }
+        .avatar-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0; }
         .avatar-card {
-            background: #FFFFFF;
-            border: 2px solid #E2D7C5;
-            border-radius: 18px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
+            background: #FFFFFF; border: 2px solid #E2D7C5; border-radius: 18px;
+            padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center;
         }
         .avatar-card:hover, .avatar-card.selected {
-            border-color: var(--primary);
-            background: #F3F0FF;
-            transform: translateY(-2px);
+            border-color: var(--primary); background: #F3F0FF; transform: translateY(-2px);
             box-shadow: 0 4px 14px rgba(91, 75, 196, 0.15);
         }
         .avatar-card.selected { border-width: 3px; }
-        .avatar-icon { font-size: 46px; display: block; margin-bottom: 6px; }
+        .avatar-icon { font-size: 50px; display: block; margin-bottom: 6px; }
 
-        .mood-grid {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 12px 0 20px 0;
-            flex-wrap: wrap;
-        }
+        .mood-grid { display: flex; gap: 10px; justifyContent: center; margin: 12px 0 20px 0; flex-wrap: wrap; }
         .mood-chip {
-            background: #FFFFFF;
-            border: 2px solid #E2D7C5;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.15s;
+            background: #FFFFFF; border: 2px solid #E2D7C5; padding: 8px 16px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.15s;
         }
-        .mood-chip.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
+        .mood-chip.selected { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* ANA UYGULAMA ALANI */
         #mainApp { display: none; }
 
         .header {
-            background: linear-gradient(135deg, #1E3A8A, #5B4BC4);
-            color: white;
-            padding: 22px;
-            border-radius: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 8px 24px rgba(30, 58, 138, 0.2);
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #1E3A8A, #5B4BC4); color: white;
+            padding: 22px; border-radius: 24px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 8px 24px rgba(30, 58, 138, 0.2); margin-bottom: 20px;
         }
         .companion-badge {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(6px);
-            padding: 8px 16px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(6px);
+            padding: 8px 16px; border-radius: 16px; display: flex; align-items: center; gap: 10px; font-weight: 700;
         }
 
-        .module-nav {
-            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
-        }
+        .module-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .module-tab {
-            flex: 1; min-width: 180px; padding: 14px 16px; border-radius: 18px;
+            flex: 1; min-width: 150px; padding: 12px 14px; border-radius: 16px;
             border: 2px solid #E2D7C5; background: var(--card-bg); color: #4A5568;
-            font-weight: 700; font-size: 15px; cursor: pointer; text-align: center;
+            font-weight: 700; font-size: 14px; cursor: pointer; text-align: center;
             font-family: inherit; transition: all 0.2s;
         }
         .module-tab.active {
@@ -135,7 +88,7 @@
             cursor: pointer; font-weight: 600; background: #FFFDF9; margin-right: 6px;
             margin-bottom: 6px; font-family: inherit;
         }
-        textarea, input[type="password"], input[type="text"] {
+        textarea, input[type="password"], input[type="text"], input[type="number"] {
             width: 100%; border-radius: 16px; border: 2px solid #E2D7C5;
             padding: 16px; font-size: 18px; font-family: inherit; box-sizing: border-box;
             outline: none; margin-top: 8px; background-color: var(--text-bg);
@@ -155,6 +108,7 @@
         .btn-dual { background: #00B894; }
         .btn-memory { background: #E17055; }
         .btn-active { background: #F39C12; }
+        .btn-time { background: #2D9CDB; }
 
         /* Jigsaw & Dual Panelleri */
         .jigsaw-box, .dual-box { display: none; border-radius: 20px; padding: 22px; margin-top: 18px; }
@@ -190,6 +144,12 @@
         .mindmap-branches { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; width: 100%; }
         .mindmap-node { background: #FFFFFF; border: 2px solid #FCD34D; padding: 12px 18px; border-radius: 18px; font-weight: 700; font-size: 15px; color: #78350F; }
 
+        /* Orman Modu (Modül 4) */
+        .forest-box { text-align: center; background: #E8F8F5; border: 2px solid #A3E4D7; border-radius: 20px; padding: 24px; margin-top: 16px; }
+        .tree-visual { font-size: 64px; margin: 10px 0; transition: transform 0.5s ease; }
+        .window-box { background: #EBF5FB; border: 2px solid #AED6F1; border-radius: 18px; padding: 20px; margin-top: 16px; }
+        .chunk-item { background: #FFFFFF; border-left: 5px solid #2D9CDB; padding: 10px 14px; border-radius: 10px; margin-top: 8px; font-weight: 600; font-size: 15px; }
+
         /* Okuma Masası */
         .output-container {
             position: relative; background-color: var(--text-bg); padding: 26px;
@@ -209,7 +169,7 @@
             border-radius: 16px; margin-top: 12px; text-align: center;
         }
 
-        /* MOLA KAPSÜLÜ */
+        /* MOLA KAPSÜLÜ & ÇOK AŞAMALI AKIŞ */
         .break-fab {
             position: fixed; bottom: 24px; left: 24px;
             background: linear-gradient(135deg, #FF7675, #D63031);
@@ -224,7 +184,7 @@
             justify-content: center; align-items: center; z-index: 2000;
         }
         .modal-card {
-            background: #FFFDF9; width: 90%; max-width: 560px; border-radius: 26px;
+            background: #FFFDF9; width: 90%; max-width: 580px; border-radius: 26px;
             padding: 24px; border: 3px solid #FF7675; text-align: center;
         }
         .game-screen {
@@ -232,10 +192,7 @@
             margin: 16px 0; padding: 16px; display: flex; flex-direction: column;
             justify-content: center; align-items: center; position: relative; overflow: hidden;
         }
-        .balloon {
-            width: 50px; height: 65px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
-            position: absolute; cursor: pointer;
-        }
+        .balloon { width: 50px; height: 65px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; position: absolute; cursor: pointer; }
         .b-red { background: #FF7675; } .b-blue { background: #0984E3; } .b-green { background: #00B894; }
         .star-target { font-size: 40px; cursor: pointer; position: absolute; }
         .breath-circle {
@@ -253,47 +210,40 @@
 
 <div class="container">
     <!-- ========================================== -->
-    <!-- 0. KARŞILAMA VE GİRİŞ EKRANI (ONBOARDING) -->
+    <!-- GİRİŞ EKRANI (ONBOARDING) -->
     <!-- ========================================== -->
     <div id="onboardingScreen">
         <h1 style="margin:0; font-size:32px; color:#1E3A8A;">🚀 Kâşif Üssüne Hoş Geldin!</h1>
         <p style="color:#4A5568; font-size:17px; margin-top:6px;">Harfleri çözecek, zihnini canlandıracak süper maceraya hazır mısın?</p>
 
-        <!-- Kâşif İsmi -->
         <div style="text-align:left; margin-top:20px;">
             <label><b>👤 Kâşif Adın Nedir?</b></label>
             <input type="text" id="explorerNameInput" placeholder="Buraya adını yaz...">
         </div>
 
-        <!-- Yol Arkadaşı Seçimi (2 Kız, 2 Erkek Karakter) -->
         <div style="text-align:left; margin-top:20px;">
             <label><b>🐾 Yol Arkadaşını Seç (Dilersen adını değiştirebilirsin):</b></label>
             <div class="avatar-grid">
-                <!-- Kız Karakter 1 -->
-                <div class="avatar-card selected" onclick="selectCompanion('🦊', 'Pupa', 'Kız', this)">
+                <div class="avatar-card selected" onclick="selectCompanion('🦊', 'Pupa', this)">
                     <span class="avatar-icon">🦊</span>
-                    <b class="c-name">Pupa</b> (Meraklı Tilki - Kız)
+                    <b class="c-name">Pupa</b> (Meraklı Tilki)
                 </div>
-                <!-- Kız Karakter 2 -->
-                <div class="avatar-card" onclick="selectCompanion('🦉', 'Nova', 'Kız', this)">
+                <div class="avatar-card" onclick="selectCompanion('🦉', 'Nova', this)">
                     <span class="avatar-icon">🦉</span>
-                    <b class="c-name">Nova</b> (Bilge Gece Kuşu - Kız)
+                    <b class="c-name">Nova</b> (Bilge Gece Kuşu)
                 </div>
-                <!-- Erkek Karakter 1 -->
-                <div class="avatar-card" onclick="selectCompanion('🤖', 'Bolt', 'Erkek', this)">
+                <div class="avatar-card" onclick="selectCompanion('🤖', 'Bolt', this)">
                     <span class="avatar-icon">🤖</span>
-                    <b class="c-name">Bolt</b> (Robotik Çırak - Erkek)
+                    <b class="c-name">Bolt</b> (Robotik Çırak)
                 </div>
-                <!-- Erkek Karakter 2 -->
-                <div class="avatar-card" onclick="selectCompanion('🐻', 'Baron', 'Erkek', this)">
+                <div class="avatar-card" onclick="selectCompanion('🐻', 'Baron', this)">
                     <span class="avatar-icon">🐻</span>
-                    <b class="c-name">Baron</b> (Koca Yürekli Ayı - Erkek)
+                    <b class="c-name">Baron</b> (Koca Yürekli Ayı)
                 </div>
             </div>
             <input type="text" id="companionCustomName" placeholder="Yol arkadaşına özel bir isim ver..." value="Pupa">
         </div>
 
-        <!-- Ön Görev Enerji Testi -->
         <div style="text-align:left; margin-top:20px;">
             <label><b>⚡ Bugün Zihnin Nasıl Hissediyor?</b></label>
             <div class="mood-grid">
@@ -318,7 +268,7 @@
                 <h1 style="margin:0; font-size:26px;">⚡ Süper Beyin Laboratuvarı</h1>
                 <div style="font-size:15px; opacity:0.9; margin-top:4px;">Kâşif <span id="displayExplorerName"></span> ve Yol Arkadaşı Görevde!</div>
             </div>
-            <div class="companion-badge" id="companionBadge">
+            <div class="companion-badge">
                 <span id="displayCompanionIcon" style="font-size:26px;">🦊</span>
                 <span id="displayCompanionName">Pupa</span>
             </div>
@@ -334,11 +284,12 @@
             <div id="keyStatus" class="status-msg" style="color:#00B894;"></div>
         </div>
 
-        <!-- MODÜL SEKME BUTONLARI -->
+        <!-- MODÜL SEKME BUTONLARI (4 BÖLÜM) -->
         <div class="module-nav">
-            <button class="module-tab active" onclick="switchModule('module1')">📖 1. İSTASYON: Okuma & Görsel Zihin</button>
-            <button class="module-tab" onclick="switchModule('module2')">🏛️ 2. İSTASYON: Zihin Evi & Kelime Pisti</button>
-            <button class="module-tab" onclick="switchModule('module3')">🌿 3. İSTASYON: Zihin Ağacı & Notlar</button>
+            <button class="module-tab active" onclick="switchModule('module1')">📖 1. Okuma & Zihin</button>
+            <button class="module-tab" onclick="switchModule('module2')">🏛️ 2. Zihin Evi</button>
+            <button class="module-tab" onclick="switchModule('module3')">🌿 3. Zihin Ağacı</button>
+            <button class="module-tab" onclick="switchModule('module4')">⏳ 4. Odak Kalkanı</button>
         </div>
 
         <!-- 1. BÖLÜM: OKUMA VE GÖRSEL ZİHİN -->
@@ -357,7 +308,7 @@
                     <div id="aiProgress" class="status-msg" style="display:none; color:var(--bionic-color);">✨ Sayfa kristalize ediliyor...</div>
                 </div>
 
-                <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Görev Defteri:</b></label>
+                <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Görev Defteri (Not: İstediğin zaman buraya yazabilir ya da yapıştırabilirsin):</b></label>
                 <textarea id="textInput" oninput="applyBionic()">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong.</textarea>
 
                 <div class="controls">
@@ -398,7 +349,7 @@
         <div id="module2" class="module-content">
             <div class="card">
                 <h2 style="margin-top:0; color:#1E3A8A;">🏛️ Zihin Evi (Eşya Yerleştirme Oyunu)</h2>
-                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Metindeki kilit bilgileri tanıdık odalara eğlenceli eşyalar olarak dağıt!</p>
+                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Not defterindeki kilit bilgileri tanıdık odalara eğlenceli eşyalar olarak dağıt!</p>
                 <button class="btn-action btn-memory" onclick="buildMemoryPalace()">🏰 Metinden Odaya Eşyaları Dağıt</button>
                 <span id="palaceLoading" style="display:none; font-weight:bold; color:var(--memory); margin-left:10px;">⏳ Odalar döşeniyor...</span>
 
@@ -420,9 +371,9 @@
 
             <div class="card">
                 <h2 style="margin-top:0; color:#1E3A8A;">🪄 Eğlenceli Şiir ve Tekerleme Fabrikası</h2>
-                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Metnindeki kilit kelimelerden birine dokun; tekerleme anında açılsın!</p>
+                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Not defterindeki kilit kelimelerden birine dokun; tekerleme anında açılsın!</p>
                 <div id="mnemonicChips" class="chip-container">
-                    <span style="color:#A0AEC0; font-size:14px;">Metindeki kelimeler taranıyor...</span>
+                    <span style="color:#A0AEC0; font-size:14px;">Not defterindeki kelimeler taranıyor...</span>
                 </div>
                 <div id="mnemonicOutput" style="display:none; background:#FFFFFF; border-left:5px solid var(--primary); padding:16px; border-radius:14px; margin-top:12px; font-size:17px; line-height:1.7; font-weight:600;"></div>
             </div>
@@ -443,7 +394,7 @@
         <div id="module3" class="module-content">
             <div class="card">
                 <h2 style="margin-top:0; color:#1E3A8A;">🌿 Dijital Zihin Ağacı (Dallanan Fikirler)</h2>
-                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Metni merkezden etrafa yayılan renkli bir ağaç gibi keşfet!</p>
+                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Not defterindeki metni merkezden etrafa yayılan renkli bir ağaç gibi keşfet!</p>
                 <button class="btn-action btn-active" onclick="buildMindMap()">🌱 Metinden Zihin Ağacı Çıkar</button>
                 <span id="mindmapLoading" style="display:none; font-weight:bold; color:var(--active); margin-left:10px;">⏳ Ağaç yeşeriyor...</span>
 
@@ -463,7 +414,6 @@
                 <textarea id="quickJotterText" placeholder="Aklıma gelen ilk şeyler, bildiğim kelimeler, merak ettiklerim..."></textarea>
             </div>
 
-            <!-- YOL ARKADAŞINA ANLAT ALANI -->
             <div class="card">
                 <h2 style="margin-top:0; color:#1E3A8A;">🗣️ Yol Arkadaşın <span id="companionChatName">Pupa</span>'ya Anlat!</h2>
                 <p style="color:#4A5568; font-size:15px; margin-top:4px;">Okuduğun konuyu sadık yol arkadaşına 2 cümleyle anlatacak olsan ne söylerdin?</p>
@@ -474,10 +424,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- ========================================== -->
+        <!-- 4. BÖLÜM: ZAMAN YÖNETİMİ VE ODAK KALKANI -->
+        <!-- ========================================== -->
+        <div id="module4" class="module-content">
+            <!-- Orman Modu (Pomodoro) -->
+            <div class="card">
+                <h2 style="margin-top:0; color:#1E3A8A;">🌳 Orman Modu (Odak Ağacı Yetiştirme)</h2>
+                <p style="color:#4A5568; font-size:15px; margin-top:4px;">25 dakika boyunca odaklan, ekrandaki fidan ulu bir ağaca dönüşsün!</p>
+                <div class="forest-box">
+                    <div id="treeVisual" class="tree-visual">🌱</div>
+                    <div id="forestTimerDisplay" style="font-size:32px; font-weight:900; color:#00B894; margin:10px 0;">25:00</div>
+                    <div style="display:flex; justify-content:center; gap:10px;">
+                        <button class="btn-action btn-save" onclick="startForestTimer()">🚀 Odaklanmayı Başlat</button>
+                        <button class="btn-action" style="background:#D63031;" onclick="resetForestTimer()">⏹️ Durdur</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zaman Pencereleri (Chunking Planlayıcısı) -->
+            <div class="card">
+                <h2 style="margin-top:0; color:#1E3A8A;">🪟 Zaman Pencereleri (Görev Bölücü)</h2>
+                <p style="color:#4A5568; font-size:15px; margin-top:4px;">Büyük ödevden korkmak yok! Görevi 30 dakikalık mini pencerelere bölelim.</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="chunkTaskInput" placeholder="Örn: Fen Bilimleri Proje Raporu..." style="margin-top:0;">
+                    <button class="btn-action btn-time" onclick="generateChunks()">🪄 Pencerelere Böl</button>
+                </div>
+                <div id="chunkResults" class="window-box" style="display:none;"></div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- MOLA KAPSÜLÜ -->
+<!-- MOLA KAPSÜLÜ (ÇOK AŞAMALI AKIŞ) -->
 <button class="break-fab" onclick="openBreakModal()">
     <span>🎮</span> Kâşif Mola Kapsülü
 </button>
@@ -485,30 +465,27 @@
 <div id="breakModal" class="modal-overlay">
     <div class="modal-card">
         <h2 style="margin-top:0; color:#D63031;">🚀 Kâşif Mola Kapsülü</h2>
-        <p style="color:#4A5568; font-size:15px; margin:4px 0 14px 0;">Zihnini tazelemek için mini bir mola ver!</p>
-        <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-            <button class="theme-btn" onclick="startBalloonGame()">🎈 Balon Avcısı</button>
-            <button class="theme-btn" onclick="startStarGame()">⭐ Yıldız Yakala</button>
-            <button class="theme-btn" onclick="startBreatheGame()">🧘 Sakin Nefes</button>
-        </div>
+        <p id="breakStepTitle" style="color:#4A5568; font-size:15px; margin:4px 0 14px 0;">Adım 1/3: Zihnini tazelemek için balonu patlat!</p>
+        
         <div id="gameScreen" class="game-screen">
-            <span style="font-weight:700; color:#718096;">Yukarıdan bir mola oyunu seç!</span>
+            <!-- Dinamik oyun alanı -->
         </div>
-        <button class="btn-action" style="background:#2D3748; width:100%; justify-content:center;" onclick="closeBreakModal()">
-            🚀 Göreve Geri Dön (Kapat)
+
+        <button id="breakCloseBtn" class="btn-action" style="background:#718096; width:100%; justify-content:center; margin-top:12px; cursor:not-allowed;" disabled onclick="closeBreakModal()">
+            🔒 Tüm Görevler Bitmeden Çıkılamaz!
         </button>
     </div>
 </div>
 
 <script>
-// --- ONBOARDING & KARAKTER YÖNETİMİ ---
-let currentCompanion = { icon: '🦊', defaultName: 'Pupa', gender: 'Kız' };
+// ONBOARDING & KARAKTER YÖNETİMİ
+let currentCompanion = { icon: '🦊', name: 'Pupa' };
 let currentMood = '🚀 Enerji Dolu';
 
-function selectCompanion(icon, name, gender, el) {
+function selectCompanion(icon, name, el) {
     document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
-    currentCompanion = { icon, defaultName: name, gender };
+    currentCompanion = { icon, name };
     document.getElementById('companionCustomName').value = name;
 }
 
@@ -520,22 +497,20 @@ function selectMood(mood, el) {
 
 function startJourney() {
     const explorerName = document.getElementById('explorerNameInput').value.trim() || 'Kâşif';
-    const finalCompName = document.getElementById('companionCustomName').value.trim() || currentCompanion.defaultName;
+    const finalCompName = document.getElementById('companionCustomName').value.trim() || currentCompanion.name;
 
-    // Arayüze aktar
     document.getElementById('displayExplorerName').innerText = explorerName;
     document.getElementById('displayCompanionIcon').innerText = currentCompanion.icon;
     document.getElementById('displayCompanionName').innerText = finalCompName;
     document.getElementById('companionChatName').innerText = finalCompName;
 
-    // Ekranı değiştir
     document.getElementById('onboardingScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
 
     applyBionic();
 }
 
-// --- SEKME DEĞİŞTİRİCİ ---
+// SEKME YÖNETİCİSİ
 function switchModule(modId) {
     document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.module-content').forEach(c => c.classList.remove('active'));
@@ -594,12 +569,12 @@ window.onload = () => {
     }
 };
 
-// GÜVENLİ VE SAĞLAM GEMINI ÇEKİRDEĞİ
+// GEMINI CORE
 async function askGemini(promptText, base64Image = null) {
     const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) throw new Error("Önce anahtarı kilitlemelisin!");
 
-    const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=$){apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     let parts = [{ text: promptText }];
     if (base64Image) {
         parts.push({ inline_data: { mime_type: "image/jpeg", data: base64Image } });
@@ -615,7 +590,6 @@ async function askGemini(promptText, base64Image = null) {
     return data.candidates[0].content.parts[0].text.trim();
 }
 
-// JSON TEMİZLEME YARDIMCISI (KODLARIN ASLA PATLAMAMASI İÇİN)
 function parseCleanJSON(raw) {
     let clean = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
     const start = clean.indexOf('{');
@@ -693,8 +667,8 @@ Bu metinden 3 net sahne çıkar, sadece bu JSON'u ver:
         data.scenes.forEach((scene, i) => {
             const card = document.createElement('div');
             card.className = 'dual-card';
-            const imgUrl = `[https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80&sig=$](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80&sig=$){i + Math.floor(Math.random()*500)}`;
-            const fallbackAiUrl = `[https://image.pollinations.ai/prompt/cute%20vibrant%20illustration%20of%20$](https://image.pollinations.ai/prompt/cute%20vibrant%20illustration%20of%20$){encodeURIComponent(scene.keyword)}?width=500&height=350&nologo=true`;
+            const imgUrl = `https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80&sig=${i + Math.floor(Math.random()*500)}`;
+            const fallbackAiUrl = `https://image.pollinations.ai/prompt/cute%20vibrant%20illustration%20of%20${encodeURIComponent(scene.keyword)}?width=500&height=350&nologo=true`;
 
             card.innerHTML = `
                 <img src="${fallbackAiUrl}" onerror="this.src='${imgUrl}'" alt="${scene.caption}">
@@ -709,7 +683,7 @@ Bu metinden 3 net sahne çıkar, sadece bu JSON'u ver:
     }
 }
 
-// 2. İSTASYON: ROMA ODASI (GARANTİLİ ÇALIŞMA MOTORU)
+// 2. İSTASYON: ROMA ODASI
 async function buildMemoryPalace() {
     const text = document.getElementById('textInput').value.trim();
     if (!text) { alert("Önce görev defterine bir metin girmelisin!"); return; }
@@ -718,7 +692,7 @@ async function buildMemoryPalace() {
     loader.style.display = 'inline';
 
     const prompt = `Metin: "${text}"
-Bu metni Roma Odası hafıza oyunu için 3 odaya paylaştır. Garip, akılda kalıcı nesneler olsun. Sadece şu JSON formatında yaz:
+Bu metni Zihin Evi oyunu için 3 odaya paylaştır. Garip, akılda kalıcı nesneler olsun. Sadece şu JSON formatında yaz:
 {
   "room1": "Oturma odasında duran garip nesne ve açıklaması",
   "room2": "Mutfak masasında duran komik nesne ve açıklaması",
@@ -738,7 +712,7 @@ Bu metni Roma Odası hafıza oyunu için 3 odaya paylaştır. Garip, akılda kal
     }
 }
 
-// 2. İSTASYON: KELİME ÇİPLERİ & DOKUNSAL PİST
+// 2. İSTASYON: KELİME ÇİPLERİ
 function populateWordChips() {
     const text = document.getElementById('textInput').value.trim();
     const container = document.getElementById('mnemonicChips');
@@ -790,7 +764,7 @@ function checkSensoryMatch() {
     }
 }
 
-// 3. İSTASYON: ZİHİN AĞACI (GARANTİLİ ÇALIŞMA MOTORU)
+// 3. İSTASYON: ZİHİN AĞACI
 async function buildMindMap() {
     const text = document.getElementById('textInput').value.trim();
     if (!text) { alert("Önce metin girmelisin!"); return; }
@@ -822,7 +796,6 @@ Bu metinden bir zihin ağacı çıkar. Sadece şu JSON formatında yaz:
     }
 }
 
-// 3. İSTASYON: 5 DAKİKALIK GERİ SAYIM
 let timerInterval = null;
 function startTimer() {
     clearInterval(timerInterval);
@@ -853,88 +826,156 @@ function checkSummaryFeedback() {
     }
 }
 
-// MOLA KAPSÜLÜ OYUNLARI
-function openBreakModal() { document.getElementById('breakModal').style.display = 'flex'; startBalloonGame(); }
-function closeBreakModal() { document.getElementById('breakModal').style.display = 'none'; }
+// 4. İSTASYON: ORMAN MODU & ZAMAN PENCERELERİ
+let forestInterval = null;
+function startForestTimer() {
+    clearInterval(forestInterval);
+    let duration = 25 * 60;
+    const disp = document.getElementById('forestTimerDisplay');
+    const tree = document.getElementById('treeVisual');
 
-let balloonTargetColor = 'red';
-let balloonScore = 0;
-function startBalloonGame() {
-    balloonScore = 0;
-    const colors = ['red', 'blue', 'green'];
-    balloonTargetColor = colors[Math.floor(Math.random() * colors.length)];
-    const colorNames = { red: 'KIRMIZI', blue: 'MAVİ', green: 'YEŞİL' };
+    forestInterval = setInterval(() => {
+        let m = Math.floor(duration / 60);
+        let s = duration % 60;
+        disp.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
 
-    const screen = document.getElementById('gameScreen');
-    screen.innerHTML = `
-        <div style="font-weight:bold; font-size:16px; margin-bottom:6px;">
-            GÖREV: Sadece <span style="color:#D63031; font-weight:900;">${colorNames[balloonTargetColor]}</span> Balonları Patlat!
-        </div>
-        <div style="font-weight:700;">Skor: <span id="bScore">0</span></div>
-        <div id="balloonArea" style="width:100%; height:140px; position:relative; overflow:hidden;"></div>
-    `;
-    spawnBalloons();
+        if (duration === 18 * 60) tree.innerText = "🌿";
+        if (duration === 10 * 60) tree.innerText = "🌲";
+        if (duration === 2 * 60) tree.innerText = "🌳";
+
+        if (--duration < 0) {
+            clearInterval(forestInterval);
+            tree.innerText = "🏆🌸";
+            disp.innerText = "ORMAN TAMAMLANDI! HARİKASIN!";
+        }
+    }, 1000);
 }
 
+function resetForestTimer() {
+    clearInterval(forestInterval);
+    document.getElementById('forestTimerDisplay').innerText = "25:00";
+    document.getElementById('treeVisual').innerText = "🌱";
+}
+
+async function generateChunks() {
+    const task = document.getElementById('chunkTaskInput').value.trim();
+    if (!task) { alert("Lütfen bölünecek görevi yaz!"); return; }
+    const box = document.getElementById('chunkResults');
+    box.style.display = 'block';
+    box.innerHTML = "⏳ Görev 30 dakikalık pencerelere bölünüyor...";
+
+    const prompt = `Görev: "${task}"
+Bu büyük görevi disleksik bir çocuğun korkmadan yapabilmesi için 3 adet yönetilebilir 30 dakikalık zaman penceresine (chunking) ayır. Sadece JSON ver:
+{
+  "chunks": [
+    "Pencere 1 (İlk 30 dk): ...",
+    "Pencere 2 (İkinci 30 dk): ...",
+    "Pencere 3 (Son 30 dk): ..."
+  ]
+}`;
+    try {
+        const reply = await askGemini(prompt);
+        const data = parseCleanJSON(reply);
+        box.innerHTML = `<b>🪟 Görev Pencerelerin Hazır:</b>` + data.chunks.map(c => `<div class="chunk-item">✨ ${c}</div>`).join('');
+    } catch(e) {
+        box.innerHTML = "Pencereler oluşturulamadı.";
+    }
+}
+
+// ============================================================
+// MOLA KAPSÜLÜ (3 AŞAMALI ZORUNLU AKIŞ)
+// ============================================================
+let breakStep = 1;
+function openBreakModal() {
+    breakStep = 1;
+    document.getElementById('breakModal').style.display = 'flex';
+    document.getElementById('breakCloseBtn').disabled = true;
+    document.getElementById('breakCloseBtn').style.background = '#718096';
+    document.getElementById('breakCloseBtn').style.cursor = 'not-allowed';
+    document.getElementById('breakCloseBtn').innerText = "🔒 Tüm Görevler Bitmeden Çıkılamaz!";
+    loadBreakStep();
+}
+function closeBreakModal() { document.getElementById('breakModal').style.display = 'none'; }
+
+function loadBreakStep() {
+    const title = document.getElementById('breakStepTitle');
+    const screen = document.getElementById('gameScreen');
+
+    if (breakStep === 1) {
+        title.innerText = "Adım 1/3: Zihnini tazelemek için kırmızı balonları patlat!";
+        screen.innerHTML = `
+            <div style="font-weight:700; margin-bottom:6px;">Sadece <span style="color:#D63031;">KIRMIZI</span> Balonlar!</div>
+            <div style="font-weight:bold;">Skor: <span id="bScore">0</span></div>
+            <div id="balloonArea" style="width:100%; height:120px; position:relative;"></div>
+        `;
+        spawnBalloons();
+    } else if (breakStep === 2) {
+        title.innerText = "Adım 2/3: Hızlı refleks için 5 altın yıldız topla!";
+        screen.innerHTML = `
+            <div style="font-weight:700; margin-bottom:6px;">Altın Yıldızlara Dokun!</div>
+            <div style="font-weight:bold;">Toplanan: <span id="starScore">0</span></div>
+            <div id="starArea" style="width:100%; height:120px; position:relative;"></div>
+        `;
+        moveStar();
+    } else if (breakStep === 3) {
+        title.innerText = "Adım 3/3: Derin bir nefes al ve zihnini sakinleştir.";
+        screen.innerHTML = `
+            <div style="font-weight:700; margin-bottom:10px;">Çemberle Birlikte Nefes Al / Ver 🌸</div>
+            <div class="breath-circle">Nefes</div>
+        `;
+        setTimeout(() => {
+            // Tüm aşamalar bittiğinde çıkış butonunu aç
+            const btn = document.getElementById('breakCloseBtn');
+            btn.disabled = false;
+            btn.style.background = '#00B894';
+            btn.style.cursor = 'pointer';
+            btn.innerText = "🚀 Harika Dinlendin, Şimdi Göreve Dön!";
+            title.innerText = "🎉 Tüm Mola Görevleri Tamamlandı!";
+        }, 4000);
+    }
+}
+
+// Balon Oyunu mantığı
+let bScore = 0;
 function spawnBalloons() {
+    bScore = 0;
     const area = document.getElementById('balloonArea');
     if (!area) return;
-    area.innerHTML = '';
-    const colorClasses = ['b-red', 'b-blue', 'b-green'];
-    const colorTypes = ['red', 'blue', 'green'];
-
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 5; i++) {
         const b = document.createElement('div');
-        const randIdx = Math.floor(Math.random() * 3);
-        b.className = `balloon ${colorClasses[randIdx]}`;
+        b.className = 'balloon b-red';
         b.style.left = `${Math.random() * 80 + 5}%`;
-        b.style.top = `${Math.random() * 70 + 10}px`;
-
+        b.style.top = `${Math.random() * 50 + 10}px`;
         b.onclick = () => {
-            if (colorTypes[randIdx] === balloonTargetColor) {
-                balloonScore += 10;
-                b.style.transform = 'scale(0)';
-                setTimeout(() => b.remove(), 100);
-                document.getElementById('bScore').innerText = balloonScore;
-                if (balloonScore >= 40) {
-                    area.innerHTML = '<div style="font-weight:900; color:#00B894; font-size:20px; margin-top:30px;">🎉 Harika Patlattın! Zihin tazelendi!</div>';
-                }
-            } else {
-                b.style.transform = 'scale(1.2)';
-                setTimeout(() => b.style.transform = 'scale(1)', 150);
+            bScore += 10;
+            b.remove();
+            document.getElementById('bScore').innerText = bScore;
+            if (bScore >= 20) {
+                area.innerHTML = '<div style="color:#00B894; font-weight:800; font-size:18px; margin-top:30px;">✨ 1. Aşama Tamamlandı!</div>';
+                setTimeout(() => { breakStep = 2; loadBreakStep(); }, 1200);
             }
         };
         area.appendChild(b);
     }
 }
 
-let starScore = 0;
-function startStarGame() {
-    starScore = 0;
-    const screen = document.getElementById('gameScreen');
-    screen.innerHTML = `
-        <div style="font-weight:bold; font-size:16px; margin-bottom:6px;">Altın Yıldızlara Hızlıca Dokun!</div>
-        <div style="font-weight:700;">Toplanan Yıldız: <span id="starScore">0</span></div>
-        <div id="starArea" style="width:100%; height:140px; position:relative;"></div>
-    `;
-    moveStar();
-}
-
+// Yıldız Oyunu mantığı
+let stScore = 0;
 function moveStar() {
+    stScore = 0;
     const area = document.getElementById('starArea');
     if (!area) return;
-    area.innerHTML = '';
     const star = document.createElement('div');
     star.className = 'star-target';
     star.innerHTML = '⭐';
     star.style.left = `${Math.random() * 80 + 5}%`;
-    star.style.top = `${Math.random() * 80 + 10}px`;
-
+    star.style.top = `${Math.random() * 60 + 10}px`;
     star.onclick = () => {
-        starScore++;
-        document.getElementById('starScore').innerText = starScore;
-        if (starScore >= 5) {
-            area.innerHTML = '<div style="font-weight:900; color:#F39C12; font-size:20px; margin-top:30px;">🌟 Süper Hızlısın! 5 Yıldız Kaptın!</div>';
+        stScore++;
+        document.getElementById('starScore').innerText = stScore;
+        if (stScore >= 5) {
+            area.innerHTML = '<div style="color:#F39C12; font-weight:800; font-size:18px; margin-top:30px;">✨ 2. Aşama Tamamlandı!</div>';
+            setTimeout(() => { breakStep = 3; loadBreakStep(); }, 1200);
         } else {
             moveStar();
         }
@@ -942,15 +983,7 @@ function moveStar() {
     area.appendChild(star);
 }
 
-function startBreatheGame() {
-    const screen = document.getElementById('gameScreen');
-    screen.innerHTML = `
-        <div style="font-weight:bold; font-size:16px; margin-bottom:10px;">Çemberle Birlikte Sakince Nefes Al ve Ver 🌸</div>
-        <div class="breath-circle">Nefes Al / Ver</div>
-    `;
-}
-
-// SAYFA KAPSÜLÜ (OCR)
+// OCR
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -979,7 +1012,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                 document.getElementById('textInput').value = resultText;
                 applyBionic();
             } catch (err) {
-                alert("Okuma kapsülü hatası: " + err.message);
+                alert("Okuma hatası: " + err.message);
             } finally {
                 prog.style.display = 'none';
                 document.getElementById('imageInput').value = ""; 
