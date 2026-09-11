@@ -136,7 +136,7 @@
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
         <textarea id="textInput" oninput="applyBionic()">Bir zamanlar gökyüzünü merak eden bir kâşif varmış. Kâşif her gece yıldızların sırrını çözmek için laboratuvarında çalışırmış.</textarea>
 
-        <!-- Kelime Rehberi & Sihirli Çubuk -->
+        <!-- Biyonik Ayarı & Takip Çubuğu -->
         <div class="controls">
             <label>✨ <b>Harf Işığı (Biyonik Güç):</b></label>
             <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
@@ -156,7 +156,6 @@
 </div>
 
 <script>
-// --- 1. ARAYÜZ VE BİYONİK OKUMA SİSTEMİ ---
 function setBg(color) {
     document.documentElement.style.setProperty('--text-bg', color);
     document.documentElement.style.setProperty('--bg-color', color === '#FDF4E3' ? '#F9F6EE' : color);
@@ -197,6 +196,7 @@ function saveKey() {
     const k = document.getElementById('apiKeyInput').value.trim();
     if (k) {
         localStorage.setItem('superbrain_gemini_key', k);
+        sessionStorage.removeItem('cached_gemini_model'); // Model önbelleğini temizle
         document.getElementById('keyStatus').innerText = "✓ Anahtar tarayıcı hafızasına güvenle kaydedildi!";
     }
 }
@@ -210,19 +210,43 @@ window.onload = () => {
     applyBionic();
 };
 
-// --- 2. MERKEZİ YAPAY ZEKA ÇEKİRDEĞİ (AI CORE) ---
-// Projedeki tüm yapay zeka işlemleri (OCR, Jigsaw, Koç vb.) buradan geçecek!
+// HESAPTA ÇALIŞAN GÜNCEL MODELİ OTOMATİK TESPİT EDEN SİSTEM (ModelService.ListModels)
+async function getAvailableModel(apiKey) {
+    const cached = sessionStorage.getItem('cached_gemini_model');
+    if (cached) return cached;
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const data = await res.json();
+    
+    if (data.error) {
+        throw new Error("Anahtar geçersiz veya modeller listelenemedi: " + data.error.message);
+    }
+    
+    if (data.models && data.models.length > 0) {
+        // Öncelikli olarak generateContent destekleyen Flash veya Pro modellerini seç
+        const usable = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
+        const best = usable.find(m => m.name.includes("flash")) || usable[0];
+        
+        if (best) {
+            sessionStorage.setItem('cached_gemini_model', best.name);
+            return best.name; // Zaten 'models/model-adi' şeklinde döner
+        }
+    }
+    throw new Error("Hesabında generateContent destekleyen aktif bir Gemini modeli bulunamadı.");
+}
+
+// MERKEZİ YAPAY ZEKA ÇEKİRDEĞİ (Dinamik Model ile)
 async function askGemini(promptText, base64Image = null) {
     const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) {
         throw new Error("Lütfen önce Laboratuvar Anahtarını (API Key) girip kaydedin!");
     }
 
-    // Google'ın en stabil ve her hesapta çalışan resmi modeli
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Hesabında çalışan gerçek modeli otomatik tespit et
+    const modelPath = await getAvailableModel(apiKey);
+    const url = `https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent?key=${apiKey}`;
     
     let parts = [{ text: promptText }];
-    
     if (base64Image) {
         parts.push({
             inline_data: { mime_type: "image/jpeg", data: base64Image }
@@ -236,7 +260,6 @@ async function askGemini(promptText, base64Image = null) {
     });
 
     const data = await response.json();
-    
     if (data.error) {
         throw new Error(data.error.message);
     }
@@ -244,18 +267,18 @@ async function askGemini(promptText, base64Image = null) {
     if (data.candidates && data.candidates[0].content.parts[0].text) {
         return data.candidates[0].content.parts[0].text.trim();
     } else {
-        throw new Error("Beklenmeyen bir cevap geldi, metin bulunamadı.");
+        throw new Error("Metin aktarılamadı, lütfen daha net bir fotoğraf deneyin.");
     }
 }
 
-// --- 3. OCR (AI CORE KULLANARAK) ---
+// OCR TETİKLEYİCİ
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const prog = document.getElementById('aiProgress');
     prog.style.display = 'block';
-    prog.innerText = "🪄 Görsel okunuyor, harfler birleştiriliyor...";
+    prog.innerText = "🪄 Sayfa inceleniyor, harfler okunuyor...";
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -280,14 +303,13 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
 
             try {
-                // AI Çekirdeğini Çağırıyoruz
-                const prompt = "Aşağıdaki görselde bulunan metni eksiksiz, olduğu gibi, yorum veya açıklama katmadan yaz.";
+                const prompt = "Bu görselde yer alan Türkçe metni harfi harfine eksiksiz oku. Başına veya sonuna hiçbir selamlama, yorum ekleme; sadece metni aktar.";
                 const resultText = await askGemini(prompt, optimizedBase64);
                 
                 document.getElementById('textInput').value = resultText;
                 applyBionic();
             } catch (err) {
-                alert("Yapay Zeka Hatası: " + err.message);
+                alert("Yapay Zeka Bildirimi: " + err.message);
             } finally {
                 prog.style.display = 'none';
                 document.getElementById('imageInput').value = ""; 
