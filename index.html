@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧪 Süper Beyin Laboratuvarı 🚀</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- Kararlı OCR Kütüphanesi -->
+    <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
     <style>
         :root {
             --bg-color: #FEF9E7;
             --primary: #6C5CE7;
             --accent: #FD79A8;
-            --card-bg: #FFFFFF;
         }
         body {
             font-family: 'Fredoka', sans-serif;
@@ -22,59 +22,24 @@
             transition: background-color 0.3s;
         }
         .container {
-            max-width: 900px;
+            max-width: 850px;
             margin: 0 auto;
         }
         .header {
             background: linear-gradient(135deg, #6C5CE7, #a29bfe);
             color: white;
-            padding: 20px;
+            padding: 22px;
             border-radius: 24px;
             text-align: center;
             box-shadow: 0 8px 20px rgba(108, 92, 231, 0.2);
             margin-bottom: 20px;
         }
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .nav-tab {
-            padding: 12px 20px;
-            border-radius: 16px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 15px;
-            background: #FFFFFF;
-            color: #4A5568;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-        }
-        .nav-tab.active {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
         .card {
-            background: var(--card-bg);
+            background: #FFFFFF;
             padding: 22px;
             border-radius: 20px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.06);
             margin-bottom: 20px;
-        }
-        .theme-select {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
         }
         .theme-btn {
             padding: 8px 16px;
@@ -83,20 +48,20 @@
             cursor: pointer;
             font-weight: 600;
             background: white;
+            margin-right: 8px;
+            margin-bottom: 8px;
         }
-        textarea, input[type="text"], input[type="password"] {
+        textarea {
             width: 100%;
+            height: 120px;
             border-radius: 14px;
             border: 2px solid #E2E8F0;
             padding: 12px;
-            font-size: 16px;
+            font-size: 17px;
             font-family: inherit;
             box-sizing: border-box;
             outline: none;
-            margin-top: 6px;
-        }
-        textarea {
-            height: 110px;
+            margin-top: 10px;
         }
         .controls {
             display: flex;
@@ -114,7 +79,7 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.25);
             transition: transform 0.2s;
         }
         .btn-action:hover {
@@ -122,9 +87,6 @@
         }
         .btn-sound {
             background-color: var(--accent);
-        }
-        .btn-ai {
-            background: linear-gradient(135deg, #00b894, #00cec9);
         }
         .output-box {
             background-color: #FFFFFF;
@@ -140,26 +102,19 @@
             color: var(--primary);
             font-weight: 800;
         }
-        .ai-result-box {
+        .ocr-zone {
             background: #F8F9FA;
-            border-left: 5px solid var(--primary);
+            border: 2px dashed #A0AEC0;
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 16px;
             margin-top: 12px;
-            font-size: 16px;
-            line-height: 1.6;
+            text-align: center;
         }
-        .ocr-preview {
-            max-width: 250px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: none;
-        }
-        .loading-spin {
-            display: none;
+        #ocrProgress {
             font-weight: bold;
             color: var(--primary);
-            margin-top: 8px;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -168,89 +123,44 @@
 <div class="container">
     <div class="header">
         <h1 style="margin:0;">🧪 Süper Beyin Laboratuvarı 🚀</h1>
-        <p style="margin:6px 0 0 0; font-size:17px;">Kendi Hızında Keşfet, Oku, Görselleştir ve Güçlen!</p>
+        <p style="margin:6px 0 0 0; font-size:17px;">Kitabını Tara, Dinle, Kendi Hızında Oku!</p>
     </div>
 
-    <!-- Modül Sekmeleri -->
-    <div class="nav-tabs">
-        <button class="nav-tab active" onclick="openTab('tab-reading')">📖 Okuma Masası & OCR</button>
-        <button class="nav-tab" onclick="openTab('tab-ai')">🤖 AI Koç & Jigsaw</button>
-        <button class="nav-tab" onclick="openTab('tab-settings')">🔑 Laboratuvar Anahtarı</button>
-    </div>
-
-    <!-- 1. SEKME: OKUMA VE OCR -->
-    <div id="tab-reading" class="tab-content active">
-        <div class="card">
-            <label><b>🎨 Büyülü Zemin Rengi (Irlen Filtresi):</b></label>
-            <div class="theme-select" style="margin-top:8px;">
-                <button class="theme-btn" onclick="setBg('#FEF9E7')">🍯 Bal Peteği</button>
-                <button class="theme-btn" onclick="setBg('#E8F8F5')">🌱 Dinozor Nanesi</button>
-                <button class="theme-btn" onclick="setBg('#FBEEE6')">🍑 Şeftali Bulutu</button>
-                <button class="theme-btn" onclick="setBg('#EBF5FB')">🌊 Uzay Dalgası</button>
-            </div>
-
-            <label><b>📸 Kitap Sayfası / Ödev Fotoğrafı Yükle (OCR):</b></label>
-            <input type="file" id="imageInput" accept="image/*" style="margin:8px 0; display:block;">
-            <img id="imagePreview" class="ocr-preview" alt="Önizleme">
-            <div id="ocrStatus" class="loading-spin">🔍 Sayfadaki harfler toplanıyor, biraz sabret kaşif...</div>
-
-            <label style="margin-top:10px; display:block;"><b>📝 Hikaye ya da Metin Alanı:</b></label>
-            <textarea id="textInput">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında harflerin izini sürer, bilginin gizemli dünyalarını keşfedermiş.</textarea>
-
-            <div class="controls">
-                <label>⚡ <b>Odak Gücü:</b></label>
-                <input type="range" id="bionicRange" min="20" max="80" value="50">
-                <button class="btn-action" onclick="applyBionic()">🚀 Sihirli Yazıya Çevir</button>
-                <button class="btn-action btn-sound" onclick="speakNatural()">🔊 Doğal Oku</button>
-                <select id="langSelect" style="padding:10px; border-radius:12px; border:2px solid #E2E8F0; font-family:inherit;">
-                    <option value="tr-TR">Türkçe (Doğal Vurgulu)</option>
-                    <option value="en-US">English (Natural)</option>
-                </select>
-            </div>
+    <div class="card">
+        <label><b>🎨 Büyülü Zemin Rengi:</b></label><br>
+        <div style="margin-top:8px;">
+            <button class="theme-btn" onclick="setBg('#FEF9E7')">🍯 Bal Peteği</button>
+            <button class="theme-btn" onclick="setBg('#E8F8F5')">🌱 Dinozor Nanesi</button>
+            <button class="theme-btn" onclick="setBg('#FBEEE6')">🍑 Şeftali Bulutu</button>
+            <button class="theme-btn" onclick="setBg('#EBF5FB')">🌊 Uzay Dalgası</button>
         </div>
 
-        <div class="output-box" id="outputArea">
-            Metin burada biyonik okuma modunda parlayacak...
+        <!-- Görsel Yükleme & OCR -->
+        <div class="ocr-zone">
+            <b>📸 Kitap Sayfası / Ödev Fotoğrafı Yükle</b>
+            <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
+            <img id="imagePreview" style="max-width:200px; display:none; margin:10px auto; border-radius:8px;" alt="Önizleme">
+            <div id="ocrProgress">🔍 Sayfa okunuyor... Lütfen bekle.</div>
+        </div>
+
+        <label style="margin-top:15px; display:block;"><b>📝 Hikaye ya da Okuma Metni:</b></label>
+        <textarea id="textInput">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+
+        <div class="controls">
+            <label>⚡ <b>Odak Gücü:</b></label>
+            <input type="range" id="bionicRange" min="20" max="80" value="50">
+            <button class="btn-action" onclick="applyBionic()">🚀 Sihirli Yazıya Çevir</button>
+            <button class="btn-action btn-sound" onclick="speakFemale()">👩‍🏫 Doğal Kadın Sesiyle Dinle</button>
+            <select id="voiceSelect" style="padding:10px; border-radius:12px; border:2px solid #E2E8F0; font-family:inherit;"></select>
         </div>
     </div>
 
-    <!-- 2. SEKME: GEMINI AI DESTEĞİ -->
-    <div id="tab-ai" class="tab-content">
-        <div class="card">
-            <h3 style="margin-top:0;">🧩 Jigsaw (Bulmaca) & Bilişsel AI Modülü</h3>
-            <p>Okuduğun metin çok mu uzun? Yapay zeka senin için büyük resmi çıkarsın ve adımlara bölsün.</p>
-            <div class="controls">
-                <button class="btn-action btn-ai" onclick="runGemini('jigsaw')">🧩 Jigsaw: Büyük Resmi & İlk Cümleleri Çıkar</button>
-                <button class="btn-action btn-ai" onclick="runGemini('dual_coding')">🎨 Dual Coding: Cümleleri Sahneye Çevir</button>
-                <button class="btn-action btn-sound" onclick="runGemini('mindset')">🌟 Pozitif Koç: Zihnimi Parlat</button>
-            </div>
-            <div id="aiStatus" class="loading-spin">🧠 Süper Beyin AI analiz yapıyor...</div>
-            <div id="aiOutput" class="ai-result-box" style="display:none;"></div>
-        </div>
-    </div>
-
-    <!-- 3. SEKME: API AYARI -->
-    <div id="tab-settings" class="tab-content">
-        <div class="card">
-            <h3 style="margin-top:0;">🔑 Google Gemini API Anahtarı</h3>
-            <p>Yapay zeka asistanını çalıştırmak için ücretsiz Gemini API anahtarını buraya kaydedebilirsin. Bilgiler sadece kendi tarayıcında saklanır.</p>
-            <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
-            <button class="btn-action" style="margin-top:12px;" onclick="saveApiKey()">💾 Anahtarı Kaydet</button>
-            <div id="keyStatus" style="margin-top:10px; color:#00b894; font-weight:bold;"></div>
-        </div>
+    <div class="output-box" id="outputArea">
+        Metin burada biyonik okuma modunda görünecek...
     </div>
 </div>
 
 <script>
-// Sekme Yönetimi
-function openTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    event.currentTarget.classList.add('active');
-}
-
-// Zemin Rengi Değiştirici
 function setBg(color) {
     document.documentElement.style.setProperty('--bg-color', color);
 }
@@ -273,30 +183,54 @@ function applyBionic() {
     document.getElementById('outputArea').innerHTML = transformed.join(' ');
 }
 
-// Tarayıcı İçi Doğal Türkçe Ses Motoru
-function speakNatural() {
-    const text = document.getElementById('textInput').value;
-    const lang = document.getElementById('langSelect').value;
+// Ses Motoru: Doğal Türkçe Kadın Sesi Seçici
+let voices = [];
+function loadVoices() {
+    voices = window.speechSynthesis.getVoices();
+    const voiceSelect = document.getElementById('voiceSelect');
+    voiceSelect.innerHTML = '';
+
+    // Türkçe ve İngilizce sesleri ayıkla
+    const relevantVoices = voices.filter(v => v.lang.startsWith('tr') || v.lang.startsWith('en'));
+    
+    relevantVoices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        // Tercihen Türkçe kadın seslerini seç (Filiz, Yelda, Sümeyye vb.)
+        if (voice.lang.startsWith('tr') && (voice.name.includes('Yelda') || voice.name.includes('Filiz') || voice.name.includes('Emel') || voice.name.includes('Female'))) {
+            option.selected = true;
+        }
+        voiceSelect.appendChild(option);
+    });
+}
+
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speakFemale() {
+    let text = document.getElementById('textInput').value;
     if (!text.trim()) return;
+
+    // Fonetik düzeltme: Şapkalı harfleri ve inceltmeleri telaffuza uygun yumuşatma
+    text = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang;
-    utterance.rate = 0.92;
-    utterance.pitch = 1.05; // Daha sempatik ve çocuk dostu frekans
 
-    const voices = window.speechSynthesis.getVoices();
-    // En kaliteli doğal Türkçe sesi bul
-    const bestVoice = voices.find(v => v.lang.includes('tr') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Yelda')));
-    if (bestVoice && lang === 'tr-TR') {
-        utterance.voice = bestVoice;
+    const voiceSelect = document.getElementById('voiceSelect');
+    const selectedVoice = voices.find(v => v.name === voiceSelect.value);
+    if (selectedVoice) {
+        utterance.voice = selectedVoice;
     }
 
+    utterance.rate = 0.92; // Çocuklar için sakin ve net hız
+    utterance.pitch = 1.1; // Yumuşak ve doğal kadın ses perdesi
     window.speechSynthesis.speak(utterance);
 }
 
-// Görselden Metin Okuma (Tesseract OCR)
-document.getElementById('imageInput').addEventListener('change', async function(e) {
+// Tesseract OCR Entegrasyonu
+document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -304,88 +238,36 @@ document.getElementById('imageInput').addEventListener('change', async function(
     imgPreview.src = URL.createObjectURL(file);
     imgPreview.style.display = 'block';
 
-    const status = document.getElementById('ocrStatus');
-    status.style.display = 'block';
+    const prog = document.getElementById('ocrProgress');
+    prog.style.display = 'block';
+    prog.innerText = "🔍 Sayfa taranıyor... (%0)";
 
-    try {
-        const worker = await Tesseract.createWorker('tur');
-        const ret = await worker.recognize(file);
-        if (ret.data.text.trim()) {
-            document.getElementById('textInput').value = ret.data.text;
-            applyBionic();
+    Tesseract.recognize(
+        file,
+        'tur',
+        {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    prog.innerText = `🔍 Harfler toplanıyor... %${Math.floor(m.progress * 100)}`;
+                }
+            }
         }
-        await worker.terminate();
-    } catch (err) {
-        alert("Fotoğraf taranırken bir aksilik oldu, daha net bir ışıkla tekrar dene!");
-    } finally {
-        status.style.display = 'none';
-    }
+    ).then(({ data: { text } }) => {
+        prog.style.display = 'none';
+        if (text.trim()) {
+            document.getElementById('textInput').value = text;
+            applyBionic();
+        } else {
+            alert("Sayfada net bir yazı bulunamadı. Işığı artırıp tekrar dene!");
+        }
+    }).catch(err => {
+        prog.style.display = 'none';
+        alert("Tarama sırasında bir hata oluştu: " + err);
+    });
 });
 
-// API Anahtarı Yönetimi
-function saveApiKey() {
-    const key = document.getElementById('apiKeyInput').value.trim();
-    if (key) {
-        localStorage.setItem('gemini_api_key', key);
-        document.getElementById('keyStatus').innerText = "✓ Anahtar tarayıcına güvenle kaydedildi!";
-    }
-}
-
-window.onload = () => {
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) {
-        document.getElementById('apiKeyInput').value = savedKey;
-        document.getElementById('keyStatus').innerText = "✓ Kayıtlı anahtar hazır!";
-    }
-    applyBionic();
-};
-
-// Gemini AI Entegrasyonu
-async function runGemini(action) {
-    const apiKey = localStorage.getItem('gemini_api_key');
-    if (!apiKey) {
-        alert("Lütfen önce 'Laboratuvar Anahtarı' sekmesinden Gemini API anahtarını kaydet!");
-        return;
-    }
-
-    const currentText = document.getElementById('textInput').value;
-    const aiStatus = document.getElementById('aiStatus');
-    const aiOutput = document.getElementById('aiOutput');
-    aiStatus.style.display = 'block';
-    aiOutput.style.display = 'none';
-
-    let prompt = "";
-    if (action === 'jigsaw') {
-        prompt = `Sen Açık Üniversite pedagojisiyle çalışan disleksi dostu bir eğitim koçusun. Aşağıdaki metni ilkokul/ortaokul öğrencisi için analiz et. 
-1) 'Kutu Kapağı Resmi': Metnin ana fikrini tek ve sevimli bir cümleyle ver.
-2) 'Kenar Parçaları': Her paragrafın ilk cümlesini/ana fikrini madde imleriyle ayıkla.
-Metin: "${currentText}"`;
-    } else if (action === 'dual_coding') {
-        prompt = `Sen bir Dual Coding uzmanısın. Disleksik bir çocuğun aşağıdaki metni zihninde canlandırması için metindeki olayları 3 tane basit, çizilebilir, renkli sahne taslağına dönüştür (ör: 'Sahne 1: Ağacın altında mavi şapkalı bir kaşif...'). 
-Metin: "${currentText}"`;
-    } else if (action === 'mindset') {
-        prompt = `Disleksik ve okurken zorlanan bir çocuk için motivasyon ve büyüme zihniyeti (growth mindset) mesajı yaz. Çocuğun beyninin bu zorlanmayla nasıl yeni nöron yolları kurduğunu sevimli ve cesaret verici şekilde anlat.`;
-    }
-
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
-        const data = await response.json();
-        const reply = data.candidates[0].content.parts[0].text;
-        aiOutput.innerHTML = reply.replace(/\n/g, '<br>');
-        aiOutput.style.display = 'block';
-    } catch (err) {
-        aiOutput.innerHTML = "Bir hata oluştu. API anahtarını veya bağlantını kontrol edebilirsin.";
-        aiOutput.style.display = 'block';
-    } finally {
-        aiStatus.style.display = 'none';
-    }
-}
+// Sayfa açıldığında biyonik metni göster
+applyBionic();
 </script>
 
 </body>
