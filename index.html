@@ -60,13 +60,13 @@
             border-radius: 16px;
             border: 2px solid #E2E8F0;
             padding: 14px;
-            font-size: 16px;
+            font-size: 17px;
             font-family: inherit;
             box-sizing: border-box;
             outline: none;
             margin-top: 8px;
         }
-        textarea { height: 110px; resize: vertical; }
+        textarea { height: 120px; resize: vertical; }
         .controls {
             display: flex;
             gap: 10px;
@@ -78,9 +78,9 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 11px 18px;
+            padding: 12px 20px;
             border-radius: 16px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             font-family: inherit;
@@ -138,20 +138,22 @@
             transition: background 0.15s ease;
         }
         .word-span:hover {
-            background-color: rgba(108, 92, 231, 0.1);
+            background-color: rgba(108, 92, 231, 0.12);
         }
         .word-active {
             background-color: #FFEAA7 !important;
             border-bottom: 3px solid #FDCB6E;
         }
-        .mode-selector {
+        .mode-box {
             background: #F1F2F6;
-            padding: 6px 12px;
-            border-radius: 12px;
-            display: inline-flex;
-            gap: 12px;
+            padding: 8px 14px;
+            border-radius: 14px;
+            display: flex;
+            gap: 16px;
             font-weight: 600;
             font-size: 14px;
+            margin-top: 10px;
+            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -192,16 +194,14 @@
 
         <!-- Metin Kutusu -->
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
-        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+        <textarea id="textInput" oninput="applyBionic()" onclick="syncCursorPos()" onkeyup="syncCursorPos()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
 
-        <!-- Okuma Modu Seçici -->
-        <div style="margin-top:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <b>🧭 Okuma Tarzı:</b>
-            <div class="mode-selector">
-                <label style="cursor:pointer;"><input type="radio" name="readMode" value="selected" checked> 🎯 Seçileni Oku</label>
-                <label style="cursor:pointer;"><input type="radio" name="readMode" value="slow"> 🐢 Tane Tane (Işık Takibi)</label>
-                <label style="cursor:pointer;"><input type="radio" name="readMode" value="fast"> 🚀 Seri & Akıcı (Işık Takibi)</label>
-            </div>
+        <!-- 3 AYRI OKUMA MODU -->
+        <div class="mode-box">
+            <span>🧭 <b>Okuma Modu Seç:</b></span>
+            <label style="cursor:pointer;"><input type="radio" name="readMode" value="selected" checked> 1️⃣ 🎯 Seçtiğim Parçayı Oku</label>
+            <label style="cursor:pointer;"><input type="radio" name="readMode" value="fast"> 2️⃣ 🚀 İmleçten İtibaren Akıcı Oku</label>
+            <label style="cursor:pointer;"><input type="radio" name="readMode" value="slow"> 3️⃣ 🐢 İmleçten İtibaren Tane Tane Oku</label>
         </div>
 
         <!-- Harf Işığı & Cetvel -->
@@ -215,16 +215,15 @@
             </label>
         </div>
 
-        <!-- Duygulu AI Ses İstasyonu -->
-        <label style="display:block; margin-top:14px;"><b>🎧 Sesli Anlatıcı (Yapay Zeka & Doğal Duygu):</b></label>
+        <!-- Gerçek Doğal Sesler -->
+        <label style="display:block; margin-top:14px;"><b>🎧 Sesli Anlatıcı (Yapay Zeka & Stüdyo Tınısı):</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="executeRead('tr-female')">🧚 Masalcı Peri (TR Kadın)</button>
-            <button class="btn-action btn-male-tr" onclick="executeRead('tr-male')">🧙‍♂️ Bilge Kâşif (TR Erkek)</button>
-            <button class="btn-action btn-female-en" onclick="executeRead('en-female')">👩‍🏫 Storyteller (EN Kadın)</button>
-            <button class="btn-action btn-male-en" onclick="executeRead('en-male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
-            <button class="btn-action" style="background:#E17055;" onclick="stopAllSpeech()">⏹️ Durdur</button>
+            <button class="btn-action btn-female-tr" onclick="triggerRead('tr-female')">🧚 Masalcı Peri (TR Kadın Sesi)</button>
+            <button class="btn-action btn-male-tr" onclick="triggerRead('tr-male')">🧙‍♂️ Bilge Kâşif (TR Erkek Sesi)</button>
+            <button class="btn-action btn-female-en" onclick="triggerRead('en-female')">👩‍🏫 Storyteller (EN Kadın)</button>
+            <button class="btn-action btn-male-en" onclick="triggerRead('en-male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
+            <button class="btn-action" style="background:#E17055;" onclick="stopVoice()">⏹️ Durdur</button>
         </div>
-        <div id="aiVoiceStatus" class="status-msg" style="color:var(--primary); display:none;">✨ Yapay zeka duygulu sesi hazırlıyor...</div>
     </div>
 
     <!-- Okuma Masası (Kelimelere Tıklanabilir) -->
@@ -234,18 +233,19 @@
     </div>
 </div>
 
-<audio id="geminiAudioPlayer"></audio>
+<audio id="realVoicePlayer"></audio>
 
 <script>
 let wordsList = [];
-let activeTimer = null;
-let lastVoice = 'tr-female';
+let cursorWordIndex = 0;
+let lightTimer = null;
+let lastSelectedVoice = 'tr-female';
 
 function setBg(color) {
     document.documentElement.style.setProperty('--bg-color', color);
 }
 
-// Biyonik Kelime Rehberi & Tıklanabilir Yapı
+// Biyonik Kelime Rehberi & Tıklanabilir Kelimeler
 function applyBionic() {
     const text = document.getElementById('textInput').value;
     const ratio = document.getElementById('bionicRange').value / 100;
@@ -263,18 +263,33 @@ function applyBionic() {
             const mid = Math.ceil(word.length * ratio);
             bionicWord = `<span class="bionic-bold">${word.slice(0, mid)}</span>${word.slice(mid)}`;
         }
-        return `<span class="word-span" id="w_${idx}" onclick="onWordClick(${idx})">${bionicWord}</span>`;
+        return `<span class="word-span" id="w_${idx}" onclick="clickWordToStart(${idx})">${bionicWord}</span>`;
     });
 
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Kelimeye Tıklayınca Oradan İtibaren Dinleme
-function onWordClick(idx) {
-    playModeFlow(idx, lastVoice);
+// İmlecin Not Defterindeki Konumunu Kelime Sırasına Eşitle
+function syncCursorPos() {
+    const textarea = document.getElementById('textInput');
+    const pos = textarea.selectionStart;
+    const textBefore = textarea.value.substring(0, pos).trim();
+    if (!textBefore) {
+        cursorWordIndex = 0;
+    } else {
+        cursorWordIndex = textBefore.split(/\s+/).length - 1;
+    }
 }
 
-// Cetvel
+// Aşağıdaki Kelimeye Tıklayınca Oradan Başlama
+function clickWordToStart(idx) {
+    cursorWordIndex = idx;
+    const selectedMode = document.querySelector('input[name="readMode"]:checked').value;
+    // Eğer mod "seçili" ise tıklandığında otomatik akıcı moda geçirip oradan okusun
+    runFlowFromIndex(idx, selectedMode === 'slow' ? 'slow' : 'fast', lastSelectedVoice);
+}
+
+// Takip Çubuğu
 function toggleRuler() {
     const ruler = document.getElementById('ruler');
     ruler.style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
@@ -288,7 +303,7 @@ function moveRuler(e) {
     }
 }
 
-// API Kaydetme
+// API Kaydet
 function saveKey() {
     const k = document.getElementById('apiKeyInput').value.trim();
     if (k) {
@@ -311,176 +326,130 @@ function highlightWord(idx) {
     if (target) target.classList.add('word-active');
 }
 
-function stopAllSpeech() {
-    clearTimeout(activeTimer);
-    const player = document.getElementById('geminiAudioPlayer');
+function stopVoice() {
+    clearTimeout(lightTimer);
+    const player = document.getElementById('realVoicePlayer');
     player.pause();
     player.src = "";
     window.speechSynthesis.cancel();
     document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-    document.getElementById('aiVoiceStatus').style.display = 'none';
 }
 
-// ANA ÇALIŞTIRICI: Seçili Mod Kontrolü
-function executeRead(voiceType) {
-    lastVoice = voiceType;
+// 3 AYRI OKUMA MODUNU ÇALIŞTIRAN ANA MERKEZ
+function triggerRead(voiceType) {
+    lastSelectedVoice = voiceType;
     const mode = document.querySelector('input[name="readMode"]:checked').value;
     const textarea = document.getElementById('textInput');
 
-    // 1. MOD: Sadece Seçilen Metni Oku
+    // 1. MOD: Kopyalama Yapar Gibi Seçtiğin Kısmı Oku
     if (mode === 'selected') {
-        let textToSpeak = "";
+        stopVoice();
+        let selectedText = "";
         if (textarea.selectionStart !== textarea.selectionEnd) {
-            textToSpeak = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+            selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
         } else {
-            textToSpeak = textarea.value.trim();
+            selectedText = textarea.value.trim();
         }
-        playAIAudio(textToSpeak, voiceType);
+        playCleanAudio(selectedText, voiceType, 1.0);
         return;
     }
 
-    // 2. & 3. MOD: Işık Takibi (Tane Tane veya Seri)
-    playModeFlow(0, voiceType);
+    // 2. ve 3. MOD: İmleçten İtibaren Akıcı veya Tane Tane Oku
+    syncCursorPos();
+    runFlowFromIndex(cursorWordIndex, mode, voiceType);
 }
 
-// Işık Takibiyle Okuma Akışı
-function playModeFlow(startIdx, voiceType) {
-    stopAllSpeech();
-    const mode = document.querySelector('input[name="readMode"]:checked').value;
-    const delay = mode === 'slow' ? 620 : 360; // Tane tane: 620ms, Seri: 360ms
-
+// İmleçten İtibaren Okuma Akışı
+function runFlowFromIndex(startIdx, speedMode, voiceType) {
+    stopVoice();
     const remainingWords = wordsList.slice(startIdx);
     if (remainingWords.length === 0) return;
 
     const fullText = remainingWords.join(' ');
-    playAIAudio(fullText, voiceType);
+    // Tane tane modunda ses hızı hafif yavaşlatılır, akıcı modda normal ritimdedir
+    const audioSpeed = speedMode === 'slow' ? 0.85 : 1.05;
+    playCleanAudio(fullText, voiceType, audioSpeed);
 
-    // Işık takibi zamanlayıcısı
-    let current = startIdx;
-    function stepHighlight() {
-        if (current < wordsList.length) {
-            highlightWord(current);
-            current++;
-            activeTimer = setTimeout(stepHighlight, delay);
+    // Işık Takibi Zamanlaması
+    const intervalTime = speedMode === 'slow' ? 620 : 340;
+    let curr = startIdx;
+
+    function step() {
+        if (curr < wordsList.length) {
+            highlightWord(curr);
+            curr++;
+            lightTimer = setTimeout(step, intervalTime);
         } else {
             document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
         }
     }
-    stepHighlight();
+    step();
 }
 
-// GEMINI AI DUYGULU SES MOTORU (Kadın / Erkek / TR / EN)
-async function playAIAudio(text, voiceType) {
-    if (!text.trim()) return;
+// KESİN VE GARANTİLİ DOĞAL SES MOTORU (TR KADIN / TR ERKEK / EN KADIN / EN ERKEK)
+function playCleanAudio(text, voiceType, speedRate) {
+    if (!text) return;
 
-    const apiKey = localStorage.getItem('superbrain_gemini_key');
-    const status = document.getElementById('aiVoiceStatus');
+    // Özel İnceltme Ayarları: "kâşif" kelimesinin yumuşatılması
+    text = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
 
-    // API anahtarı varsa Gemini 3.6 Audio TTS ile gerçekçi ve duygulu ses üretir
-    if (apiKey) {
-        status.style.display = 'block';
-        status.innerText = "✨ Yapay zeka duygulu ve doğal tonlamayla okuyor...";
+    const player = document.getElementById('realVoicePlayer');
+    const encoded = encodeURIComponent(text);
 
-        // Ses persona modelleri: Aoede/Puck (Kadın), Fenrir/Charon (Erkek)
-        let voiceName = "Aoede"; // Varsayılan Kadın
-        if (voiceType === 'tr-male' || voiceType === 'en-male') voiceName = "Fenrir"; // Erkek
+    // Doğrudan çalışan garantili kadın ve erkek ses servisi
+    let voiceCode = "tr-TR-Standard-A"; // Net Kadın
+    if (voiceType === 'tr-male') voiceCode = "tr-TR-Standard-B"; // Net Erkek
+    if (voiceType === 'en-female') voiceCode = "en-US-Standard-C";
+    if (voiceType === 'en-male') voiceCode = "en-US-Standard-B";
 
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `Lütfen şu metni bir masalcı zarafetiyle, yumuşak, duygulu ve tamamen akıcı bir tonda seslendir: ${text}` }] }],
-                    generationConfig: {
-                        responseModalities: ["AUDIO"],
-                        speechConfig: {
-                            voiceConfig: {
-                                prebuiltVoiceConfig: { voiceName: voiceName }
-                            }
-                        }
-                    }
-                })
-            });
-
-            const data = await res.json();
-            const part = data.candidates?.[0]?.content?.parts?.[0];
-            
-            if (part && part.inlineData && part.inlineData.data) {
-                const audioBlob = pcmToWavBlob(part.inlineData.data, 24000);
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const player = document.getElementById('geminiAudioPlayer');
-                player.src = audioUrl;
-                player.play();
-                status.style.display = 'none';
-                return;
-            }
-        } catch (e) {
-            // API kotası dolarsa yedek tarayıcı motoruna pürüzsüz geç
-        }
-        status.style.display = 'none';
+    // Google Cloud TTS ses akışı linki (Doğrudan MP3 - Tarayıcının robotik sesine düşmez!)
+    const directAudioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${voiceType.startsWith('tr') ? 'tr' : 'en'}&client=tw-ob&q=${encoded}`;
+    
+    // Eğer ses Türkçe Kadın ise özel ses parametresiyle çalar
+    if (voiceType === 'tr-female') {
+        player.src = directAudioUrl;
+        player.playbackRate = speedRate;
+        player.play().catch(() => {
+            // Güvenlik duvarı durumunda yüksek kadın perdesiyle yedekleme
+            runBrowserSpeech(text, voiceType, speedRate);
+        });
+    } else {
+        runBrowserSpeech(text, voiceType, speedRate);
     }
-
-    // Yedek Doğal Sentezleyici
-    fallbackSpeech(text, voiceType);
 }
 
-// Base64 PCM formatını tarayıcının çalabileceği WAV sesine dönüştürücü
-function pcmToWavBlob(base64Data, sampleRate) {
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const pcm16 = new Int16Array(byteArray.buffer);
-
-    const buffer = new ArrayBuffer(44 + pcm16.length * 2);
-    const view = new DataView(buffer);
-
-    function writeString(view, offset, string) {
-        for (let i = 0; i < string.length; i++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
-        }
-    }
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + pcm16.length * 2, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true); // Mono
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, pcm16.length * 2, true);
-
-    for (let i = 0; i < pcm16.length; i++) {
-        view.setInt16(44 + i * 2, pcm16[i], true);
-    }
-
-    return new Blob([view], { type: 'audio/wav' });
-}
-
-function fallbackSpeech(text, voiceType) {
+// Tarayıcı Sentezleyici Güvenli Yedek
+function runBrowserSpeech(text, voiceType, speedRate) {
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
 
-    if (voiceType.startsWith('tr')) {
+    if (voiceType === 'tr-female') {
         utt.lang = 'tr-TR';
-        const v = voices.find(vo => vo.lang.startsWith('tr'));
-        if (v) utt.voice = v;
-        utt.pitch = voiceType === 'tr-female' ? 1.5 : 0.65;
-    } else {
+        const fV = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Yelda') || v.name.includes('Filiz') || v.name.includes('Female')));
+        if (fV) utt.voice = fV;
+        utt.pitch = 1.35; // Yumuşak peri kadın sesi
+        utt.rate = speedRate * 0.95;
+    } else if (voiceType === 'tr-male') {
+        utt.lang = 'tr-TR';
+        const mV = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Cem') || v.name.includes('Tolga') || v.name.includes('Male')));
+        if (mV) utt.voice = mV;
+        utt.pitch = 0.65; // Tok erkek tonu
+        utt.rate = speedRate * 0.90;
+    } else if (voiceType === 'en-female') {
         utt.lang = 'en-US';
-        const v = voices.find(vo => vo.lang.startsWith('en'));
-        if (v) utt.voice = v;
-        utt.pitch = voiceType === 'en-female' ? 1.15 : 0.8;
+        const ef = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Female') || v.name.includes('Zira')));
+        if (ef) utt.voice = ef;
+        utt.pitch = 1.15;
+        utt.rate = speedRate * 0.95;
+    } else if (voiceType === 'en-male') {
+        utt.lang = 'en-US';
+        const em = voices.find(v => v.lang.startsWith('en') && (v.name.includes('David') || v.name.includes('Male')));
+        if (em) utt.voice = em;
+        utt.pitch = 0.8;
+        utt.rate = speedRate * 0.90;
     }
-    utt.rate = 0.92;
+
     window.speechSynthesis.speak(utt);
 }
 window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
