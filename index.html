@@ -15,7 +15,7 @@
             --card-border: #D8CEBE;
             --primary: #3B82F6;
             --jigsaw: #0284C7;
-            --dual: #F97316;
+            --dual: #EA580C;
             --memory: #EA580C;
             --active: #D97706;
             --time-mod: #2563EB;
@@ -76,7 +76,6 @@
         }
         .mood-chip.selected { background: #334155; color: white; border-color: #334155; }
 
-        /* DİL SEÇİMİ */
         .lang-select-container { display: flex; gap: 10px; justify-content: center; margin: 12px 0 16px 0; }
         .lang-btn {
             background: #FFFFFF; border: 2px solid #CBD5E1; padding: 10px 20px; border-radius: 16px;
@@ -168,21 +167,63 @@
         .path-box:hover, .path-box.active { border-color: var(--primary); background: #F8FAFC; }
         .path-divider { font-weight: 700; color: #64748B; font-size: 14px; }
 
-        /* METİN ALTI BÜYÜK EYLEM BUTONLARI */
-        .action-container-center {
-            display: flex; justify-content: center; gap: 14px; margin: 18px 0 10px 0; flex-wrap: wrap;
+        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI & PARÇA SAYFALAMA */
+        .output-wrapper { max-width: 650px; margin: 16px 0; }
+        .output-container {
+            position: relative; background-color: var(--text-bg); padding: 24px 26px;
+            border-radius: 18px; font-size: 21px; line-height: 2.3;
+            letter-spacing: 0.06em; word-spacing: 0.16em; font-weight: 500;
+            border: 2px solid #CBD5E1; min-height: 110px;
+            color: #09090B; text-align: left;
         }
+        .reading-ruler {
+            position: absolute; left: 0; right: 0; height: 56px;
+            background: var(--ruler-bg); border-radius: 8px;
+            pointer-events: none; display: none; z-index: 1;
+            mix-blend-mode: multiply;
+        }
+        .text-content-layer { position: relative; z-index: 2; }
+        .syllable-a { color: #1E3A8A; font-weight: 600; }
+        .syllable-b { color: #0F172A; font-weight: 600; }
+
+        /* BELİRGİN AŞAĞI SAYFALAMA BUTONLARI */
+        .bottom-chunk-navigation {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap;
+        }
+        .btn-page-nav {
+            background: #FFFFFF; border: 2.5px solid #2563EB; color: #1E40AF; padding: 12px 20px;
+            border-radius: 16px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; min-height: 48px;
+        }
+        .btn-page-nav:hover:not(:disabled) { background: #EFF6FF; transform: translateY(-2px); }
+        .btn-page-nav:disabled { opacity: 0.35; cursor: not-allowed; border-color: #CBD5E1; color: #94A3B8; }
+        .page-counter-pill {
+            background: #F1F5F9; border: 1.5px solid #CBD5E1; padding: 8px 16px; border-radius: 20px;
+            font-size: 14px; font-weight: 700; color: #334155;
+        }
+
+        /* SOLA YASLI, ALT ALTA 2 DÖNÜŞTÜRÜCÜ KART */
+        .tool-action-card {
+            background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 18px;
+            padding: 16px 20px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center;
+            gap: 16px; flex-wrap: wrap; transition: all 0.2s;
+        }
+        .tool-action-card:hover { border-color: #94A3B8; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .tool-action-info { max-width: 580px; }
+        .tool-action-title { font-size: 15px; font-weight: 700; color: #1E3A8A; margin-bottom: 4px; }
+        .tool-action-desc { font-size: 13px; color: #475569; line-height: 1.5; }
+
         .btn-action-large {
-            padding: 14px 24px; border-radius: 16px; font-size: 16px; font-weight: 600;
+            padding: 14px 22px; border-radius: 16px; font-size: 15px; font-weight: 700;
             cursor: pointer; font-family: inherit; display: inline-flex; align-items: center;
             gap: 8px; border: 2px solid transparent; transition: all 0.2s ease;
-            min-height: 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            min-height: 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); white-space: nowrap;
         }
         .btn-jigsaw-style { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
         .btn-jigsaw-style:hover, .btn-jigsaw-style.active { background: #0284C7; color: white; border-color: #0284C7; }
 
         .btn-dual-style { background: #FFEDD5; color: #C2410C; border-color: #FED7AA; }
-        .btn-dual-style:hover, .btn-dual-style.active { background: #F97316; color: white; border-color: #F97316; }
+        .btn-dual-style:hover, .btn-dual-style.active { background: #EA580C; color: white; border-color: #EA580C; }
 
         /* JIGSAW & DUAL */
         .jigsaw-box, .dual-box { display: none; border-radius: 20px; padding: 20px; margin-top: 18px; scroll-margin-top: 30px; text-align: left; }
@@ -201,36 +242,6 @@
         .dual-card img { width: 100%; height: 320px; object-fit: cover; }
         .dual-card-caption { padding: 14px; font-weight: 600; font-size: 15px; color: #9A3412; }
 
-        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI & PARÇA SAYFALAMA */
-        .output-wrapper { max-width: 650px; margin: 16px 0; }
-        .chunk-controls-bar {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
-            background: #E2E8F0; padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; color: #334155;
-        }
-        .chunk-nav-btn {
-            background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 4px 10px; border-radius: 8px;
-            cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; color: #1E293B;
-        }
-        .chunk-nav-btn:hover { background: #F1F5F9; border-color: var(--primary); }
-        .chunk-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        .output-container {
-            position: relative; background-color: var(--text-bg); padding: 24px 26px;
-            border-radius: 18px; font-size: 21px; line-height: 2.3;
-            letter-spacing: 0.06em; word-spacing: 0.16em; font-weight: 500;
-            border: 2px solid #CBD5E1; min-height: 110px;
-            color: #09090B; text-align: left;
-        }
-        .reading-ruler {
-            position: absolute; left: 0; right: 0; height: 56px;
-            background: var(--ruler-bg); border-radius: 8px;
-            pointer-events: none; display: none; z-index: 1;
-            mix-blend-mode: multiply;
-        }
-        .text-content-layer { position: relative; z-index: 2; }
-        .syllable-a { color: #1E3A8A; font-weight: 600; }
-        .syllable-b { color: #0F172A; font-weight: 600; }
-
         /* MODÜL 2: ALT SEKME */
         .sub-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #E2D7C5; padding-bottom: 10px; }
         .sub-tab-btn {
@@ -242,6 +253,9 @@
         .sub-content.active { display: block; }
 
         /* ZİHİN EVİ */
+        .palace-header-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+        }
         .palace-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
         .palace-room { background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 16px; padding: 18px; text-align: center; }
         .palace-room-icon { font-size: 48px; margin: 10px 0; }
@@ -273,7 +287,7 @@
             75% { transform: translateX(4px); }
         }
 
-        /* MODÜL 3: ZİHİN AĞACI & BİRLEŞİK SOHBET */
+        /* MODÜL 3: ZİHİN AĞACI & SOHBET */
         .tree-vertical { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; border-left: 3px solid #FCD34D; padding-left: 16px; text-align: left; }
         .tree-node {
             background: #FFFFFF; border: 2px solid #FDE68A; border-left: 5px solid #D97706;
@@ -348,17 +362,17 @@
             font-size: 17px; font-weight: 700; width: 100%; cursor: pointer; font-family: inherit;
         }
 
-        /* YARATICI SONRAKİ ODA KÖPRÜSÜ (SAĞ ALT) */
+        /* YARATICI SONRAKİ ODA KÖPRÜSÜ */
         .next-bridge-container {
             display: flex; justify-content: flex-end; margin-top: 20px;
         }
         .next-bridge-btn {
-            background: #FFFFFF; border: 2px solid #CBD5E1; color: #1E3A8A; padding: 12px 22px;
+            background: #FFFFFF; border: 2.5px solid #2563EB; color: #1E40AF; padding: 12px 24px;
             border-radius: 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
-            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
             transition: all 0.2s;
         }
-        .next-bridge-btn:hover { border-color: #2563EB; transform: translateX(3px); background: #EFF6FF; }
+        .next-bridge-btn:hover { border-color: #1D4ED8; transform: translateX(3px); background: #EFF6FF; }
 
         /* SERTİFİKA */
         .certificate-card {
@@ -415,7 +429,6 @@
             </div>
         </div>
 
-        <!-- Karşılama Pulu -->
         <div class="welcome-pill" id="onboardPill">
             🌟 <b>Kâşif Alanı:</b> Kendi hızında keşfet, acele etmek yok! Dinlenmek istediğinde üst bardaki <b>'☕ Kâşif Molası'</b> hep yanında olacak.
         </div>
@@ -539,7 +552,7 @@
                         <span style="font-size:12px; color:#64748B;" id="lblPath2Desc">Kelimeleri doğrudan deftere ekle</span>
                     </div>
                 </div>
-                <div id="aiProgress" style="display:none; color:var(--primary); font-size:13px; font-weight:600; text-align:center; margin-bottom:8px;">✨ Sayfa kristalize ediliyor...</div>
+                <div id="aiProgress" style="display:none; color:var(--primary); font-size:13px; font-weight:600; text-align:center; margin-bottom:8px;">✨ Sayfa aktarılıyor...</div>
 
                 <textarea id="textInput" oninput="resetAndDisplayChunks()" placeholder="Fotoğraf yüklemediysen sorun değil! Metnini buraya yazabilir veya yapıştırabilirsin...">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong. Working in space takes courage and daily practice.</textarea>
 
@@ -553,31 +566,49 @@
                     </label>
                 </div>
 
-                <!-- DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI & METİN BÖLME KONTROLLERİ -->
+                <!-- DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI -->
                 <div class="output-wrapper">
-                    <!-- Parça / Sayfalama Çubuğu (Metin uzunsa otomatik açılır) -->
-                    <div id="chunkBar" class="chunk-controls-bar" style="display:none;">
-                        <button class="chunk-nav-btn" id="btnPrevChunk" onclick="changeChunk(-1)">◀ Önceki Parça</button>
-                        <span id="chunkIndicator">Parça: 1 / 1</span>
-                        <button class="chunk-nav-btn" id="btnNextChunk" onclick="changeChunk(1)">Sonraki Parça ▶</button>
-                        <button class="chunk-nav-btn" style="margin-left:8px;" onclick="toggleFullTextMode()">Tümünü Göster</button>
-                    </div>
-
                     <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
                         <div id="ruler" class="reading-ruler"></div>
                         <div class="text-content-layer" id="textOutput">Yazılar burada net ve sakin parlayacak...</div>
                     </div>
+
+                    <!-- BELİRGİN İLERİ / GERİ SAYFA BUTONLARI -->
+                    <div id="bottomChunkNav" class="bottom-chunk-navigation" style="display:none;">
+                        <button class="btn-page-nav" id="btnPrevChunk" onclick="changeChunk(-1)">
+                            ◀ <span id="lblPrevChunk">Önceki Sayfa</span>
+                        </button>
+                        <span class="page-counter-pill" id="chunkIndicator">Sayfa 1 / 1</span>
+                        <button class="btn-page-nav" id="btnNextChunk" onclick="changeChunk(1)">
+                            <span id="lblNextChunk">Sonraki Sayfa</span> ▶
+                        </button>
+                    </div>
                 </div>
 
-                <!-- METİN ALTI DÖNÜŞTÜRÜCÜ BUTONLAR -->
-                <div class="action-container-center">
-                    <button id="btnJigsaw" class="btn-action-large btn-jigsaw-style" onclick="runJigsaw()">
-                        🧩 <span id="btnJigsawText">Parçalara Ayır</span>
-                    </button>
-                    <button id="btnDual" class="btn-action-large btn-dual-style" onclick="runDualCoding()">
-                        🎬 <span id="btnDualText">Zihin Sineması</span>
-                    </button>
-                    <span id="moduleLoading" style="display:none; font-weight:600; color:var(--primary); align-self:center;">⏳ Hazırlanıyor...</span>
+                <!-- SOLA YASLI, ALT ALTA 2 DÖNÜŞTÜRÜCÜ KART -->
+                <div style="margin-top:20px;">
+                    <!-- 1. Dönüştürücü: Parçalara Ayır -->
+                    <div class="tool-action-card">
+                        <div class="tool-action-info">
+                            <div class="tool-action-title">🧩 1. Kâşif Adımı: Parçalara Ayır</div>
+                            <div class="tool-action-desc">Bu uzun metni minik yapboz parçaları gibi adım adım inceleyelim mi? Büyük resim anında ortaya çıksın!</div>
+                        </div>
+                        <button id="btnJigsaw" class="btn-action-large btn-jigsaw-style" onclick="runJigsaw()">
+                            🧩 Parçalara Ayır
+                        </button>
+                    </div>
+
+                    <!-- 2. Dönüştürücü: Zihin Sineması -->
+                    <div class="tool-action-card">
+                        <div class="tool-action-info">
+                            <div class="tool-action-title">🎬 2. Kâşif Adımı: Zihin Sineması</div>
+                            <div class="tool-action-desc">Okuduğun hikâyeyi zihninde canlanan renkli bir çizgi filme dönüştür! Gözlerinin önünde iki capcanlı sahne belirecek.</div>
+                        </div>
+                        <button id="btnDual" class="btn-action-large btn-dual-style" onclick="runDualCoding()">
+                            🎬 Zihin Sineması
+                        </button>
+                    </div>
+                    <span id="moduleLoading" style="display:none; font-weight:600; color:var(--primary); margin-top:8px;">⏳ Hazırlanıyor...</span>
                 </div>
 
                 <!-- SAĞ ALT KÖPRÜ: 1 -> 2 -->
@@ -603,7 +634,7 @@
             </div>
         </div>
 
-        <!-- 2. BÖLÜM: ZİHİN EVİ & KELİME PİSTİ (ADIM ADIM ALT SEKME) -->
+        <!-- 2. BÖLÜM: ZİHİN EVİ & KELİME PİSTİ (ADIM ADIM REHBERLİ AKIŞ) -->
         <div id="module2" class="module-content">
             <div class="card">
                 <div class="companion-helper">
@@ -612,22 +643,25 @@
                 </div>
 
                 <div class="sub-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('subPalace', this)">1. Odaları Gez 🏛️</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('subMnemonic', this)">2. Tekerleme Söyle 🪄</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('subTrack', this)">3. Kelimeyi Kilitle ✍️</button>
+                    <button class="sub-tab-btn active" id="tabBtn1" onclick="switchSubTab('subPalace', this)">1. Odaları Gez 🏛️</button>
+                    <button class="sub-tab-btn" id="tabBtn2" onclick="switchSubTab('subMnemonic', this)">2. Tekerleme Söyle 🪄</button>
+                    <button class="sub-tab-btn" id="tabBtn3" onclick="switchSubTab('subTrack', this)">3. Kelimeyi Kilitle ✍️</button>
                 </div>
 
                 <!-- 1. Alt Adım: Odalar -->
                 <div id="subPalace" class="sub-content active">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="margin:0; color:#1E3A8A;">🏛️ Zihin Evi Odaları</h3>
-                        <button id="btnPalace" class="btn-action-large btn-jigsaw-style" onclick="buildMemoryPalace()">🏰 Odalara Dağıt</button>
+                    <!-- ODALARA DAĞIT BUTONU BAŞLIĞIN HEMEN YANINDA VE BELİRGİN -->
+                    <div class="palace-header-row">
+                        <h3 style="margin:0; color:#1E3A8A; font-size:18px;">🏛️ Zihin Evi Odaları</h3>
+                        <button id="btnPalace" class="btn-action-large btn-jigsaw-style" onclick="buildMemoryPalace()">
+                            🏰 Odalara Dağıt
+                        </button>
                     </div>
-                    <span id="palaceLoading" style="display:none; font-weight:600; color:var(--memory);">⏳ Döşeniyor...</span>
+                    <span id="palaceLoading" style="display:none; font-weight:600; color:var(--memory);">⏳ Odalar döşeniyor...</span>
 
                     <div class="palace-container">
                         <div class="palace-room">
-                            <div class="room-header">🛋️ 1. Durak: Giriş / Oturma Odası</div>
+                            <div class="room-header">🛋️ 1. Durak: Oturma Odası</div>
                             <div class="palace-room-icon" id="room1Icon">🛋️</div>
                             <div class="palace-cue" id="room1Cue">Metindeki ilk ana fikir eşyası bekleniyor...</div>
                         </div>
@@ -642,6 +676,13 @@
                             <div class="palace-cue" id="room3Cue">Sonuç eşyası bekleniyor...</div>
                         </div>
                     </div>
+
+                    <!-- Sıradaki Adıma Geçiren Köprü -->
+                    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+                        <button class="btn-action-large btn-dual-style" onclick="switchSubTab('subMnemonic', document.getElementById('tabBtn2'))">
+                            Sonraki Adıma Geç: Tekerleme Söyle 🪄 ➔
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 2. Alt Adım: Tekerleme -->
@@ -655,6 +696,13 @@
                         <button class="btn-action-large btn-jigsaw-style" onclick="generateCustomMnemonic()">🪄 Tekerleme Üret</button>
                     </div>
                     <div id="mnemonicOutput" class="mnemonic-result" style="display:none;"></div>
+
+                    <!-- Sıradaki Adıma Geçiren Köprü -->
+                    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+                        <button class="btn-action-large btn-dual-style" onclick="switchSubTab('subTrack', document.getElementById('tabBtn3'))">
+                            Sonraki Adıma Geç: Kelimeyi Kilitle ✍️ ➔
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 3. Alt Adım: Kelime Pisti -->
@@ -672,18 +720,18 @@
                         <button class="theme-btn" onclick="undoLastLetter()">⌫ Son Harfi Geri Al</button>
                         <div id="trackFeedback" style="margin-top:12px; font-weight:700;"></div>
                     </div>
-                </div>
 
-                <!-- SAĞ ALT KÖPRÜ: 2 -> 3 -->
-                <div class="next-bridge-container">
-                    <button class="next-bridge-btn" onclick="goToModule(3)">
-                        🌿 <span id="bridge2">Zihin Ağacına İlerle</span> ➔
-                    </button>
+                    <!-- Modül 3'e Geçiş Köprüsü -->
+                    <div class="next-bridge-container">
+                        <button class="next-bridge-btn" onclick="goToModule(3)">
+                            🌿 <span id="bridge2">Tüm Adımlar Tamam: Zihin Ağacına İlerle</span> ➔
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. BÖLÜM: ZİHİN AĞACI & BİRLEŞİK SOHBET -->
+        <!-- 3. BÖLÜM: ZİHİN AĞACI & SOHBET -->
         <div id="module3" class="module-content">
             <div class="card">
                 <div class="companion-helper">
@@ -691,7 +739,7 @@
                     <span><b class="comp-name">Pupa</b> diyor ki: "Düşüncelerini bir ağaç gibi dallandır, her şey berraklaşsın!"</span>
                 </div>
                 
-                <!-- Başlık kaldırıldı, yerine doğrudan sola yaslı büyük belirgin buton konuldu -->
+                <!-- Başlık kaldırıldı, yerine sola yaslı büyük belirgin buton konuldu -->
                 <div style="margin-bottom:10px;">
                     <button id="btnMindmap" class="btn-action-large btn-jigsaw-style" onclick="buildMindMap()">
                         🌱 <span id="btnMindmapText">Metinden Zihin Ağacı Çıkar</span>
@@ -710,7 +758,7 @@
                 <h2 style="margin-top:0; color:#1E3A8A;">💬 Yol Arkadaşın <span class="comp-name">Pupa</span> ile Zihin Kancası</h2>
                 <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblChatDesc">Metinde seni en çok meraklandıran şeyi yol arkadaşına anlat:</p>
                 
-                <!-- Genişletilmiş Cümle İskeleleri -->
+                <!-- Genişletilmiş Zengin Cümle İskeleleri -->
                 <div style="margin-bottom:8px;">
                     <button class="sentence-starter-btn" onclick="addChatStarter('Bence ')">Bence...</button>
                     <button class="sentence-starter-btn" onclick="addChatStarter('Çünkü ')">Çünkü...</button>
@@ -734,7 +782,7 @@
                         
                         <!-- Belirgin Mikrofon Butonu -->
                         <button class="voice-action-btn" id="voiceBtn" onclick="toggleSpeechToText()">
-                            🎙️ <span>Sesinle Konuş</span>
+                            🎙️ <span>Sesinle Konuş (Dilersen Sesle Yaz)</span>
                         </button>
                         
                         <button class="btn-action-large btn-dual-style" onclick="sendChatMessage()" style="min-height:48px;">Gönder ✨</button>
@@ -759,7 +807,6 @@
                 </div>
                 <h2 style="margin-top:0; color:#1E3A8A;">🌳 Odak Ormanı</h2>
 
-                <!-- Bitki Kartları -->
                 <div class="plant-select-grid">
                     <button class="plant-card-btn selected" data-plant="tree" onclick="selectPlant('tree', this)">🌲 Ulu Çam</button>
                     <button class="plant-card-btn" data-plant="flower" onclick="selectPlant('flower', this)">🌻 Ayçiçeği</button>
@@ -767,7 +814,6 @@
                     <button class="plant-card-btn" data-plant="sprout" onclick="selectPlant('sprout', this)">🌸 Bahar Çiçeği</button>
                 </div>
 
-                <!-- Süre Çipleri -->
                 <div class="time-chips-container">
                     <button class="time-chip-btn" onclick="selectForestTime(5, this)">5 dk</button>
                     <button class="time-chip-btn" onclick="selectForestTime(10, this)">10 dk</button>
@@ -775,7 +821,6 @@
                     <button class="time-chip-btn" onclick="selectForestTime(25, this)">25 dk</button>
                 </div>
 
-                <!-- Time Timer & Sakin Mod -->
                 <div class="forest-card">
                     <div style="display:flex; justify-content:flex-end;">
                         <label style="font-size:13px; font-weight:600; cursor:pointer; color:#047857;">
@@ -961,10 +1006,9 @@ let currentTrackWord = "astronot";
 let typedTrackLetters = [];
 let speechRecognizer = null;
 
-// METİN BÖLME (CHUNKING) DURUMU
+// METİN BÖLME
 let textChunks = [];
 let currentChunkIndex = 0;
-let isFullTextMode = false;
 
 function playSuccessTone() {
     try {
@@ -984,7 +1028,6 @@ function playSuccessTone() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Avatar seçimi
     document.querySelectorAll('.avatar-card').forEach(card => {
         card.addEventListener('click', function() {
             document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
@@ -995,7 +1038,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Sekmeler
     document.querySelectorAll('.module-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
@@ -1051,14 +1093,14 @@ function selectLang(lang, el) {
         document.getElementById('textInput').placeholder = "No photo? No problem! Type or paste your story here...";
         document.getElementById('lblRuler').innerText = "Laser Focus Window";
         document.getElementById('lblSyllable').innerText = "Magic Syllables";
-        document.getElementById('btnJigsawText').innerText = "Break into Steps";
-        document.getElementById('btnDualText').innerText = "Visualize in Mind";
         document.getElementById('btnMindmapText').innerText = "Grow Mind Tree from Text";
         document.getElementById('bridge1').innerText = "Enter Memory House";
-        document.getElementById('bridge2').innerText = "Grow Mind Tree";
+        document.getElementById('bridge2').innerText = "All Steps Done: Grow Mind Tree";
         document.getElementById('bridge3').innerText = "Plant Seeds in Focus Forest";
         document.getElementById('bridge4').innerText = "Fly to Trophy Room";
         document.getElementById('headerExplorerPrefix').innerText = "Explorer";
+        document.getElementById('lblPrevChunk').innerText = "Previous Page";
+        document.getElementById('lblNextChunk').innerText = "Next Page";
     } else {
         location.reload();
     }
@@ -1118,12 +1160,11 @@ function cleanMarkdown(text) {
     return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
 }
 
-// METNİ ANLAM BÜTÜNLÜĞÜYLE PARÇALAMA (CHUNKING) MOTORU
+// METNİ ANLAM BÜTÜNLÜĞÜYLE PARÇALAMA
 function resetAndDisplayChunks() {
     const textInput = document.getElementById('textInput');
     const raw = cleanMarkdown(textInput.value.trim());
     currentChunkIndex = 0;
-    isFullTextMode = false;
 
     if (!raw) {
         textChunks = [];
@@ -1131,14 +1172,13 @@ function resetAndDisplayChunks() {
         return;
     }
 
-    // Metin 350 karakterden uzunsa veya 3'ten fazla cümle içeriyorsa lokmalara böl
-    if (raw.length > 320) {
+    if (raw.length > 280) {
         const sentences = raw.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [raw];
         textChunks = [];
         let currentChunk = "";
 
         sentences.forEach(s => {
-            if ((currentChunk + s).length > 280 && currentChunk.length > 0) {
+            if ((currentChunk + s).length > 240 && currentChunk.length > 0) {
                 textChunks.push(currentChunk.trim());
                 currentChunk = s;
             } else {
@@ -1155,29 +1195,28 @@ function resetAndDisplayChunks() {
 
 function updateTextDisplay() {
     const textOutput = document.getElementById('textOutput');
-    const chunkBar = document.getElementById('chunkBar');
+    const bottomNav = document.getElementById('bottomChunkNav');
     const syllableToggle = document.getElementById('syllableToggle');
     if (!textOutput) return;
 
     if (textChunks.length === 0) {
         textOutput.innerText = currentLang === 'en' ? "Your words will shine softly and clearly here..." : "Yazılar burada net ve sakin parlayacak...";
-        if (chunkBar) chunkBar.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
         return;
     }
 
-    // Parça çubuğunu göster/gizle
     if (textChunks.length > 1) {
-        chunkBar.style.display = 'flex';
-        document.getElementById('chunkIndicator').innerText = isFullTextMode 
-            ? "Tam Metin Modu" 
-            : `Parça: ${currentChunkIndex + 1} / ${textChunks.length}`;
-        document.getElementById('btnPrevChunk').disabled = isFullTextMode || currentChunkIndex === 0;
-        document.getElementById('btnNextChunk').disabled = isFullTextMode || currentChunkIndex === textChunks.length - 1;
+        bottomNav.style.display = 'flex';
+        document.getElementById('chunkIndicator').innerText = currentLang === 'en' 
+            ? `Page ${currentChunkIndex + 1} of ${textChunks.length}` 
+            : `Sayfa ${currentChunkIndex + 1} / ${textChunks.length}`;
+        document.getElementById('btnPrevChunk').disabled = currentChunkIndex === 0;
+        document.getElementById('btnNextChunk').disabled = currentChunkIndex === textChunks.length - 1;
     } else {
-        chunkBar.style.display = 'none';
+        bottomNav.style.display = 'none';
     }
 
-    const displayText = isFullTextMode ? textChunks.join(" ") : textChunks[currentChunkIndex];
+    const displayText = textChunks[currentChunkIndex];
 
     if (!syllableToggle || !syllableToggle.checked) {
         textOutput.innerText = displayText;
@@ -1201,15 +1240,9 @@ function changeChunk(direction) {
     const newIdx = currentChunkIndex + direction;
     if (newIdx >= 0 && newIdx < textChunks.length) {
         currentChunkIndex = newIdx;
-        isFullTextMode = false;
         updateTextDisplay();
         playSuccessTone();
     }
-}
-
-function toggleFullTextMode() {
-    isFullTextMode = !isFullTextMode;
-    updateTextDisplay();
 }
 
 function toggleRuler() {
@@ -1357,7 +1390,7 @@ async function runDualCoding() {
 function switchSubTab(subId, el) {
     document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+    if (el) el.classList.add('active');
     document.getElementById(subId).classList.add('active');
 }
 
@@ -1539,7 +1572,7 @@ function toggleSpeechToText() {
             const transcript = event.results[0][0].transcript;
             document.getElementById('chatInput').value += " " + transcript;
         };
-        speechRecognizer.onend = () => { document.getElementById('voiceBtn').innerHTML = "🎙️ <span>Sesinle Konuş</span>"; };
+        speechRecognizer.onend = () => { document.getElementById('voiceBtn').innerHTML = "🎙️ <span>Sesinle Konuş (Dilersen Sesle Yaz)</span>"; };
     }
     speechRecognizer.start();
 }
