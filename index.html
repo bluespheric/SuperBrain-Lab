@@ -68,7 +68,7 @@
             box-sizing: border-box;
             outline: none;
             margin-top: 8px;
-            background-color: var(--text-bg); /* Bej Arkaplan */
+            background-color: var(--text-bg);
             color: #2D3748;
             line-height: 1.6;
         }
@@ -98,10 +98,10 @@
 
         .output-container {
             position: relative;
-            background-color: var(--text-bg); /* Bej Arkaplan */
+            background-color: var(--text-bg);
             padding: 30px;
             border-radius: 20px;
-            font-size: 26px; /* Okumayı kolaylaştırmak için biraz daha büyük */
+            font-size: 26px; 
             line-height: 2.4;
             border: 3px dashed #CBD5E0;
             min-height: 120px;
@@ -167,7 +167,7 @@
         <div class="upload-zone">
             <b>📸 Kitap Sayfasını Yükle (Yapay Zeka Okuyucu)</b>
             <input type="file" id="imageInput" accept="image/*" style="display:block; margin:12px auto;">
-            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--bionic-color);">🪄 Görsel yüksek çözünürlükle taranıyor, lütfen bekle...</div>
+            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--bionic-color);">🪄 Görsel taranıyor, harfler toplanıyor...</div>
         </div>
 
         <!-- Metin Kutusu (Bej Zemin) -->
@@ -254,7 +254,7 @@ window.onload = () => {
     applyBionic();
 };
 
-// GÜÇLENDİRİLMİŞ OCR (Yüksek Çözünürlük ve Hata Yakalama)
+// GÜÇLENDİRİLMİŞ OCR (Gemini 1.5 Flash Latest - Hata Çözümü)
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -267,7 +267,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
 
     const prog = document.getElementById('ocrProgress');
     prog.style.display = 'block';
-    prog.innerText = "🪄 Görsel yüksek çözünürlükle taranıyor, lütfen bekle...";
+    prog.innerText = "🪄 Görsel okunuyor, harfler birleştiriliyor...";
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -276,7 +276,6 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
         img.src = event.target.result;
         img.onload = async () => {
             const canvas = document.createElement('canvas');
-            // Çözünürlüğü artırdık (Bulanıklaşmayı önler)
             const MAX_WIDTH = 1600; 
             let width = img.width;
             let height = img.height;
@@ -290,11 +289,11 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Kaliteyi artırdık (0.85'ten 0.95'e)
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
 
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                // MODEL İSMİ GÜNCELLENDİ: gemini-1.5-flash-latest
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -315,13 +314,12 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                     document.getElementById('textInput').value = data.candidates[0].content.parts[0].text.trim();
                     applyBionic();
                 } else {
-                    alert("Görselde okunabilir net bir metin bulunamadı. Lütfen daha iyi ışıkta çekilmiş bir fotoğraf yükle.");
+                    alert("Görselde okunabilir net bir metin bulunamadı.");
                 }
             } catch (err) {
                 alert("İnternet veya bağlantı hatası oluştu. Lütfen tekrar dene.");
             } finally {
                 prog.style.display = 'none';
-                // Görsel inputunu temizle (aynı fotoğrafı tekrar seçebilmek için)
                 document.getElementById('imageInput').value = ""; 
             }
         };
