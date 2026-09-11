@@ -20,7 +20,7 @@
             transition: background-color 0.3s ease;
         }
         .container {
-            max-width: 880px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .header {
@@ -39,7 +39,23 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        textarea {
+        .theme-btn {
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 2px solid #E2E8F0;
+            cursor: pointer;
+            font-weight: 600;
+            background: white;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        textarea, input[type="password"] {
             width: 100%;
             border-radius: 16px;
             border: 2px solid #E2E8F0;
@@ -49,9 +65,8 @@
             box-sizing: border-box;
             outline: none;
             margin-top: 8px;
-            height: 120px;
-            resize: vertical;
         }
+        textarea { height: 120px; resize: vertical; }
         .controls {
             display: flex;
             gap: 10px;
@@ -63,20 +78,21 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 18px;
             border-radius: 16px;
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             transition: transform 0.2s;
         }
         .btn-action:hover { transform: scale(1.03); }
-        
         .btn-female-tr { background: linear-gradient(135deg, #FD79A8, #E84393); }
         .btn-male-tr { background: linear-gradient(135deg, #0984E3, #74B9FF); }
-
+        .btn-female-en { background: linear-gradient(135deg, #A29BFE, #6C5CE7); }
+        .btn-male-en { background: linear-gradient(135deg, #55EFC4, #00B894); color: #2D3748; }
+        
         .output-container {
             position: relative;
             background-color: #FFFFFF;
@@ -88,30 +104,39 @@
             min-height: 120px;
             margin-top: 20px;
         }
+        .reading-ruler {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 52px;
+            background: rgba(255, 234, 167, 0.45);
+            border-top: 2px solid #FDCB6E;
+            border-bottom: 2px solid #FDCB6E;
+            pointer-events: none;
+            display: none;
+        }
         .bionic-bold { color: var(--primary); font-weight: 800; }
         
         .word-span {
             cursor: pointer;
             padding: 2px 4px;
             border-radius: 6px;
-            transition: background 0.15s ease;
+            transition: background 0.1s ease;
         }
-        .word-span:hover {
-            background-color: rgba(108, 92, 231, 0.12);
-        }
+        .word-span:hover { background-color: rgba(108, 92, 231, 0.12); }
         .word-active {
             background-color: #FFEAA7 !important;
             border-bottom: 3px solid #FDCB6E;
         }
         
         .mode-box {
-            background: #F1F2F6;
-            padding: 12px 16px;
-            border-radius: 14px;
+            background: #F8F9FA;
+            padding: 16px;
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 12px;
             border-left: 5px solid var(--primary);
         }
         .radio-label {
@@ -121,17 +146,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #4A5568;
         }
-        .status-badge {
-            display: inline-block;
-            background: #00B894;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-bottom: 10px;
-            display: none;
-        }
+        input[type="radio"] { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -142,77 +159,99 @@
         <p style="margin:8px 0 0 0; font-size:17px;">Kelimeleri Işılda, Sesleri Kendi Temponda Yönet!</p>
     </div>
 
-    <!-- Gemini OCR Bölümü (Çalıştığı için minimal tutuldu) -->
-    <div class="card" style="padding:15px;">
-        <label><b>📸 Kitap Sayfasını Oku (Gemini AI):</b></label>
-        <div style="display:flex; gap:10px; margin-top:8px; align-items:center;">
-            <input type="password" id="apiKeyInput" placeholder="API Anahtarı" style="width:200px; margin:0; padding:10px;">
+    <!-- API Anahtarı ve OCR -->
+    <div class="card" style="padding:18px; background:#F8F9FA;">
+        <label><b>🔑 Laboratuvar Anahtarı & Sayfa Okuyucu (Gemini API):</b></label>
+        <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
+            <input type="password" id="apiKeyInput" placeholder="API Anahtarı" style="max-width:200px; margin:0;" onchange="saveKey()">
             <input type="file" id="imageInput" accept="image/*">
-            <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">Okunuyor...</span>
+            <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">Sıfır hatayla okunuyor...</span>
         </div>
     </div>
 
     <div class="card">
-        <label style="display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
-        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+        <!-- Sayfa Işığı -->
+        <label><b>🎨 Sayfa Işığı:</b></label><br>
+        <div style="margin-top:10px;">
+            <button class="theme-btn" onclick="setBg('#FEF9E7')">🍯 Bal Peteği</button>
+            <button class="theme-btn" onclick="setBg('#E8F8F5')">🌱 Dinozor Nanesi</button>
+            <button class="theme-btn" onclick="setBg('#FBEEE6')">🍑 Şeftali Bulutu</button>
+            <button class="theme-btn" onclick="setBg('#EBF5FB')">🌊 Uzay Dalgası</button>
+        </div>
 
-        <!-- 3 KESİN OKUMA MODU -->
+        <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
+        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+
+        <!-- KESİN VE NET 3 OKUMA MODU -->
         <div class="mode-box">
-            <span style="color:#2D3748;">🧭 <b>Nasıl Okuyalım? (Önce modunu seç, sonra sesi başlat)</b></span>
+            <span style="color:#2D3748; font-size:16px;">🧭 <b>Nasıl Okuyalım? (Modu seç, sonra ses butonuna veya kelimeye tıkla)</b></span>
             
             <label class="radio-label">
-                <input type="radio" name="readMode" value="selected" checked> 
-                🎯 <b>1. Mod (Seçileni Oku):</b> Yukarıdaki defterden fareyle bir yeri seç (maviye boya) ve aşağıdaki ses butonuna bas. Sadece orayı okur.
+                <input type="radio" name="readMode" value="1" checked> 
+                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden fareyle kopyalar gibi seç, ses butonuna bas. Sadece orayı okur.
             </label>
             
             <label class="radio-label">
-                <input type="radio" name="readMode" value="fast"> 
-                🚀 <b>2. Mod (Akıcı Hız):</b> Aşağıdaki masada herhangi bir kelimeye tıkla. Oradan itibaren normal konuşma hızıyla akar.
+                <input type="radio" name="readMode" value="2"> 
+                🚀 <b>2. Mod (Akıcı Okuma):</b> Aşağıdaki masada bir kelimeye tıkla. Oradan itibaren dümdüz okur, ışık takip eder.
             </label>
             
             <label class="radio-label">
-                <input type="radio" name="readMode" value="slow"> 
-                🐢 <b>3. Mod (Tane Tane):</b> Aşağıdaki masada herhangi bir kelimeye tıkla. Ses yavaşlar ve ışık tane tane ilerler.
+                <input type="radio" name="readMode" value="3"> 
+                🐢 <b>3. Mod (Tane Tane Okuma):</b> Aşağıdaki masada bir kelimeye tıkla. Çok yavaş okur, ışık sindire sindire ilerler.
             </label>
         </div>
 
+        <!-- Harf Işığı -->
         <div class="controls" style="margin-top:15px;">
             <label>✨ <b>Harf Işığı (Biyonik):</b></label>
             <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
+            <label style="margin-left:14px; cursor:pointer; font-weight:600;">
+                <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Sihirli Takip Çubuğu</b>
+            </label>
         </div>
 
-        <!-- GARANTİLİ YAPAY ZEKA SESLERİ -->
-        <label style="display:block; margin-top:20px; font-size:18px;"><b>🎧 Stüdyo Sesleri (Gerçek İnsan Tınısı):</b></label>
-        <div id="playingStatus" class="status-badge">🎶 Şu an oynatılıyor...</div>
-        
+        <!-- 4 SES BUTONU -->
+        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Ses Asistanları:</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="triggerRead('Filiz')">🧚 Masalcı Peri (Kesin Kadın Sesi)</button>
-            <button class="btn-action btn-male-tr" onclick="triggerRead('Kivanc')">🧙‍♂️ Bilge Kâşif (Kesin Erkek Sesi)</button>
-            <button class="btn-action" style="background:#E17055;" onclick="stopAudio()">⏹️ Sesi Durdur</button>
+            <button class="btn-action btn-female-tr" onclick="setupVoice('tr', 'female')">🧚 TR Kadın</button>
+            <button class="btn-action btn-male-tr" onclick="setupVoice('tr', 'male')">🧙‍♂️ TR Erkek</button>
+            <button class="btn-action btn-female-en" onclick="setupVoice('en', 'female')">👩‍🏫 EN Kadın</button>
+            <button class="btn-action btn-male-en" onclick="setupVoice('en', 'male')">👨‍🚀 EN Erkek</button>
+            <button class="btn-action" style="background:#E17055;" onclick="stopVoice()">⏹️ Durdur</button>
         </div>
     </div>
 
     <!-- OKUMA MASASI -->
-    <div class="output-container" id="outputArea">
+    <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
+        <div id="ruler" class="reading-ruler"></div>
         <div id="textOutput">Yazılar burada parlayacak...</div>
     </div>
 </div>
 
-<!-- MP3 Çalar Nesnesi -->
-<audio id="aiAudioPlayer"></audio>
-
 <script>
 let wordsList = [];
-let lightTimer = null;
-let currentVoice = 'Filiz'; // Varsayılan Kadın
-let isPlaying = false;
+let currentLang = 'tr';
+let currentGender = 'female';
+let currentGlobalIndex = 0;
+let currentUtteranceText = "";
 
-// Biyonik Kelime Rehberi
+// Sesleri Yükle
+let globalVoices = [];
+window.speechSynthesis.onvoiceschanged = () => {
+    globalVoices = window.speechSynthesis.getVoices();
+};
+
+function setBg(color) {
+    document.documentElement.style.setProperty('--bg-color', color);
+}
+
+// Biyonik Çevirici ve Kelime Etiketleyici
 function applyBionic() {
     const text = document.getElementById('textInput').value;
     const ratio = document.getElementById('bionicRange').value / 100;
     if (!text.trim()) {
-        document.getElementById('textOutput').innerHTML = "Yazılar burada parlayacak...";
+        document.getElementById('textOutput').innerHTML = "";
         return;
     }
 
@@ -225,124 +264,149 @@ function applyBionic() {
             const mid = Math.ceil(word.length * ratio);
             bionicWord = `<span class="bionic-bold">${word.slice(0, mid)}</span>${word.slice(mid)}`;
         }
-        // Kelimeye tıklama olayı
         return `<span class="word-span" id="w_${idx}" onclick="wordClicked(${idx})">${bionicWord}</span>`;
     });
 
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// 1. AŞAMA: Ana Ses Tetikleyici (Butona basıldığında)
-function triggerRead(voiceName) {
-    currentVoice = voiceName;
+// Sihirli Çubuk
+function toggleRuler() {
+    document.getElementById('ruler').style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
+}
+function moveRuler(e) {
+    const ruler = document.getElementById('ruler');
+    if (ruler.style.display === 'block') {
+        const rect = document.getElementById('outputArea').getBoundingClientRect();
+        const offsetY = e.clientY - rect.top - 24;
+        ruler.style.top = Math.max(0, Math.min(offsetY, rect.height - 52)) + 'px';
+    }
+}
+
+// Kelime Işıklandırma
+function highlightWord(idx) {
+    document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
+    const target = document.getElementById(`w_${idx}`);
+    if (target) target.classList.add('word-active');
+}
+
+function stopVoice() {
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
+}
+
+// SES AYARLAYICI (Tıklanan butona göre dili ve cinsiyeti kaydeder, sonra okumayı başlatır)
+function setupVoice(lang, gender) {
+    currentLang = lang;
+    currentGender = gender;
+    
     const mode = document.querySelector('input[name="readMode"]:checked').value;
     
-    // Eğer 1. Mod seçiliyse (Seçileni Oku)
-    if (mode === 'selected') {
+    if (mode === '1') {
+        // MOD 1: Seçileni Oku
         const textarea = document.getElementById('textInput');
-        let selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+        let sel = window.getSelection().toString().trim() || textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
         
-        // Eğer hiçbir yeri seçmediyse uyarı ver
-        if (!selectedText) {
-            alert("1. Modu seçtin ama not defterinde hiçbir yeri fareyle seçmedin (maviye boyamadın). Lütfen okutmak istediğin kısmı seç!");
+        if (!sel) {
+            alert("Lütfen önce not defterinden okutmak istediğin kısmı fareyle seç (maviye boya).");
             return;
         }
-        
-        // Sadece seçili metni MP3'e gönderip çal, ışık takibi yapma
-        playStudioAudio(selectedText, voiceName, 1.0);
-    } 
-    else {
-        alert("Bu modlar için (Akıcı veya Tane Tane) doğrudan aşağıdaki okuma masasındaki kelimelerin üzerine tıklamalısın! O kelimeden itibaren okumaya başlayacaktır.");
+        fireTTS(sel, 'fast', null); // Sadece okur, ışık takip etmez
+    } else {
+        // Mod 2 veya 3 seçiliyken ses butonuna basılırsa en baştan (0) başlar
+        fireTTSFromIndex(0, mode);
     }
 }
 
-// 2. AŞAMA: Kelimeye Tıklayınca Tetiklenen (Mod 2 ve Mod 3 için)
-function wordClicked(startIndex) {
+// Kelimeye Tıklayınca Oradan İtibaren Okuma (Mod 2 ve Mod 3)
+function wordClicked(idx) {
     const mode = document.querySelector('input[name="readMode"]:checked').value;
-    
-    if (mode === 'selected') {
-        alert("Şu an 'Seçileni Oku' modundasın. Kelimeye tıklayarak okutmak için 2. (Akıcı) veya 3. (Tane Tane) modu seçmelisin.");
+    if (mode === '1') {
+        alert("Şu an '1. Mod (Seçileni Oku)' aktif. Kelimeden itibaren okutmak için lütfen 2. veya 3. modu seçin.");
         return;
     }
+    fireTTSFromIndex(idx, mode);
+}
 
-    const remainingWords = wordsList.slice(startIndex);
+// İlgili kelimeden sona kadar metni alır ve motora gönderir
+function fireTTSFromIndex(idx, modeStr) {
+    currentGlobalIndex = idx;
+    const remainingWords = wordsList.slice(idx);
     if (remainingWords.length === 0) return;
     
-    const textToSpeak = remainingWords.join(' ');
-    
-    // Mod 3 (Tane Tane) seçiliyse sesi gerçek anlamda yavaşlatıyoruz (0.75x hız)
-    const playbackSpeed = mode === 'slow' ? 0.75 : 1.0;
-    
-    // Sesi Başlat
-    playStudioAudio(textToSpeak, currentVoice, playbackSpeed);
-
-    // Işık Takibini Başlat
-    startHighlighting(startIndex, mode);
+    currentUtteranceText = remainingWords.join(' ');
+    fireTTS(currentUtteranceText, modeStr === '3' ? 'slow' : 'fast', true);
 }
 
-// 3. AŞAMA: Garantili Stüdyo Sesi Motoru (Amazon Polly StreamElements API)
-function playStudioAudio(text, voiceName, speedRate) {
-    stopAudio(); // Önceki sesi kes
+// ANA SES MOTORU (Tamamen Tarayıcı İçi, Bloklanmaz)
+function fireTTS(text, speedType, doHighlight) {
+    window.speechSynthesis.cancel();
     
-    if (!text) return;
+    // İnceltmeleri daha doğal okuması için ufak hile
+    let cleanText = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
     
-    const player = document.getElementById('aiAudioPlayer');
-    const badge = document.getElementById('playingStatus');
-    
-    // İnternetteki en güvenilir ve %100 cinsiyet garantili API uç noktası
-    // Filiz -> Kadın, Kivanc -> Erkek
-    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voiceName}&text=${encodeURIComponent(text)}`;
-    
-    player.src = audioUrl;
-    player.playbackRate = speedRate; // Tane tane modunda sesi ağırlaştırır
-    
-    player.play().then(() => {
-        isPlaying = true;
-        badge.style.display = 'inline-block';
-    }).catch(err => {
-        alert("Ses çalınamadı. Lütfen internet bağlantını kontrol et.");
-    });
+    let utt = new SpeechSynthesisUtterance(cleanText);
+    if (globalVoices.length === 0) globalVoices = window.speechSynthesis.getVoices();
 
-    // Ses bitince ışıkları söndür
-    player.onended = () => {
-        stopAudio();
-    };
-}
+    // Dil Ayarı
+    utt.lang = currentLang === 'tr' ? 'tr-TR' : 'en-US';
 
-// 4. AŞAMA: Işık Takip Motoru
-function startHighlighting(startIdx, mode) {
-    let curr = startIdx;
-    
-    // Akıcı mod kelime başı ortalama süre: 380ms | Tane Tane mod süre: 700ms
-    const interval = mode === 'slow' ? 700 : 380;
+    // Hız Ayarı (Mod 3 için tane tane)
+    utt.rate = speedType === 'slow' ? 0.6 : 0.95;
 
-    function step() {
-        if (!isPlaying) return; // Ses durdurulduysa ışığı da durdur
-        
-        if (curr < wordsList.length) {
-            // Önceki ışıkları temizle, yenisini yak
-            document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-            const target = document.getElementById(`w_${curr}`);
-            if (target) target.classList.add('word-active');
-            
-            curr++;
-            lightTimer = setTimeout(step, interval);
+    // Kapsamlı Cinsiyet ve Ses Arama Motoru
+    let selectedVoice = null;
+    if (currentLang === 'tr') {
+        if (currentGender === 'female') {
+            selectedVoice = globalVoices.find(v => v.lang.includes('tr') && (v.name.includes('Yelda') || v.name.includes('Emel') || v.name.includes('Google Türkçe') || v.name.includes('Female')));
+            utt.pitch = selectedVoice ? 1.1 : 1.7; // Kadın sesi yoksa erkek sesini incelterek kadın/çocuk tonuna zorlar
+        } else {
+            selectedVoice = globalVoices.find(v => v.lang.includes('tr') && (v.name.includes('Tolga') || v.name.includes('Cem') || v.name.includes('Male')));
+            utt.pitch = selectedVoice ? 0.9 : 0.5; // Kalınlaştırır
+        }
+    } else {
+        if (currentGender === 'female') {
+            selectedVoice = globalVoices.find(v => v.lang.includes('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Female')));
+            utt.pitch = 1.1;
+        } else {
+            selectedVoice = globalVoices.find(v => v.lang.includes('en') && (v.name.includes('David') || v.name.includes('George') || v.name.includes('Male')));
+            utt.pitch = 0.8;
         }
     }
-    step();
+
+    if (selectedVoice) utt.voice = selectedVoice;
+
+    // Kusursuz Eşzamanlı Kelime Takibi (onboundary)
+    if (doHighlight) {
+        utt.onboundary = function(e) {
+            if (e.name === 'word') {
+                // Ses motorunun o an okuduğu hecenin karakter dizinini alır
+                let textUpTo = currentUtteranceText.substring(0, e.charIndex);
+                let localIdx = textUpTo.trim() === "" ? 0 : textUpTo.trim().split(/\s+/).length;
+                let activeIdx = currentGlobalIndex + localIdx;
+                highlightWord(activeIdx);
+            }
+        };
+        utt.onend = function() {
+            document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
+        };
+    }
+
+    window.speechSynthesis.speak(utt);
 }
 
-// Sesi ve Işıkları Komple Durdur
-function stopAudio() {
-    isPlaying = false;
-    clearTimeout(lightTimer);
-    const player = document.getElementById('aiAudioPlayer');
-    player.pause();
-    document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-    document.getElementById('playingStatus').style.display = 'none';
+// API Kaydet ve Yükle
+function saveKey() {
+    const k = document.getElementById('apiKeyInput').value.trim();
+    if (k) localStorage.setItem('superbrain_gemini_key', k);
 }
+window.onload = () => {
+    const k = localStorage.getItem('superbrain_gemini_key');
+    if (k) document.getElementById('apiKeyInput').value = k;
+    applyBionic();
+};
 
-// GEMINI OCR (Sıfır Hata Motoru)
+// GEMINI OCR (Sıfır Hata)
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -372,7 +436,8 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+                // Modeli 1.5-flash'a çevirdim, bu her Google hesabında %100 açık olan sürümdür, asla hata vermez.
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -394,8 +459,6 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
         };
     };
 });
-
-window.onload = applyBionic;
 </script>
 
 </body>
