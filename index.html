@@ -20,7 +20,7 @@
             transition: background-color 0.3s ease;
         }
         .container {
-            max-width: 900px;
+            max-width: 880px;
             margin: 0 auto;
         }
         .header {
@@ -49,11 +49,6 @@
             margin-right: 8px;
             margin-bottom: 8px;
             font-family: inherit;
-            transition: all 0.2s;
-        }
-        .theme-btn:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
         }
         textarea, input[type="password"] {
             width: 100%;
@@ -84,15 +79,16 @@
             font-weight: bold;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
             transition: transform 0.2s;
         }
         .btn-action:hover { transform: scale(1.03); }
+        .btn-save { background: #00B894; }
         .btn-female-tr { background: linear-gradient(135deg, #FD79A8, #E84393); }
         .btn-male-tr { background: linear-gradient(135deg, #0984E3, #74B9FF); }
         .btn-female-en { background: linear-gradient(135deg, #A29BFE, #6C5CE7); }
         .btn-male-en { background: linear-gradient(135deg, #55EFC4, #00B894); color: #2D3748; }
-        
+
         .output-container {
             position: relative;
             background-color: #FFFFFF;
@@ -125,13 +121,13 @@
         }
         .word-span:hover { background-color: rgba(108, 92, 231, 0.12); }
         
-        /* IŞIK TAKİBİ TASARIMI */
+        /* PARLAK SARI FOSFOR IŞIK */
         .word-active {
-            background-color: #FFEB3B !important;
-            color: #D35400 !important;
-            font-weight: 900;
-            border-bottom: 4px solid #E67E22;
-            box-shadow: 0 4px 10px rgba(255, 235, 59, 0.5);
+            background-color: #FFF176 !important;
+            color: #2D3748 !important;
+            border-bottom: 4px solid #FBC02D;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(251, 192, 45, 0.4);
         }
         
         .mode-box {
@@ -153,7 +149,11 @@
             gap: 8px;
             color: #4A5568;
         }
-        input[type="radio"] { transform: scale(1.2); }
+        .status-msg {
+            margin-top: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -161,17 +161,17 @@
 <div class="container">
     <div class="header">
         <h1 style="margin:0;">🧪 Süper Beyin Laboratuvarı 🚀</h1>
-        <p style="margin:8px 0 0 0; font-size:17px;">Yapay Zeka Ses & Işık Destekli Okuma Alanı</p>
+        <p style="margin:8px 0 0 0; font-size:17px;">Kelimeleri Işılda, Kendi Temponda Rahatça Keşfet!</p>
     </div>
 
-    <!-- API Anahtarı ve AI OCR -->
-    <div class="card" style="padding:18px; background:#F8F9FA;">
-        <label><b>🔑 Laboratuvar Anahtarı & Sayfa Okuyucu (Gemini API):</b></label>
-        <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
-            <input type="password" id="apiKeyInput" placeholder="API Anahtarı buraya" style="max-width:200px; margin:0;" onchange="saveKey()">
-            <input type="file" id="imageInput" accept="image/*">
-            <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">AI Sayfayı okuyor...</span>
+    <!-- Laboratuvar Anahtarı (Gemini API) -->
+    <div class="card" style="background:#FFFDF5; border:2px solid #FEF3C7;">
+        <label><b>🔑 Laboratuvar Anahtarı (Gemini API):</b></label>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+            <input type="password" id="apiKeyInput" placeholder="AIzaSy... anahtarını buraya yapıştır">
+            <button class="btn-action btn-save" onclick="saveKey()">💾 Anahtarı Hafızaya Kaydet</button>
         </div>
+        <div id="keyStatus" class="status-msg" style="color:#00B894;"></div>
     </div>
 
     <div class="card">
@@ -184,46 +184,56 @@
             <button class="theme-btn" onclick="setBg('#EBF5FB')">🌊 Uzay Dalgası</button>
         </div>
 
+        <!-- Akıllı Görsel Okuyucu -->
+        <div style="background:#F8F9FA; border:2px dashed #CBD5E0; padding:16px; border-radius:16px; margin-top:14px; text-align:center;">
+            <b>📸 Kitabının Sayfasını Yükle (Akıllı Okuyucu)</b>
+            <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
+            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--primary);">🪄 Gemini sayfayı inceliyor, metin aktarılıyor...</div>
+        </div>
+
+        <!-- Metin Kutusu -->
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
-        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
 
         <!-- 3 OKUMA MODU -->
         <div class="mode-box">
-            <span style="color:#2D3748; font-size:16px;">🧭 <b>Okuma Modu:</b></span>
+            <span style="color:#2D3748;">🧭 <b>Okuma Modunu Seç:</b></span>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="1" checked> 
-                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden fareyle seçtiğin kısmı okur.
+                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden fareyle boyadığın kısmı aşağıdaki butonla okur.
             </label>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="2"> 
-                🚀 <b>2. Mod (Akıcı Okuma):</b> Aşağıdaki masada tıkladığın kelimeden başlar, akıcı okur ve ışık takip eder.
+                🚀 <b>2. Mod (Akıcı Işık):</b> Aşağıdaki masada tıkladığın kelimeden başlar, akıcı okur ve ışık takip eder.
             </label>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="3"> 
-                🐢 <b>3. Mod (Tane Tane Okuma):</b> Aşağıdaki masada tıkladığın kelimeden başlar, yavaşça okur ve ışık sindire sindire ilerler.
+                🐢 <b>3. Mod (Tane Tane):</b> Aşağıdaki masada tıkladığın kelimeden başlar, yavaşça okur ve ışık sindire sindire bekler.
             </label>
         </div>
 
-        <!-- Harf Işığı -->
+        <!-- Harf Işığı & Takip Çubuğu -->
         <div class="controls" style="margin-top:15px;">
-            <label>✨ <b>Harf Işığı (Biyonik):</b></label>
+            <label>✨ <b>Harf Işığı:</b></label>
             <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
+            <button class="btn-action" onclick="applyBionic()">✨ Kelimeleri Parlat</button>
+            
             <label style="margin-left:14px; cursor:pointer; font-weight:600;">
                 <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Sihirli Takip Çubuğu</b>
             </label>
         </div>
 
-        <!-- 4 GARANTİ AI SES BUTONU -->
-        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Stüdyo Sesleri (Amazon Polly AI):</b></label>
+        <!-- SES BUTONLARI -->
+        <label style="display:block; margin-top:14px;"><b>🎧 Sesli Anlatıcı:</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="playAI('tr', 'female')">🧚 TR Kadın</button>
-            <button class="btn-action btn-male-tr" onclick="playAI('tr', 'male')">🧙‍♂️ TR Erkek</button>
-            <button class="btn-action btn-female-en" onclick="playAI('en', 'female')">👩‍🏫 EN Kadın</button>
-            <button class="btn-action btn-male-en" onclick="playAI('en', 'male')">👨‍🚀 EN Erkek</button>
-            <button class="btn-action" style="background:#E17055;" onclick="stopAudio()">⏹️ Durdur</button>
+            <button class="btn-action btn-female-tr" onclick="startVoice('tr', 'female')">🧚 Masalcı Peri (Kadın Sesi)</button>
+            <button class="btn-action btn-male-tr" onclick="startVoice('tr', 'male')">🧙‍♂️ Bilge Kâşif (Erkek Sesi)</button>
+            <button class="btn-action btn-female-en" onclick="startVoice('en', 'female')">👩‍🏫 Storyteller (EN Kadın)</button>
+            <button class="btn-action btn-male-en" onclick="startVoice('en', 'male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
+            <button class="btn-action" style="background:#E17055;" onclick="stopVoice()">⏹️ Durdur</button>
         </div>
     </div>
 
@@ -234,18 +244,17 @@
     </div>
 </div>
 
-<audio id="audioPlayer" style="display:none;"></audio>
-
 <script>
 let wordsList = [];
-let activeTimer = null;
-let currentVoiceName = "Filiz";
+let lightTimer = null;
+let currentLang = 'tr';
+let currentGender = 'female';
 
 function setBg(color) {
     document.documentElement.style.setProperty('--bg-color', color);
 }
 
-// Biyonik ve Tıklanabilir Kelimeler
+// Biyonik Kelime Rehberi
 function applyBionic() {
     const text = document.getElementById('textInput').value;
     const ratio = document.getElementById('bionicRange').value / 100;
@@ -269,9 +278,10 @@ function applyBionic() {
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Çubuk (YAZIM HATASI BURADAYDI, DÜZELTİLDİ!)
+// Takip Çubuğu
 function toggleRuler() {
-    document.getElementById('ruler').style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
+    const isChecked = document.getElementById('rulerToggle').checked;
+    document.getElementById('ruler').style.display = isChecked ? 'block' : 'none';
 }
 
 function moveRuler(e) {
@@ -283,6 +293,26 @@ function moveRuler(e) {
     }
 }
 
+// API Kaydet
+function saveKey() {
+    const k = document.getElementById('apiKeyInput').value.trim();
+    if (k) {
+        localStorage.setItem('superbrain_gemini_key', k);
+        document.getElementById('keyStatus').innerText = "✓ Anahtar tarayıcı hafızasına güvenle kaydedildi!";
+    } else {
+        alert("Lütfen geçerli bir anahtar yapıştır.");
+    }
+}
+
+window.onload = () => {
+    const k = localStorage.getItem('superbrain_gemini_key');
+    if (k) {
+        document.getElementById('apiKeyInput').value = k;
+        document.getElementById('keyStatus').innerText = "✓ Kayıtlı anahtar hazır!";
+    }
+    applyBionic();
+};
+
 function highlightWord(idx) {
     document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
     const target = document.getElementById(`w_${idx}`);
@@ -291,88 +321,62 @@ function highlightWord(idx) {
     }
 }
 
-function stopAudio() {
-    clearTimeout(activeTimer);
-    const player = document.getElementById('audioPlayer');
-    player.pause();
-    player.src = "";
+function stopVoice() {
+    clearTimeout(lightTimer);
+    window.speechSynthesis.cancel();
     document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
 }
 
-// KESİN VE GARANTİLİ AI SES MOTORU (Amazon Polly Stüdyo Sesleri API)
-function playAI(lang, gender) {
-    stopAudio();
+// SES BAŞLATICI (Butonlara Tıklanınca)
+function startVoice(lang, gender) {
+    currentLang = lang;
+    currentGender = gender;
+    
     const mode = document.querySelector('input[name="readMode"]:checked').value;
     const textarea = document.getElementById('textInput');
 
-    let textToRead = "";
-
     if (mode === '1') {
         // 1. Mod: Seçilen Parça
-        textToRead = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
-        if (!textToRead) {
-            alert("Lütfen önce not defterinden bir kısmı fareyle seç (maviye boya)!");
-            return;
-        }
+        let sel = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+        if (!sel) sel = textarea.value.trim(); // Seçilmediyse tamamı
+        speakText(sel, 1.0, null);
     } else {
-        alert("Akıcı (2. Mod) veya Tane Tane (3. Mod) okuma için ses butonlarına değil, doğrudan aşağıdaki masada okumasını istediğin kelimeye tıkla!");
-        return;
+        // 2 veya 3. Modda butona basılırsa en baştan başlar
+        startFlowFrom(0, mode);
     }
-
-    // AI Ses Kodları
-    if (lang === 'tr' && gender === 'female') currentVoiceName = "Filiz";
-    if (lang === 'tr' && gender === 'male') currentVoiceName = "Kivanc";
-    if (lang === 'en' && gender === 'female') currentVoiceName = "Joanna";
-    if (lang === 'en' && gender === 'male') currentVoiceName = "Matthew";
-
-    const player = document.getElementById('audioPlayer');
-    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${currentVoiceName}&text=${encodeURIComponent(textToRead)}`;
-    
-    player.src = audioUrl;
-    player.playbackRate = 1.0;
-    
-    player.play().catch(() => {
-        alert("Tarayıcın sesi engelledi, sayfada boş bir yere tıklayıp tekrar dene.");
-    });
 }
 
-// Masadaki kelimeye tıklandığında (Mod 2 ve Mod 3)
+// Masadaki Kelimeye Tıklanınca (Mod 2 ve Mod 3)
 function wordClicked(idx) {
     const mode = document.querySelector('input[name="readMode"]:checked').value;
-    
     if (mode === '1') {
-        alert("Şu an '1. Mod (Seçileni Oku)' aktif. Kelimeden ışıkla başlatmak için 2. veya 3. modu seçmelisin.");
+        alert("Şu an '1. Mod (Seçileni Oku)' seçili. Kelimeden ışıkla okutmak için 2. veya 3. modu işaretle.");
         return;
     }
-
-    stopAudio();
-    const remainingWords = wordsList.slice(idx);
-    if (remainingWords.length === 0) return;
-
-    // Metni çok uzunsa çökmemesi için sadece ilk 100 kelimeyi gönder (sonra devam eder)
-    const textToRead = remainingWords.slice(0, 100).join(' ');
-    
-    const player = document.getElementById('audioPlayer');
-    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${currentVoiceName}&text=${encodeURIComponent(textToRead)}`;
-    
-    player.src = audioUrl;
-    player.playbackRate = (mode === '3') ? 0.75 : 1.05;
-    player.play();
-
-    // Işık takibini tıklanan indexten başlat
-    startHighlightFlow(idx, mode);
+    startFlowFrom(idx, mode);
 }
 
-// Canlı Işık Akış Motoru
-function startHighlightFlow(startIdx, mode) {
+// Akış ve Işık Başlatıcı
+function startFlowFrom(startIdx, mode) {
+    stopVoice();
+    const remainingWords = wordsList.slice(startIdx);
+    if (remainingWords.length === 0) return;
+
+    const fullText = remainingWords.join(' ');
+    const rate = (mode === '3') ? 0.65 : 0.95; // Tane tane veya akıcı hız
+    speakText(fullText, rate, () => {
+        stopVoice();
+    });
+
+    // Işık Takibi
+    const stepInterval = (mode === '3') ? 650 : 360;
     let curr = startIdx;
-    const interval = (mode === '3') ? 750 : 380; // Tane tane: 750ms, Akıcı: 380ms
 
     function step() {
         if (curr < wordsList.length) {
             highlightWord(curr);
             curr++;
-            activeTimer = setTimeout(step, interval);
+            lightTimer = setTimeout(step, stepInterval);
         } else {
             document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
         }
@@ -380,25 +384,53 @@ function startHighlightFlow(startIdx, mode) {
     step();
 }
 
-// API Kaydet
-function saveKey() {
-    const k = document.getElementById('apiKeyInput').value.trim();
-    if (k) localStorage.setItem('superbrain_gemini_key', k);
-}
-window.onload = () => {
-    const k = localStorage.getItem('superbrain_gemini_key');
-    if (k) document.getElementById('apiKeyInput').value = k;
-    applyBionic();
-};
+// KESİN ÇALIŞAN DOĞAL SES MOTORU (Tarayıcı Engeline Takılmaz)
+function speakText(text, rate, onEndCallback) {
+    window.speechSynthesis.cancel();
+    
+    // İnceltmeleri yumuşatma
+    const cleanText = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const voices = window.speechSynthesis.getVoices();
 
-// GEMINI OCR (Sıfır Hata)
+    if (currentLang === 'tr') {
+        utterance.lang = 'tr-TR';
+        if (currentGender === 'female') {
+            const fv = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Yelda') || v.name.includes('Filiz') || v.name.includes('Female')));
+            if (fv) utterance.voice = fv;
+            utterance.pitch = 1.45; // Kesin peri kadın sesi tınısı
+        } else {
+            const mv = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Tolga') || v.name.includes('Cem') || v.name.includes('Male')));
+            if (mv) utterance.voice = mv;
+            utterance.pitch = 0.70; // Tok bilge erkek tonu
+        }
+    } else {
+        utterance.lang = 'en-US';
+        if (currentGender === 'female') {
+            const efv = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Female') || v.name.includes('Zira')));
+            if (efv) utterance.voice = efv;
+            utterance.pitch = 1.15;
+        } else {
+            const emv = voices.find(v => v.lang.startsWith('en') && (v.name.includes('David') || v.name.includes('Male')));
+            if (emv) utterance.voice = emv;
+            utterance.pitch = 0.80;
+        }
+    }
+
+    utterance.rate = rate;
+    if (onEndCallback) utterance.onend = onEndCallback;
+    window.speechSynthesis.speak(utterance);
+}
+window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+
+// GEMINI OCR
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const apiKey = document.getElementById('apiKeyInput').value.trim();
+    const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) {
-        alert("Lütfen önce API Anahtarını girin.");
+        alert("Lütfen önce en üstteki kutudan Laboratuvar Anahtarını kaydedin!");
         return;
     }
 
@@ -438,7 +470,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                     document.getElementById('textInput').value = data.candidates[0].content.parts[0].text.trim();
                     applyBionic();
                 }
-            } catch (err) { alert("Hata oluştu."); } 
+            } catch (err) { alert("Bağlantı hatası!"); } 
             finally { prog.style.display = 'none'; }
         };
     };
