@@ -84,7 +84,7 @@
             font-weight: bold;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
             transition: transform 0.2s;
         }
         .btn-action:hover { transform: scale(1.03); }
@@ -119,14 +119,19 @@
         
         .word-span {
             cursor: pointer;
-            padding: 2px 4px;
+            padding: 2px 6px;
             border-radius: 6px;
-            transition: background 0.1s ease;
+            transition: all 0.1s ease;
         }
         .word-span:hover { background-color: rgba(108, 92, 231, 0.12); }
+        
+        /* NET VE GÖRÜNÜR IŞIK VURGUSU */
         .word-active {
-            background-color: #FFEAA7 !important;
-            border-bottom: 3px solid #FDCB6E;
+            background-color: #FFEB3B !important;
+            color: #D35400 !important;
+            font-weight: 900;
+            border-bottom: 4px solid #E67E22;
+            box-shadow: 0 4px 10px rgba(255, 235, 59, 0.5);
         }
         
         .mode-box {
@@ -156,16 +161,16 @@
 <div class="container">
     <div class="header">
         <h1 style="margin:0;">🧪 Süper Beyin Laboratuvarı 🚀</h1>
-        <p style="margin:8px 0 0 0; font-size:17px;">Kelimeleri Işılda, Sesleri Kendi Temponda Yönet!</p>
+        <p style="margin:8px 0 0 0; font-size:17px;">Yapay Zeka Ses & Işık Destekli Okuma Alanı</p>
     </div>
 
-    <!-- API Anahtarı ve OCR -->
+    <!-- API Anahtarı ve AI OCR -->
     <div class="card" style="padding:18px; background:#F8F9FA;">
         <label><b>🔑 Laboratuvar Anahtarı & Sayfa Okuyucu (Gemini API):</b></label>
         <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
             <input type="password" id="apiKeyInput" placeholder="API Anahtarı" style="max-width:200px; margin:0;" onchange="saveKey()">
             <input type="file" id="imageInput" accept="image/*">
-            <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">Sıfır hatayla okunuyor...</span>
+            <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">AI Sayfayı okuyor...</span>
         </div>
     </div>
 
@@ -182,23 +187,23 @@
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
         <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
 
-        <!-- KESİN VE NET 3 OKUMA MODU -->
+        <!-- 3 OKUMA MODU -->
         <div class="mode-box">
-            <span style="color:#2D3748; font-size:16px;">🧭 <b>Nasıl Okuyalım? (Modu seç, sonra ses butonuna veya kelimeye tıkla)</b></span>
+            <span style="color:#2D3748; font-size:16px;">🧭 <b>Okuma Modu:</b></span>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="1" checked> 
-                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden fareyle kopyalar gibi seç, ses butonuna bas. Sadece orayı okur.
+                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden fareyle seçtiğin kısmı okur.
             </label>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="2"> 
-                🚀 <b>2. Mod (Akıcı Okuma):</b> Aşağıdaki masada bir kelimeye tıkla. Oradan itibaren dümdüz okur, ışık takip eder.
+                🚀 <b>2. Mod (Akıcı Okuma):</b> Aşağıdaki masada tıkladığın kelimeden başlar, akıcı okur ve ışık takip eder.
             </label>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="3"> 
-                🐢 <b>3. Mod (Tane Tane Okuma):</b> Aşağıdaki masada bir kelimeye tıkla. Çok yavaş okur, ışık sindire sindire ilerler.
+                🐢 <b>3. Mod (Tane Tane Okuma):</b> Aşağıdaki masada tıkladığın kelimeden başlar, yavaşça okur ve ışık sindire sindire ilerler.
             </label>
         </div>
 
@@ -211,14 +216,14 @@
             </label>
         </div>
 
-        <!-- 4 SES BUTONU -->
-        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Ses Asistanları:</b></label>
+        <!-- 4 GARANTİ AI SES BUTONU -->
+        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Yapay Zeka (AI) Ses Asistanları:</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="setupVoice('tr', 'female')">🧚 TR Kadın</button>
-            <button class="btn-action btn-male-tr" onclick="setupVoice('tr', 'male')">🧙‍♂️ TR Erkek</button>
-            <button class="btn-action btn-female-en" onclick="setupVoice('en', 'female')">👩‍🏫 EN Kadın</button>
-            <button class="btn-action btn-male-en" onclick="setupVoice('en', 'male')">👨‍🚀 EN Erkek</button>
-            <button class="btn-action" style="background:#E17055;" onclick="stopVoice()">⏹️ Durdur</button>
+            <button class="btn-action btn-female-tr" onclick="playAI('tr', 'female')">🧚 Masalcı Peri (AI Kadın)</button>
+            <button class="btn-action btn-male-tr" onclick="playAI('tr', 'male')">🧙‍♂️ Bilge Kâşif (AI Erkek)</button>
+            <button class="btn-action btn-female-en" onclick="playAI('en', 'female')">👩‍🏫 Storyteller (EN Kadın)</button>
+            <button class="btn-action btn-male-en" onclick="playAI('en', 'male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
+            <button class="btn-action" style="background:#E17055;" onclick="stopAudio()">⏹️ Durdur</button>
         </div>
     </div>
 
@@ -229,24 +234,17 @@
     </div>
 </div>
 
+<audio id="audioPlayer" style="display:none;"></audio>
+
 <script>
 let wordsList = [];
-let currentLang = 'tr';
-let currentGender = 'female';
-let currentGlobalIndex = 0;
-let currentUtteranceText = "";
-
-// Sesleri Yükle
-let globalVoices = [];
-window.speechSynthesis.onvoiceschanged = () => {
-    globalVoices = window.speechSynthesis.getVoices();
-};
+let activeTimer = null;
 
 function setBg(color) {
     document.documentElement.style.setProperty('--bg-color', color);
 }
 
-// Biyonik Çevirici ve Kelime Etiketleyici
+// Biyonik ve Tıklanabilir Kelimeler
 function applyBionic() {
     const text = document.getElementById('textInput').value;
     const ratio = document.getElementById('bionicRange').value / 100;
@@ -270,9 +268,9 @@ function applyBionic() {
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Sihirli Çubuk
+// Çubuk
 function toggleRuler() {
-    document.getElementById('ruler').style.display = document.getElementById('rulerToggle').checked ? 'block' : 'none';
+    document.getElementById('ruler').style.display = document.getElementById('rulerToggle'].checked ? 'block' : 'none';
 }
 function moveRuler(e) {
     const ruler = document.getElementById('ruler');
@@ -283,119 +281,110 @@ function moveRuler(e) {
     }
 }
 
-// Kelime Işıklandırma
 function highlightWord(idx) {
     document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
     const target = document.getElementById(`w_${idx}`);
-    if (target) target.classList.add('word-active');
+    if (target) {
+        target.classList.add('word-active');
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
-function stopVoice() {
-    window.speechSynthesis.cancel();
+function stopAudio() {
+    clearTimeout(activeTimer);
+    const player = document.getElementById('audioPlayer');
+    player.pause();
+    player.src = "";
     document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
 }
 
-// SES AYARLAYICI (Tıklanan butona göre dili ve cinsiyeti kaydeder, sonra okumayı başlatır)
-function setupVoice(lang, gender) {
-    currentLang = lang;
-    currentGender = gender;
-    
+// KESİN VE GARANTİLİ AI SES MOTORU (Amazon Polly Stüdyo Sesleri API)
+function playAI(lang, gender) {
+    stopAudio();
     const mode = document.querySelector('input[name="readMode"]:checked').value;
-    
+    const textarea = document.getElementById('textInput');
+
+    let textToRead = "";
+    let startIndex = 0;
+
     if (mode === '1') {
-        // MOD 1: Seçileni Oku
-        const textarea = document.getElementById('textInput');
-        let sel = window.getSelection().toString().trim() || textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
-        
-        if (!sel) {
-            alert("Lütfen önce not defterinden okutmak istediğin kısmı fareyle seç (maviye boya).");
-            return;
+        // 1. Mod: Seçilen Parça
+        textToRead = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+        if (!textToRead) {
+            textToRead = textarea.value.trim(); // Seçilmediyse tamamı
         }
-        fireTTS(sel, 'fast', null); // Sadece okur, ışık takip etmez
     } else {
-        // Mod 2 veya 3 seçiliyken ses butonuna basılırsa en baştan (0) başlar
-        fireTTSFromIndex(0, mode);
+        textToRead = textarea.value.trim();
+    }
+
+    if (!textToRead) return;
+
+    // AI Ses Kodları: Filiz (TR Kadın), Filiz/Kivanc -> Kadın için Filiz, Erkek için Arda/Kivanc
+    let voiceName = "Filiz"; // TR Kadın
+    if (lang === 'tr' && gender === 'male') voiceName = "Kivanc"; // TR Erkek
+    if (lang === 'en' && gender === 'female') voiceName = "Joanna"; // EN Kadın
+    if (lang === 'en' && gender === 'male') voiceName = "Joey"; // EN Erkek
+
+    const player = document.getElementById('audioPlayer');
+    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=${voiceName}&text=${encodeURIComponent(textToRead)}`;
+    
+    player.src = audioUrl;
+    
+    // Mod 3 (Tane Tane) için ses hızını biraz yavaşlatıyoruz
+    player.playbackRate = (mode === '3') ? 0.75 : 1.0;
+    
+    player.play().catch(() => {
+        alert("Ses çalma tarayıcı tarafından engellendi, sayfada bir yere tıklayıp tekrar dene!");
+    });
+
+    // Işık Takibi (Eğer mod 2 veya 3 ise kelimeleri aydınlatarak akıt)
+    if (mode === '2' || mode === '3') {
+        startHighlightFlow(0, mode);
     }
 }
 
-// Kelimeye Tıklayınca Oradan İtibaren Okuma (Mod 2 ve Mod 3)
+// Masadaki kelimeye tıklandığında (Mod 2 ve Mod 3)
 function wordClicked(idx) {
     const mode = document.querySelector('input[name="readMode"]:checked').value;
     if (mode === '1') {
-        alert("Şu an '1. Mod (Seçileni Oku)' aktif. Kelimeden itibaren okutmak için lütfen 2. veya 3. modu seçin.");
+        alert("Şu an '1. Mod (Seçileni Oku)' aktif. Kelimeden başlatmak için 2. veya 3. modu seçmelisin.");
         return;
     }
-    fireTTSFromIndex(idx, mode);
-}
 
-// İlgili kelimeden sona kadar metni alır ve motora gönderir
-function fireTTSFromIndex(idx, modeStr) {
-    currentGlobalIndex = idx;
     const remainingWords = wordsList.slice(idx);
     if (remainingWords.length === 0) return;
+
+    const textToRead = remainingWords.join(' ');
     
-    currentUtteranceText = remainingWords.join(' ');
-    fireTTS(currentUtteranceText, modeStr === '3' ? 'slow' : 'fast', true);
+    // Ses çal
+    const player = document.getElementById('audioPlayer');
+    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=Filiz&text=${encodeURIComponent(textToRead)}`;
+    player.src = audioUrl;
+    player.playbackRate = (mode === '3') ? 0.75 : 1.0;
+    player.play();
+
+    // Işık takibini tıklanan indexten başlat
+    startHighlightFlow(idx, mode);
 }
 
-// ANA SES MOTORU (Tamamen Tarayıcı İçi, Bloklanmaz)
-function fireTTS(text, speedType, doHighlight) {
-    window.speechSynthesis.cancel();
-    
-    // İnceltmeleri daha doğal okuması için ufak hile
-    let cleanText = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
-    
-    let utt = new SpeechSynthesisUtterance(cleanText);
-    if (globalVoices.length === 0) globalVoices = window.speechSynthesis.getVoices();
+// Canlı Işık Akış Motoru
+function startHighlightFlow(startIdx, mode) {
+    let curr = startIdx;
+    const interval = (mode === '3') ? 700 : 380; // Tane tane: 700ms, Akıcı: 380ms
 
-    // Dil Ayarı
-    utt.lang = currentLang === 'tr' ? 'tr-TR' : 'en-US';
-
-    // Hız Ayarı (Mod 3 için tane tane)
-    utt.rate = speedType === 'slow' ? 0.6 : 0.95;
-
-    // Kapsamlı Cinsiyet ve Ses Arama Motoru
-    let selectedVoice = null;
-    if (currentLang === 'tr') {
-        if (currentGender === 'female') {
-            selectedVoice = globalVoices.find(v => v.lang.includes('tr') && (v.name.includes('Yelda') || v.name.includes('Emel') || v.name.includes('Google Türkçe') || v.name.includes('Female')));
-            utt.pitch = selectedVoice ? 1.1 : 1.7; // Kadın sesi yoksa erkek sesini incelterek kadın/çocuk tonuna zorlar
+    function step() {
+        if (curr < wordsList.length) {
+            highlightWord(curr);
+            curr++;
+            activeTimer = setTimeout(step, interval);
         } else {
-            selectedVoice = globalVoices.find(v => v.lang.includes('tr') && (v.name.includes('Tolga') || v.name.includes('Cem') || v.name.includes('Male')));
-            utt.pitch = selectedVoice ? 0.9 : 0.5; // Kalınlaştırır
-        }
-    } else {
-        if (currentGender === 'female') {
-            selectedVoice = globalVoices.find(v => v.lang.includes('en') && (v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Female')));
-            utt.pitch = 1.1;
-        } else {
-            selectedVoice = globalVoices.find(v => v.lang.includes('en') && (v.name.includes('David') || v.name.includes('George') || v.name.includes('Male')));
-            utt.pitch = 0.8;
-        }
-    }
-
-    if (selectedVoice) utt.voice = selectedVoice;
-
-    // Kusursuz Eşzamanlı Kelime Takibi (onboundary)
-    if (doHighlight) {
-        utt.onboundary = function(e) {
-            if (e.name === 'word') {
-                // Ses motorunun o an okuduğu hecenin karakter dizinini alır
-                let textUpTo = currentUtteranceText.substring(0, e.charIndex);
-                let localIdx = textUpTo.trim() === "" ? 0 : textUpTo.trim().split(/\s+/).length;
-                let activeIdx = currentGlobalIndex + localIdx;
-                highlightWord(activeIdx);
-            }
-        };
-        utt.onend = function() {
             document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-        };
+        }
     }
-
-    window.speechSynthesis.speak(utt);
+    step();
 }
 
-// API Kaydet ve Yükle
+// API Kaydet
 function saveKey() {
     const k = document.getElementById('apiKeyInput').value.trim();
     if (k) localStorage.setItem('superbrain_gemini_key', k);
@@ -436,7 +425,6 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
             try {
-                // Modeli 1.5-flash'a çevirdim, bu her Google hesabında %100 açık olan sürümdür, asla hata vermez.
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
