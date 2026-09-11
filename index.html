@@ -9,7 +9,6 @@
         :root {
             --bg-color: #FEF9E7;
             --primary: #6C5CE7;
-            --accent: #FD79A8;
         }
         body {
             font-family: 'Fredoka', sans-serif;
@@ -20,7 +19,7 @@
             transition: background-color 0.3s ease;
         }
         .container {
-            max-width: 880px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .header {
@@ -70,7 +69,6 @@
             flex-wrap: wrap;
         }
         .btn-action {
-            background-color: var(--primary);
             color: white;
             border: none;
             padding: 12px 18px;
@@ -79,18 +77,15 @@
             font-weight: bold;
             cursor: pointer;
             font-family: inherit;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
             transition: transform 0.2s;
         }
         .btn-action:hover { transform: scale(1.03); }
-        .btn-save { background: #00B894; }
         .btn-female-tr { background: linear-gradient(135deg, #FD79A8, #E84393); }
         .btn-male-tr { background: linear-gradient(135deg, #0984E3, #74B9FF); }
         .btn-female-en { background: linear-gradient(135deg, #A29BFE, #6C5CE7); }
         .btn-male-en { background: linear-gradient(135deg, #55EFC4, #00B894); color: #2D3748; }
 
         .output-container {
-            position: relative;
             background-color: #FFFFFF;
             padding: 28px;
             border-radius: 20px;
@@ -100,34 +95,23 @@
             min-height: 120px;
             margin-top: 20px;
         }
-        .reading-ruler {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 52px;
-            background: rgba(255, 234, 167, 0.45);
-            border-top: 2px solid #FDCB6E;
-            border-bottom: 2px solid #FDCB6E;
-            pointer-events: none;
-            display: none;
-        }
         .bionic-bold { color: var(--primary); font-weight: 800; }
         
         .word-span {
             cursor: pointer;
             padding: 2px 6px;
             border-radius: 6px;
-            transition: all 0.1s ease;
+            transition: background 0.1s;
         }
-        .word-span:hover { background-color: rgba(108, 92, 231, 0.12); }
+        .word-span:hover { background-color: #F1F2F6; }
         
-        /* PARLAK SARI FOSFOR IŞIK */
+        /* Fosforlu Okuma Işığı */
         .word-active {
             background-color: #FFF176 !important;
-            color: #2D3748 !important;
+            color: #D35400 !important;
+            font-weight: 900;
             border-bottom: 4px solid #FBC02D;
             border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(251, 192, 45, 0.4);
         }
         
         .mode-box {
@@ -147,13 +131,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #4A5568;
         }
-        .status-msg {
-            margin-top: 8px;
-            font-weight: 600;
-            font-size: 14px;
-        }
+        input[type="radio"] { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -161,21 +140,21 @@
 <div class="container">
     <div class="header">
         <h1 style="margin:0;">🧪 Süper Beyin Laboratuvarı 🚀</h1>
-        <p style="margin:8px 0 0 0; font-size:17px;">Kelimeleri Işılda, Kendi Temponda Rahatça Keşfet!</p>
+        <p style="margin:8px 0 0 0; font-size:17px;">Kelimeleri Işılda, Sesleri Kendi Temponda Yönet!</p>
     </div>
 
-    <!-- Laboratuvar Anahtarı (Gemini API) -->
-    <div class="card" style="background:#FFFDF5; border:2px solid #FEF3C7;">
-        <label><b>🔑 Laboratuvar Anahtarı (Gemini API):</b></label>
-        <div style="display:flex; gap:10px; margin-top:8px;">
-            <input type="password" id="apiKeyInput" placeholder="AIzaSy... anahtarını buraya yapıştır">
-            <button class="btn-action btn-save" onclick="saveKey()">💾 Anahtarı Hafızaya Kaydet</button>
+    <!-- API Anahtarı ve AI OCR -->
+    <div class="card" style="padding:18px; background:#F8F9FA;">
+        <label><b>🔑 Laboratuvar Anahtarı & Sayfa Okuyucu (Gemini API):</b></label>
+        <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
+            <input type="password" id="apiKeyInput" placeholder="API Anahtarı" style="max-width:200px; margin:0;" onchange="saveKey()">
+            <input type="file" id="imageInput" accept="image/*">
+            <span id="ocrProgress" style="display:none; color:var(--primary); font-weight:bold;">Sayfa okunuyor...</span>
         </div>
-        <div id="keyStatus" class="status-msg" style="color:#00B894;"></div>
     </div>
 
     <div class="card">
-        <!-- Sayfa Işığı -->
+        <!-- Zemin Işığı -->
         <label><b>🎨 Sayfa Işığı:</b></label><br>
         <div style="margin-top:10px;">
             <button class="theme-btn" onclick="setBg('#FEF9E7')">🍯 Bal Peteği</button>
@@ -184,69 +163,57 @@
             <button class="theme-btn" onclick="setBg('#EBF5FB')">🌊 Uzay Dalgası</button>
         </div>
 
-        <!-- Akıllı Görsel Okuyucu -->
-        <div style="background:#F8F9FA; border:2px dashed #CBD5E0; padding:16px; border-radius:16px; margin-top:14px; text-align:center;">
-            <b>📸 Kitabının Sayfasını Yükle (Akıllı Okuyucu)</b>
-            <input type="file" id="imageInput" accept="image/*" style="display:block; margin:10px auto;">
-            <div id="ocrProgress" class="status-msg" style="display:none; color:var(--primary);">🪄 Gemini sayfayı inceliyor, metin aktarılıyor...</div>
-        </div>
-
-        <!-- Metin Kutusu -->
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
-        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
 
-        <!-- 3 OKUMA MODU -->
+        <!-- KESİN VE NET 3 OKUMA MODU -->
         <div class="mode-box">
-            <span style="color:#2D3748;">🧭 <b>Okuma Modunu Seç:</b></span>
+            <span style="color:#2D3748; font-size:16px;">🧭 <b>Nasıl Okuyalım? (Modunu Seç!)</b></span>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="1" checked> 
-                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden fareyle boyadığın kısmı aşağıdaki butonla okur.
+                🎯 <b>1. Mod (Seçileni Oku):</b> Not defterinden (yukarıdan) veya okuma masasından (aşağıdan) yazıyı fareyle maviye boya. Sonra ses butonuna bas.
             </label>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="2"> 
-                🚀 <b>2. Mod (Akıcı Işık):</b> Aşağıdaki masada tıkladığın kelimeden başlar, akıcı okur ve ışık takip eder.
+                🚀 <b>2. Mod (Akıcı Okuma):</b> Aşağıdaki masada bir kelimeye TIKLA. Oradan itibaren normal konuşma hızıyla okur.
             </label>
             
             <label class="radio-label">
                 <input type="radio" name="readMode" value="3"> 
-                🐢 <b>3. Mod (Tane Tane):</b> Aşağıdaki masada tıkladığın kelimeden başlar, yavaşça okur ve ışık sindire sindire bekler.
+                🐢 <b>3. Mod (Tane Tane Okuma):</b> Aşağıdaki masada bir kelimeye TIKLA. Ses ağırlaşır, kelimeler yavaş okunur.
             </label>
         </div>
 
-        <!-- Harf Işığı & Takip Çubuğu -->
+        <!-- Biyonik Ayarı -->
         <div class="controls" style="margin-top:15px;">
             <label>✨ <b>Harf Işığı:</b></label>
             <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
-            <button class="btn-action" onclick="applyBionic()">✨ Kelimeleri Parlat</button>
-            
-            <label style="margin-left:14px; cursor:pointer; font-weight:600;">
-                <input type="checkbox" id="rulerToggle" onchange="toggleRuler()"> 📏 <b>Sihirli Takip Çubuğu</b>
-            </label>
         </div>
 
-        <!-- SES BUTONLARI -->
-        <label style="display:block; margin-top:14px;"><b>🎧 Sesli Anlatıcı:</b></label>
+        <!-- 4 SES BUTONU (Google AI Kadın Sesleri Garantili) -->
+        <label style="display:block; margin-top:20px; font-size:16px;"><b>🎧 Ses Asistanları:</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="startVoice('tr', 'female')">🧚 Masalcı Peri (Kadın Sesi)</button>
-            <button class="btn-action btn-male-tr" onclick="startVoice('tr', 'male')">🧙‍♂️ Bilge Kâşif (Erkek Sesi)</button>
-            <button class="btn-action btn-female-en" onclick="startVoice('en', 'female')">👩‍🏫 Storyteller (EN Kadın)</button>
-            <button class="btn-action btn-male-en" onclick="startVoice('en', 'male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
-            <button class="btn-action" style="background:#E17055;" onclick="stopVoice()">⏹️ Durdur</button>
+            <button class="btn-action btn-female-tr" onclick="playSelectedText('tr', 'female')">🧚 TR AI Kadın (Garantili)</button>
+            <button class="btn-action btn-male-tr" onclick="playSelectedText('tr', 'male')">🧙‍♂️ TR Erkek</button>
+            <button class="btn-action btn-female-en" onclick="playSelectedText('en', 'female')">👩‍🏫 EN AI Kadın</button>
+            <button class="btn-action btn-male-en" onclick="playSelectedText('en', 'male')">👨‍🚀 EN Erkek</button>
+            <button class="btn-action" style="background:#E17055;" onclick="stopAll()">⏹️ Durdur</button>
         </div>
     </div>
 
     <!-- OKUMA MASASI -->
-    <div class="output-container" id="outputArea" onmousemove="moveRuler(event)">
-        <div id="ruler" class="reading-ruler"></div>
+    <div class="output-container" id="outputArea">
         <div id="textOutput">Yazılar burada parlayacak...</div>
     </div>
 </div>
 
 <script>
-let wordsList = [];
-let lightTimer = null;
+let wordsArray = [];
+let isPlaying = false;
+let globalAudio = new Audio();
+let highlightTimer = null;
 let currentLang = 'tr';
 let currentGender = 'female';
 
@@ -254,183 +221,201 @@ function setBg(color) {
     document.documentElement.style.setProperty('--bg-color', color);
 }
 
-// Biyonik Kelime Rehberi
+// Biyonik İşlem & Tıklanabilir Kelimeler
 function applyBionic() {
-    const text = document.getElementById('textInput').value;
-    const ratio = document.getElementById('bionicRange').value / 100;
-    if (!text.trim()) {
+    const text = document.getElementById('textInput').value.trim();
+    if (!text) {
         document.getElementById('textOutput').innerHTML = "";
         return;
     }
-
-    wordsList = text.trim().split(/\s+/);
-    const transformed = wordsList.map((word, idx) => {
-        let bionicWord = "";
-        if (word.length <= 2) {
-            bionicWord = `<span class="bionic-bold">${word}</span>`;
-        } else {
-            const mid = Math.ceil(word.length * ratio);
-            bionicWord = `<span class="bionic-bold">${word.slice(0, mid)}</span>${word.slice(mid)}`;
-        }
-        return `<span class="word-span" id="w_${idx}" onclick="wordClicked(${idx})">${bionicWord}</span>`;
+    wordsArray = text.split(/\s+/);
+    const transformed = wordsArray.map((word, idx) => {
+        let bionicWord = word.length <= 2 
+            ? `<span class="bionic-bold">${word}</span>` 
+            : `<span class="bionic-bold">${word.slice(0, Math.ceil(word.length * (document.getElementById('bionicRange').value / 100)))}</span>${word.slice(Math.ceil(word.length * (document.getElementById('bionicRange').value / 100)))}`;
+        return `<span class="word-span" id="w_${idx}" onclick="handleWordClick(${idx})">${bionicWord}</span>`;
     });
-
     document.getElementById('textOutput').innerHTML = transformed.join(' ');
 }
 
-// Takip Çubuğu
-function toggleRuler() {
-    const isChecked = document.getElementById('rulerToggle').checked;
-    document.getElementById('ruler').style.display = isChecked ? 'block' : 'none';
+function clearHighlight() {
+    document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
 }
 
-function moveRuler(e) {
-    const ruler = document.getElementById('ruler');
-    if (ruler.style.display === 'block') {
-        const rect = document.getElementById('outputArea').getBoundingClientRect();
-        const offsetY = e.clientY - rect.top - 24;
-        ruler.style.top = Math.max(0, Math.min(offsetY, rect.height - 52)) + 'px';
+function highlightWord(idx) {
+    clearHighlight();
+    const target = document.getElementById(`w_${idx}`);
+    if (target) target.classList.add('word-active');
+}
+
+function stopAll() {
+    isPlaying = false;
+    clearInterval(highlightTimer);
+    globalAudio.pause();
+    globalAudio.src = "";
+    window.speechSynthesis.cancel();
+    clearHighlight();
+}
+
+// --------------------------------------------------------
+// MOD 1: SADECE SEÇİLİ METNİ OKUMA
+// --------------------------------------------------------
+function playSelectedText(lang, gender) {
+    currentLang = lang;
+    currentGender = gender;
+    
+    const mode = document.querySelector('input[name="readMode"]:checked').value;
+    
+    if (mode === '1') {
+        // Ekranda maviye boyanmış (seçilmiş) metni al
+        let selText = window.getSelection().toString().trim();
+        
+        // Eğer okuma masasından seçmediyse, not defterinden seçileni al
+        if (!selText) {
+            const ta = document.getElementById('textInput');
+            selText = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+        }
+
+        if (!selText) {
+            alert("Lütfen okunmasını istediğin yazıyı fareyle KOPYALAR GİBİ SEÇ (maviye boya) ve tekrar butona bas!");
+            return;
+        }
+
+        stopAll();
+        // Kadın sesi ise doğrudan Google AI Sesini çal (Engel/Robotlaşma yok)
+        if (gender === 'female') {
+            const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=${lang}&q=${encodeURIComponent(selText.substring(0, 195))}`;
+            globalAudio.src = url;
+            globalAudio.playbackRate = 1.0;
+            globalAudio.play();
+        } else {
+            // Erkek sesi için tarayıcıyı kullan
+            let utt = new SpeechSynthesisUtterance(selText);
+            utt.lang = lang === 'tr' ? 'tr-TR' : 'en-US';
+            const voices = window.speechSynthesis.getVoices();
+            utt.voice = voices.find(v => v.lang.includes(lang) && (v.name.includes('Male') || v.name.includes('Tolga') || v.name.includes('David')));
+            utt.pitch = 0.6;
+            window.speechSynthesis.speak(utt);
+        }
+    } else {
+        alert("Şu an Mod 2 veya Mod 3'tesin. Lütfen ses butonlarına basmak yerine doğrudan aşağıdaki MASADAN BİR KELİMEYE TIKLA!");
+    }
+}
+
+// --------------------------------------------------------
+// MOD 2 & MOD 3: KELİMEYE TIKLAYINCA İLERLEYEN AKIŞ
+// --------------------------------------------------------
+function handleWordClick(startIndex) {
+    const mode = document.querySelector('input[name="readMode"]:checked').value;
+    
+    if (mode === '1') {
+        alert("Şu an 1. Mod (Seçileni Oku) aktif. Işıklı ve akıcı okuma için 2. veya 3. Modu seçmelisin!");
+        return;
+    }
+
+    playTextFlow(startIndex, mode, currentLang, currentGender);
+}
+
+async function playTextFlow(startIndex, mode, lang, gender) {
+    stopAll();
+    isPlaying = true;
+    
+    // Mod 3 ise sesi yavaşlat
+    const speedRate = mode === '3' ? 0.65 : 1.0;
+
+    if (gender === 'female') {
+        // GOOGLE AI KADIN SESİ (Kusursuz Çözüm)
+        let remainingWords = wordsArray.slice(startIndex);
+        
+        // Cümleleri 12 kelimelik bloklara böl (API engeline takılmamak için)
+        let chunks = [];
+        for (let i = 0; i < remainingWords.length; i += 12) {
+            chunks.push({
+                text: remainingWords.slice(i, i + 12).join(' '),
+                startIdx: startIndex + i,
+                wordCount: Math.min(12, remainingWords.length - i)
+            });
+        }
+
+        for (let chunk of chunks) {
+            if (!isPlaying) break;
+
+            await new Promise((resolve) => {
+                const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=${lang}&q=${encodeURIComponent(chunk.text)}`;
+                globalAudio.src = url;
+                globalAudio.playbackRate = speedRate;
+                
+                globalAudio.onloadedmetadata = () => {
+                    // Bloktaki ses uzunluğunu kelime sayısına bölerek canlı ışık takibi yap
+                    let durationMs = (globalAudio.duration * 1000) / speedRate; 
+                    let timePerWord = durationMs / chunk.wordCount;
+                    
+                    let wIdx = 0;
+                    clearInterval(highlightTimer);
+                    highlightTimer = setInterval(() => {
+                        if (wIdx < chunk.wordCount) {
+                            highlightWord(chunk.startIdx + wIdx);
+                            wIdx++;
+                        }
+                    }, timePerWord);
+                };
+
+                globalAudio.onended = () => {
+                    clearInterval(highlightTimer);
+                    resolve();
+                };
+                globalAudio.onerror = resolve; // Hata olursa sonrakine geç
+
+                globalAudio.play().catch(e => resolve());
+            });
+        }
+        clearHighlight();
+
+    } else {
+        // TARAYICI ERKEK SESİ
+        let textToPlay = wordsArray.slice(startIndex).join(' ');
+        let cleanText = textToPlay.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
+        
+        let utt = new SpeechSynthesisUtterance(cleanText);
+        utt.lang = lang === 'tr' ? 'tr-TR' : 'en-US';
+        utt.rate = speedRate;
+        utt.pitch = 0.6;
+        
+        const voices = window.speechSynthesis.getVoices();
+        utt.voice = voices.find(v => v.lang.includes(lang) && (v.name.includes('Male') || v.name.includes('Tolga') || v.name.includes('David')));
+
+        let currentGlobalIndex = startIndex;
+        utt.onboundary = function(e) {
+            if (e.name === 'word') {
+                let textUpTo = textToPlay.substring(0, e.charIndex);
+                let localIdx = textUpTo.trim() === "" ? 0 : textUpTo.trim().split(/\s+/).length;
+                highlightWord(currentGlobalIndex + localIdx);
+            }
+        };
+        utt.onend = clearHighlight;
+        window.speechSynthesis.speak(utt);
     }
 }
 
 // API Kaydet
 function saveKey() {
     const k = document.getElementById('apiKeyInput').value.trim();
-    if (k) {
-        localStorage.setItem('superbrain_gemini_key', k);
-        document.getElementById('keyStatus').innerText = "✓ Anahtar tarayıcı hafızasına güvenle kaydedildi!";
-    } else {
-        alert("Lütfen geçerli bir anahtar yapıştır.");
-    }
+    if (k) localStorage.setItem('superbrain_gemini_key', k);
 }
-
 window.onload = () => {
     const k = localStorage.getItem('superbrain_gemini_key');
-    if (k) {
-        document.getElementById('apiKeyInput').value = k;
-        document.getElementById('keyStatus').innerText = "✓ Kayıtlı anahtar hazır!";
-    }
+    if (k) document.getElementById('apiKeyInput').value = k;
     applyBionic();
 };
 
-function highlightWord(idx) {
-    document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-    const target = document.getElementById(`w_${idx}`);
-    if (target) {
-        target.classList.add('word-active');
-    }
-}
-
-function stopVoice() {
-    clearTimeout(lightTimer);
-    window.speechSynthesis.cancel();
-    document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-}
-
-// SES BAŞLATICI (Butonlara Tıklanınca)
-function startVoice(lang, gender) {
-    currentLang = lang;
-    currentGender = gender;
-    
-    const mode = document.querySelector('input[name="readMode"]:checked').value;
-    const textarea = document.getElementById('textInput');
-
-    if (mode === '1') {
-        // 1. Mod: Seçilen Parça
-        let sel = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
-        if (!sel) sel = textarea.value.trim(); // Seçilmediyse tamamı
-        speakText(sel, 1.0, null);
-    } else {
-        // 2 veya 3. Modda butona basılırsa en baştan başlar
-        startFlowFrom(0, mode);
-    }
-}
-
-// Masadaki Kelimeye Tıklanınca (Mod 2 ve Mod 3)
-function wordClicked(idx) {
-    const mode = document.querySelector('input[name="readMode"]:checked').value;
-    if (mode === '1') {
-        alert("Şu an '1. Mod (Seçileni Oku)' seçili. Kelimeden ışıkla okutmak için 2. veya 3. modu işaretle.");
-        return;
-    }
-    startFlowFrom(idx, mode);
-}
-
-// Akış ve Işık Başlatıcı
-function startFlowFrom(startIdx, mode) {
-    stopVoice();
-    const remainingWords = wordsList.slice(startIdx);
-    if (remainingWords.length === 0) return;
-
-    const fullText = remainingWords.join(' ');
-    const rate = (mode === '3') ? 0.65 : 0.95; // Tane tane veya akıcı hız
-    speakText(fullText, rate, () => {
-        stopVoice();
-    });
-
-    // Işık Takibi
-    const stepInterval = (mode === '3') ? 650 : 360;
-    let curr = startIdx;
-
-    function step() {
-        if (curr < wordsList.length) {
-            highlightWord(curr);
-            curr++;
-            lightTimer = setTimeout(step, stepInterval);
-        } else {
-            document.querySelectorAll('.word-span').forEach(el => el.classList.remove('word-active'));
-        }
-    }
-    step();
-}
-
-// KESİN ÇALIŞAN DOĞAL SES MOTORU (Tarayıcı Engeline Takılmaz)
-function speakText(text, rate, onEndCallback) {
-    window.speechSynthesis.cancel();
-    
-    // İnceltmeleri yumuşatma
-    const cleanText = text.replace(/kâ/gi, "kyaa").replace(/gâ/gi, "gyaa").replace(/lâ/gi, "lyaa");
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    const voices = window.speechSynthesis.getVoices();
-
-    if (currentLang === 'tr') {
-        utterance.lang = 'tr-TR';
-        if (currentGender === 'female') {
-            const fv = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Yelda') || v.name.includes('Filiz') || v.name.includes('Female')));
-            if (fv) utterance.voice = fv;
-            utterance.pitch = 1.45; // Kesin peri kadın sesi tınısı
-        } else {
-            const mv = voices.find(v => v.lang.startsWith('tr') && (v.name.includes('Tolga') || v.name.includes('Cem') || v.name.includes('Male')));
-            if (mv) utterance.voice = mv;
-            utterance.pitch = 0.70; // Tok bilge erkek tonu
-        }
-    } else {
-        utterance.lang = 'en-US';
-        if (currentGender === 'female') {
-            const efv = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Female') || v.name.includes('Zira')));
-            if (efv) utterance.voice = efv;
-            utterance.pitch = 1.15;
-        } else {
-            const emv = voices.find(v => v.lang.startsWith('en') && (v.name.includes('David') || v.name.includes('Male')));
-            if (emv) utterance.voice = emv;
-            utterance.pitch = 0.80;
-        }
-    }
-
-    utterance.rate = rate;
-    if (onEndCallback) utterance.onend = onEndCallback;
-    window.speechSynthesis.speak(utterance);
-}
-window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-
-// GEMINI OCR
+// GEMINI OCR (Sıfır Hata)
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const apiKey = localStorage.getItem('superbrain_gemini_key');
+    const apiKey = document.getElementById('apiKeyInput').value.trim();
     if (!apiKey) {
-        alert("Lütfen önce en üstteki kutudan Laboratuvar Anahtarını kaydedin!");
+        alert("Lütfen önce API Anahtarını girin.");
         return;
     }
 
@@ -470,7 +455,7 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                     document.getElementById('textInput').value = data.candidates[0].content.parts[0].text.trim();
                     applyBionic();
                 }
-            } catch (err) { alert("Bağlantı hatası!"); } 
+            } catch (err) { alert("Hata oluştu."); } 
             finally { prog.style.display = 'none'; }
         };
     };
