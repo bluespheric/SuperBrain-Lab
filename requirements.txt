@@ -1,4 +1,0 @@
-gradio
-pillow
-pytesseract
-edge-tts
