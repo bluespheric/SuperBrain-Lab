@@ -104,7 +104,7 @@
             border: 3px dashed var(--primary);
             min-height: 120px;
             margin-top: 20px;
-            user-select: none;
+            user-select: text;
         }
         .reading-ruler {
             position: absolute;
@@ -130,6 +130,15 @@
             margin-top: 8px;
             font-weight: 600;
             font-size: 14px;
+        }
+        .tip-badge {
+            display: inline-block;
+            background: #EDF2F7;
+            color: #4A5568;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 6px;
         }
     </style>
 </head>
@@ -170,12 +179,13 @@
 
         <!-- Metin Kutusu -->
         <label style="margin-top:18px; display:block;"><b>📝 Kâşifin Not Defteri:</b></label>
-        <textarea id="textInput">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+        <textarea id="textInput" oninput="applyBionic()">Bir zamanlar meraklı bir kâşif varmış. Bu kâşif Süper Beyin Laboratuvarında yepyeni dünyalar keşfetmeye bayılırmış.</textarea>
+        <div class="tip-badge">💡 İpucu: Kutudaki istediğin bir kelimeyi veya cümleyi fareyle seçip dinleme butonuna basarsan sadece orayı okur!</div>
 
         <!-- Kelime Rehberi & Sihirli Çubuk -->
         <div class="controls">
             <label>✨ <b>Harf Işığı:</b></label>
-            <input type="range" id="bionicRange" min="20" max="80" value="50">
+            <input type="range" id="bionicRange" min="20" max="80" value="50" onchange="applyBionic()">
             <button class="btn-action" onclick="applyBionic()">✨ Kelimeleri Parlat</button>
             
             <label style="margin-left:14px; cursor:pointer; font-weight:600;">
@@ -186,10 +196,10 @@
         <!-- Ses İstasyonu -->
         <label style="display:block; margin-top:14px;"><b>🎧 Sesli Anlatıcı:</b></label>
         <div class="controls">
-            <button class="btn-action btn-female-tr" onclick="playGuaranteedFemaleTR()">🧚 Masalcı Peri (Kadın Sesi)</button>
-            <button class="btn-action btn-male-tr" onclick="speakBrowser('tr-male')">🧙‍♂️ Bilge Kâşif (Erkek Sesi)</button>
-            <button class="btn-action btn-female-en" onclick="speakBrowser('en-female')">👩‍🏫 Storyteller (EN Kadın)</button>
-            <button class="btn-action btn-male-en" onclick="speakBrowser('en-male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
+            <button class="btn-action btn-female-tr" onclick="playSpeech('tr-female')">🧚 Masalcı Peri (Kadın Sesi)</button>
+            <button class="btn-action btn-male-tr" onclick="playSpeech('tr-male')">🧙‍♂️ Bilge Kâşif (Erkek Sesi)</button>
+            <button class="btn-action btn-female-en" onclick="playSpeech('en-female')">👩‍🏫 Storyteller (EN Kadın)</button>
+            <button class="btn-action btn-male-en" onclick="playSpeech('en-male')">👨‍🚀 Captain Explorer (EN Erkek)</button>
         </div>
     </div>
 
@@ -199,6 +209,9 @@
         <div id="textOutput">Yazılar burada parlayacak...</div>
     </div>
 </div>
+
+<!-- Kesintisiz Kadın Sesi Çalar -->
+<audio id="ttsAudioElement"></audio>
 
 <script>
 // Sayfa Işığı
@@ -210,7 +223,10 @@ function setBg(color) {
 function applyBionic() {
     const text = document.getElementById('textInput').value;
     const ratio = document.getElementById('bionicRange').value / 100;
-    if (!text.trim()) return;
+    if (!text.trim()) {
+        document.getElementById('textOutput').innerHTML = "Yazılar burada parlayacak...";
+        return;
+    }
 
     const words = text.split(/\s+/);
     const transformed = words.map(word => {
@@ -254,32 +270,57 @@ window.onload = () => {
     applyBionic();
 };
 
-// KESİN TÜRKÇE KADIN SESİ (Doğrudan Ses API Sentezleyicisi)
-function playGuaranteedFemaleTR() {
-    const text = document.getElementById('textInput').value.trim();
-    if (!text) return;
+// AKILLI METİN SEÇİCİ: İmleçle seçilen yer varsa sadece orayı, yoksa imleçten sonrasını/tamamını alır
+function getTargetText() {
+    const textarea = document.getElementById('textInput');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    // 1. Kullanıcı fareyle bir metin parçası seçtiyse
+    if (start !== end) {
+        return textarea.value.substring(start, end).trim();
+    }
+    
+    // 2. İmleç bir yere bırakıldıysa oradan sonrasını oku
+    if (start > 0 && start < textarea.value.length) {
+        return textarea.value.substring(start).trim();
+    }
 
-    window.speechSynthesis.cancel();
-    
-    // Doğrudan ses akışını oynatacak güvenli ses motoru
-    const encoded = encodeURIComponent(text.substring(0, 200));
-    const audio = new Audio(`https://api.streamelements.com/kappa/v2/speech?voice=Filiz&text=${encoded}`);
-    
-    audio.play().catch(() => {
-        // Yedek bulut kadın sesi servisi
-        const backupAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&tl=tr&client=tw-ob&q=${encoded}`);
-        backupAudio.play().catch(() => {
-            alert("Ses çalma tarayıcı tarafından engellendi, lütfen sayfada bir yere tıklayıp tekrar dene!");
-        });
-    });
+    // 3. Hiçbir seçim yoksa tüm metni oku
+    return textarea.value.trim();
 }
 
-// DİĞER SESLER (Erkek ve İngilizce)
-function speakBrowser(type) {
-    let text = document.getElementById('textInput').value.trim();
+// TÜM SESLERİ ÇALAN GÜVENLİ VE ENGEL AŞAN MOTOR
+function playSpeech(type) {
+    const text = getTargetText();
     if (!text) return;
 
+    // Önceki sesleri durdur
     window.speechSynthesis.cancel();
+    const audioEl = document.getElementById('ttsAudioElement');
+    audioEl.pause();
+
+    // 1. TÜRKÇE KADIN SESİ (Doğrudan Tıklama İçi Oynatma - Güvenlik Duvarına Takılmaz)
+    if (type === 'tr-female') {
+        const encoded = encodeURIComponent(text.substring(0, 300));
+        // Güvenilir, doğrudan çalınabilir bulut kadın sesi endpoint'i
+        audioEl.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=tr-TR&client=tw-ob&q=${encoded}`;
+        
+        const playPromise = audioEl.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                // Tarayıcı tamamen kilitlerse en yüksek perdeli peri tınısıyla sentezleyiciyi devreye sokar
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'tr-TR';
+                utterance.pitch = 1.6;
+                utterance.rate = 0.92;
+                window.speechSynthesis.speak(utterance);
+            });
+        }
+        return;
+    }
+
+    // 2. DİĞER SESLER (Tarayıcı Motoru)
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
 
@@ -287,7 +328,7 @@ function speakBrowser(type) {
         utterance.lang = 'tr-TR';
         const mVoice = voices.find(v => v.lang.startsWith('tr'));
         if (mVoice) utterance.voice = mVoice;
-        utterance.pitch = 0.65; // Tok erkek sesi
+        utterance.pitch = 0.65;
         utterance.rate = 0.88;
     } else if (type === 'en-female') {
         utterance.lang = 'en-US';
@@ -345,7 +386,6 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
 
             try {
-                // Güncel resmi model endpoint'i: gemini-3.6-flash
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
