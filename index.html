@@ -589,9 +589,9 @@
                 <div class="two-paths-grid">
                     <div class="path-box" onclick="document.getElementById('imageInput').click()">
                         <div style="font-size:24px;">📸</div>
-                        <b style="font-size:14px; color:#1E3A8A;" id="lblPath1Title">1. Yol: Fotoğrafını Yükle</b>
-                        <span style="font-size:12px; color:#64748B;" id="lblPath1Desc">Kitabının sayfasını seç</span>
-                        <input type="file" id="imageInput" accept="image/*" style="display:none;">
+                        <b style="font-size:14px; color:#1E3A8A;" id="lblPath1Title">1. Yol: Fotoğraf / PDF Yükle</b>
+                        <span style="font-size:12px; color:#64748B;" id="lblPath1Desc">Birden fazla fotoğraf veya kısa PDF seçebilirsin</span>
+                        <input type="file" id="imageInput" accept="image/*,.pdf,.txt,text/plain" multiple style="display:none;">
                     </div>
                     <div class="path-divider" id="lblOr">VEYA</div>
                     <div class="path-box" onclick="document.getElementById('textInput').focus()">
@@ -1196,8 +1196,8 @@ function selectLang(lang, el) {
 
         document.getElementById('lblAtmosphere').innerText = "Planet Theme:";
         document.getElementById('lblFont').innerText = "Typography:";
-        document.getElementById('lblPath1Title').innerText = "Path 1: Upload a Photo";
-        document.getElementById('lblPath1Desc').innerText = "Snap or choose your book page";
+        document.getElementById('lblPath1Title').innerText = "Path 1: Upload Photos / PDF";
+        document.getElementById('lblPath1Desc').innerText = "Choose multiple photos or a short PDF";
         document.getElementById('lblOr').innerText = "OR";
         document.getElementById('lblPath2Title').innerText = "Path 2: Write Here";
         document.getElementById('lblPath2Desc').innerText = "Type or paste your text";
@@ -2486,94 +2486,15 @@ function finishBreak() {
     playSuccessTone();
 }
 
-// OCR — hibrit sistem:
-// - Temiz ekran görüntüsü / dijital sayfa: Tesseract.js
-// - Gerçek fotoğraf veya düşük güvenli sonuç: Cloudflare Moondream Vision OCR
-// Gemini API anahtarı gerekmez.
+// BELGE AKTARMA — tek yerde:
+ // • birden fazla fotoğraf
+ // • birden fazla kısa PDF
+ // • TXT
+ // • dijital PDF: doğrudan metin çıkarma
+ // • taranmış PDF/fotoğraf: Cloudflare Qwen Vision OCR
+ // • temiz PNG ekran görüntüsü: hızlı Tesseract, gerekirse AI fallback
 
-function buildOcrCanvas(img, strong = false) {
-    const MAX_SIDE = 1500;
-    const MAX_PIXELS = 1600000;
-
-    let width = img.naturalWidth || img.width;
-    let height = img.naturalHeight || img.height;
-
-    if (!width || !height) {
-        throw new Error(
-            currentLang === 'en'
-                ? 'Image dimensions could not be read.'
-                : 'Görsel boyutları okunamadı.'
-        );
-    }
-
-    let scale = Math.min(
-        1,
-        MAX_SIDE / Math.max(width, height),
-        Math.sqrt(MAX_PIXELS / (width * height))
-    );
-
-    if (scale === 1 && width < 900) {
-        scale = Math.min(1.25, 900 / width);
-    }
-
-    width = Math.max(1, Math.round(width * scale));
-    height = Math.max(1, Math.round(height * scale));
-
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext('2d', { alpha: false });
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.filter = strong
-        ? 'grayscale(1) contrast(1.75) brightness(1.06)'
-        : 'grayscale(1) contrast(1.30) brightness(1.03)';
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, 0, 0, width, height);
-    ctx.filter = 'none';
-
-    return canvas;
-}
-
-function buildVisionOcrDataUrl(img) {
-    // OCR needs more detail than ordinary image preview.
-    // Keep enough resolution for small printed text while still compressing
-    // before sending it to the Worker.
-    const MAX_SIDE = 2400;
-    const MAX_PIXELS = 5000000;
-
-    let width = img.naturalWidth || img.width;
-    let height = img.naturalHeight || img.height;
-
-    let scale = Math.min(
-        1,
-        MAX_SIDE / Math.max(width, height),
-        Math.sqrt(MAX_PIXELS / (width * height))
-    );
-
-    width = Math.max(1, Math.round(width * scale));
-    height = Math.max(1, Math.round(height * scale));
-
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext('2d', { alpha: false });
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, 0, 0, width, height);
-
-    // Fotoğrafı Worker'a gereksiz büyük göndermemek için sıkıştır.
-    return canvas.toDataURL('image/jpeg', 0.94);
-}
-
-function cleanOcrText(text) {
+function sbCleanText(text) {
     return String(text || '')
         .replace(/\r/g, '')
         .replace(/^```(?:text)?\s*/i, '')
@@ -2584,255 +2505,358 @@ function cleanOcrText(text) {
         .trim();
 }
 
-function looksLikeUsableText(text) {
-    const clean = cleanOcrText(text);
-    if (clean.length < 20) return false;
-
-    const letters =
-        (clean.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
-
-    return letters >= Math.max(10, clean.length * 0.38);
+function sbLooksUsable(text) {
+    const clean = sbCleanText(text);
+    if (clean.length < 18) return false;
+    const letters = (clean.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
+    return letters >= Math.max(8, clean.length * 0.34);
 }
 
-async function runCloudflareVisionOcr(img, prog) {
-    prog.innerText =
-        currentLang === 'en'
-            ? '👁️ Photo mode — AI is reading the page directly...'
-            : '👁️ Fotoğraf modu — yapay zekâ sayfayı doğrudan okuyor...';
+function sbFileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
-    const imageDataUrl = buildVisionOcrDataUrl(img);
+function sbLoadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = dataUrl;
+    });
+}
 
-    const data = await askSuperBrainAI('ocr', {
-        image: imageDataUrl
+function sbImageToOcrDataUrl(img) {
+    const MAX_SIDE = 2400;
+    const MAX_PIXELS = 5000000;
+
+    let width = img.naturalWidth || img.width;
+    let height = img.naturalHeight || img.height;
+
+    const scale = Math.min(
+        1,
+        MAX_SIDE / Math.max(width, height),
+        Math.sqrt(MAX_PIXELS / (width * height))
+    );
+
+    width = Math.max(1, Math.round(width * scale));
+    height = Math.max(1, Math.round(height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, width, height);
+
+    return canvas.toDataURL('image/jpeg', 0.94);
+}
+
+async function sbVisionOcrDataUrl(dataUrl, prog, label) {
+    prog.innerText = label ||
+        (currentLang === 'en'
+            ? '👁️ AI is reading the page...'
+            : '👁️ Yapay zekâ sayfayı okuyor...');
+
+    const result = await askSuperBrainAI('ocr', {
+        image: dataUrl
     });
 
-    const text = cleanOcrText(data.text || '');
+    const text = sbCleanText(result.text || '');
 
-    if (!looksLikeUsableText(text)) {
+    if (!sbLooksUsable(text)) {
         throw new Error(
             currentLang === 'en'
-                ? 'Vision OCR could not extract enough readable text.'
-                : 'Görsel OCR yeterince okunabilir metin çıkaramadı.'
+                ? 'AI could not extract enough readable text.'
+                : 'Yapay zekâ yeterince okunabilir metin çıkaramadı.'
         );
     }
 
     return text;
 }
 
-document.getElementById('imageInput').addEventListener('change', function(e) {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
+async function sbReadImageFile(file, prog, index, total) {
+    const dataUrl = await sbFileToDataUrl(file);
+    const img = await sbLoadImage(dataUrl);
+
+    const fileName = String(file.name || '').toLowerCase();
+    const isCleanPng =
+        /^image\/png$/i.test(file.type || '') ||
+        fileName.endsWith('.png');
+
+    // PNG screenshots are often fastest and most accurate locally.
+    if (isCleanPng && window.Tesseract) {
+        try {
+            prog.innerText =
+                currentLang === 'en'
+                    ? `🔎 Reading image ${index}/${total}...`
+                    : `🔎 Görsel ${index}/${total} okunuyor...`;
+
+            const canvas = document.createElement('canvas');
+            const maxSide = 1500;
+            const w0 = img.naturalWidth || img.width;
+            const h0 = img.naturalHeight || img.height;
+            const scale = Math.min(1, maxSide / Math.max(w0, h0));
+            canvas.width = Math.max(1, Math.round(w0 * scale));
+            canvas.height = Math.max(1, Math.round(h0 * scale));
+
+            const ctx = canvas.getContext('2d', { alpha: false });
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.filter = 'grayscale(1) contrast(1.3) brightness(1.03)';
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.filter = 'none';
+
+            const result = await Tesseract.recognize(
+                canvas,
+                currentLang === 'en' ? 'eng' : 'tur+eng'
+            );
+
+            const tessText = sbCleanText(result?.data?.text || '');
+            const confidence = Number(result?.data?.confidence || 0);
+
+            if (confidence >= 80 && sbLooksUsable(tessText)) {
+                return tessText;
+            }
+        } catch (err) {
+            console.warn('Local PNG OCR fallback:', err);
+        }
+    }
+
+    // Camera photos and uncertain screenshots go directly to vision OCR.
+    return await sbVisionOcrDataUrl(
+        sbImageToOcrDataUrl(img),
+        prog,
+        currentLang === 'en'
+            ? `👁️ AI is reading image ${index}/${total}...`
+            : `👁️ Yapay zekâ görsel ${index}/${total} içindeki metni okuyor...`
+    );
+}
+
+let sbPdfJsPromise = null;
+
+async function sbEnsurePdfJs() {
+    if (window.pdfjsLib) return window.pdfjsLib;
+    if (sbPdfJsPromise) return sbPdfJsPromise;
+
+    sbPdfJsPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+
+        script.onload = () => {
+            if (!window.pdfjsLib) {
+                reject(new Error('PDF reader could not initialize.'));
+                return;
+            }
+
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            resolve(window.pdfjsLib);
+        };
+
+        script.onerror = () =>
+            reject(new Error('PDF reader could not load.'));
+
+        document.head.appendChild(script);
+    });
+
+    return sbPdfJsPromise;
+}
+
+async function sbReadPdfFile(file, prog, fileIndex, fileTotal) {
+    const pdfjsLib = await sbEnsurePdfJs();
+    const buffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({
+        data: new Uint8Array(buffer)
+    }).promise;
+
+    // Young learners are likely to upload short worksheets/booklets.
+    // Read up to 20 digital pages; OCR up to 8 scanned pages.
+    const digitalPages = Math.min(pdf.numPages, 20);
+    const pageTexts = [];
+    let visibleChars = 0;
+
+    for (let p = 1; p <= digitalPages; p++) {
+        prog.innerText =
+            currentLang === 'en'
+                ? `📄 PDF ${fileIndex}/${fileTotal} — page ${p}/${digitalPages}`
+                : `📄 PDF ${fileIndex}/${fileTotal} — sayfa ${p}/${digitalPages}`;
+
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        const text = content.items
+            .map(item => item.str)
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (text) {
+            pageTexts.push(text);
+            visibleChars += text.length;
+        }
+    }
+
+    // A text-based PDF should give plenty of embedded text.
+    if (visibleChars >= 250) {
+        return pageTexts.join('\n\n').trim();
+    }
+
+    // Scanned PDF: render pages to images, then use the same high-quality OCR.
+    const ocrPages = Math.min(pdf.numPages, 8);
+    const scannedTexts = [];
+
+    for (let p = 1; p <= ocrPages; p++) {
+        prog.innerText =
+            currentLang === 'en'
+                ? `👁️ Scanned PDF ${fileIndex}/${fileTotal} — AI OCR page ${p}/${ocrPages}`
+                : `👁️ Taranmış PDF ${fileIndex}/${fileTotal} — AI OCR sayfa ${p}/${ocrPages}`;
+
+        const page = await pdf.getPage(p);
+        const viewport = page.getViewport({ scale: 1.8 });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        await page.render({
+            canvasContext: ctx,
+            viewport
+        }).promise;
+
+        const pageDataUrl =
+            canvas.toDataURL('image/jpeg', 0.94);
+
+        const pageText = await sbVisionOcrDataUrl(
+            pageDataUrl,
+            prog,
+            currentLang === 'en'
+                ? `👁️ AI OCR: PDF page ${p}/${ocrPages}`
+                : `👁️ AI OCR: PDF sayfa ${p}/${ocrPages}`
+        );
+
+        if (pageText) scannedTexts.push(pageText);
+    }
+
+    if (!scannedTexts.length) {
+        throw new Error(
+            currentLang === 'en'
+                ? 'No readable text was found in the PDF.'
+                : 'PDF içinde okunabilir metin bulunamadı.'
+        );
+    }
+
+    return scannedTexts.join('\n\n').trim();
+}
+
+async function sbReadOneFile(file, prog, index, total) {
+    const type = String(file.type || '').toLowerCase();
+    const name = String(file.name || '').toLowerCase();
+
+    if (type === 'application/pdf' || name.endsWith('.pdf')) {
+        return await sbReadPdfFile(file, prog, index, total);
+    }
+
+    if (type.startsWith('image/')) {
+        return await sbReadImageFile(file, prog, index, total);
+    }
+
+    if (type === 'text/plain' || name.endsWith('.txt')) {
+        return sbCleanText(await file.text());
+    }
+
+    throw new Error(
+        currentLang === 'en'
+            ? `Unsupported file: ${file.name}`
+            : `Desteklenmeyen dosya: ${file.name}`
+    );
+}
+
+document.getElementById('imageInput').addEventListener('change', async function(e) {
+    const files = Array.from(e.target.files || []);
+
+    if (!files.length) return;
 
     const prog = document.getElementById('aiProgress');
     prog.style.display = 'block';
-    prog.innerText =
-        currentLang === 'en'
-            ? '📸 Preparing the image...'
-            : '📸 Görsel hazırlanıyor...';
 
-    const reader = new FileReader();
+    // Prevent accidentally sending a huge batch from a child's device.
+    const selected = files.slice(0, 10);
 
-    reader.onerror = () => {
+    try {
+        const parts = [];
+
+        for (let i = 0; i < selected.length; i++) {
+            const file = selected[i];
+
+            prog.innerText =
+                currentLang === 'en'
+                    ? `📚 Reading file ${i + 1}/${selected.length}: ${file.name}`
+                    : `📚 Dosya ${i + 1}/${selected.length} okunuyor: ${file.name}`;
+
+            const text = await sbReadOneFile(
+                file,
+                prog,
+                i + 1,
+                selected.length
+            );
+
+            if (text) {
+                parts.push(
+                    selected.length > 1
+                        ? `--- ${file.name} ---\n${text}`
+                        : text
+                );
+            }
+        }
+
+        const finalText = parts.join('\n\n').trim();
+
+        if (!sbLooksUsable(finalText)) {
+            throw new Error(
+                currentLang === 'en'
+                    ? 'No readable text could be extracted from the selected files.'
+                    : 'Seçilen dosyalardan okunabilir metin çıkarılamadı.'
+            );
+        }
+
+        document.getElementById('textInput').value = finalText;
+        resetAndDisplayChunks();
+
+        prog.innerText =
+            currentLang === 'en'
+                ? `✅ ${selected.length} file(s) transferred!`
+                : `✅ ${selected.length} dosya aktarıldı!`;
+
+        setTimeout(() => {
+            prog.style.display = 'none';
+        }, 1200);
+
+    } catch (err) {
+        console.error('Document import error:', err);
         prog.style.display = 'none';
-        document.getElementById('imageInput').value = '';
+
         alert(
             currentLang === 'en'
-                ? 'The image could not be read.'
-                : 'Görsel okunamadı.'
+                ? `Document import failed: ${err.message}`
+                : `Belge aktarılamadı: ${err.message}`
         );
-    };
-
-    reader.onload = (event) => {
-        const img = new Image();
-
-        img.onerror = () => {
-            prog.style.display = 'none';
-            document.getElementById('imageInput').value = '';
-            alert(
-                currentLang === 'en'
-                    ? 'The image could not be opened.'
-                    : 'Görsel açılamadı.'
-            );
-        };
-
-        img.onload = async () => {
-            let finalText = '';
-            let usedVision = false;
-
-            try {
-                // JPEG + yüksek çözünürlük çoğunlukla telefon/kamera fotoğrafıdır.
-                // Böyle görselleri Tesseract'ta uzun süre bekletmek yerine
-                // doğrudan vision OCR'a gönderiyoruz.
-                const fileName =
-                    String(file.name || '').toLowerCase();
-
-                const isJpeg =
-                    /^image\/jpe?g$/i.test(file.type || '') ||
-                    fileName.endsWith('.jpg') ||
-                    fileName.endsWith('.jpeg');
-
-                const isLikelyPhoto =
-                    isJpeg ||
-                    (
-                        img.naturalWidth >= 1800 &&
-                        img.naturalHeight >= 1200 &&
-                        !/^image\/png$/i.test(file.type || '')
-                    );
-
-                // IMPORTANT:
-                // Real camera/book photos DO NOT go through Tesseract first.
-                // They go directly to Cloudflare Vision OCR.
-                if (isLikelyPhoto) {
-                    try {
-                        finalText =
-                            await runCloudflareVisionOcr(img, prog);
-
-                        usedVision = true;
-                    } catch (visionErr) {
-                        console.warn(
-                            'Vision OCR failed; falling back to Tesseract:',
-                            visionErr
-                        );
-                    }
-                }
-
-                // Temiz ekran görüntülerinde hızlı ve ücretsiz tarayıcı OCR'ı.
-                if (!finalText) {
-                    if (!window.Tesseract) {
-                        // Tesseract CDN yüklenmediyse vision doğrudan yedek olur.
-                        finalText =
-                            await runCloudflareVisionOcr(img, prog);
-
-                        usedVision = true;
-                    } else {
-                        const ocrLang =
-                            currentLang === 'en'
-                                ? 'eng'
-                                : 'tur+eng';
-
-                        const canvas =
-                            buildOcrCanvas(img, false);
-
-                        const result =
-                            await Tesseract.recognize(
-                                canvas,
-                                ocrLang,
-                                {
-                                    logger: (m) => {
-                                        if (
-                                            m.status ===
-                                            'recognizing text'
-                                        ) {
-                                            const pct =
-                                                Math.round(
-                                                    (m.progress || 0) * 100
-                                                );
-
-                                            prog.innerText =
-                                                currentLang === 'en'
-                                                    ? `🔎 Reading text... ${pct}%`
-                                                    : `🔎 Metin okunuyor... %${pct}`;
-                                        }
-                                    }
-                                }
-                            );
-
-                        const tessText =
-                            cleanOcrText(
-                                result?.data?.text || ''
-                            );
-
-                        const confidence =
-                            Number(
-                                result?.data?.confidence || 0
-                            );
-
-                        // Tesseract sonucu şüpheliyse vision modeline geç.
-                        const shouldUseVision =
-                            confidence < 80 ||
-                            !looksLikeUsableText(tessText);
-
-                        if (shouldUseVision) {
-                            try {
-                                finalText =
-                                    await runCloudflareVisionOcr(
-                                        img,
-                                        prog
-                                    );
-
-                                usedVision = true;
-                            } catch (visionErr) {
-                                console.warn(
-                                    'Vision OCR fallback failed:',
-                                    visionErr
-                                );
-
-                                finalText = tessText;
-                            }
-                        } else {
-                            finalText = tessText;
-                        }
-                    }
-                }
-
-                finalText =
-                    cleanOcrText(finalText);
-
-                if (!looksLikeUsableText(finalText)) {
-                    throw new Error(
-                        currentLang === 'en'
-                            ? 'No readable text could be extracted. Try a brighter and closer photo.'
-                            : 'Okunabilir metin çıkarılamadı. Daha aydınlık ve yakından çekilmiş bir fotoğraf dene.'
-                    );
-                }
-
-                document.getElementById(
-                    'textInput'
-                ).value = finalText;
-
-                resetAndDisplayChunks();
-
-                prog.innerText =
-                    currentLang === 'en'
-                        ? (
-                            usedVision
-                                ? '✅ Photo read with AI!'
-                                : '✅ Text transferred!'
-                        )
-                        : (
-                            usedVision
-                                ? '✅ Fotoğraf yapay zekâ ile okundu!'
-                                : '✅ Metin aktarıldı!'
-                        );
-
-                setTimeout(() => {
-                    prog.style.display = 'none';
-                }, 1100);
-
-            } catch (err) {
-                console.error(
-                    'Hybrid OCR error:',
-                    err
-                );
-
-                prog.style.display = 'none';
-
-                alert(
-                    currentLang === 'en'
-                        ? `OCR could not finish: ${err.message}`
-                        : `OCR tamamlanamadı: ${err.message}`
-                );
-            } finally {
-                document.getElementById(
-                    'imageInput'
-                ).value = '';
-            }
-        };
-
-        img.src = event.target.result;
-    };
-
-    reader.readAsDataURL(file);
+    } finally {
+        document.getElementById('imageInput').value = '';
+    }
 });
 
 </script>
