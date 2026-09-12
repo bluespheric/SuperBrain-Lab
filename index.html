@@ -260,7 +260,13 @@
         .dual-box { background: #FFF7ED; border: 2px solid #FED7AA; }
         .dual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
         .dual-card { background: #FFFFFF; border-radius: 16px; overflow: hidden; border: 2px solid #FFEDD5; text-align: center; }
-        .dual-card img { width: 100%; height: 320px; object-fit: cover; }
+        .dual-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            height: auto;
+            object-fit: cover;
+            display: block;
+        }
         .dual-card-caption { padding: 14px; font-weight: 600; font-size: 15px; color: #9A3412; line-height: 1.5; }
 
         .station-pipeline {
@@ -1788,8 +1794,7 @@ async function runDualCoding() {
 
                 cards.push(`
                     <div class="dual-card">
-                        <img src="${imgUrl}" alt="${cleanMarkdown(scene.caption)}">
-                        <div class="dual-card-caption">🎬 ${cleanMarkdown(scene.caption)}</div>
+                        <img src="${imgUrl}" alt="">
                     </div>
                 `);
             } catch (err) {
