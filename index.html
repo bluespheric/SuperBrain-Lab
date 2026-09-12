@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Süper Beyin Laboratuvarı</title>
     <!-- Okuma dostu yazı tipleri: Lexend + Atkinson Hyperlegible -->
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inclusive+Sans:wght@400;600;700&family=Lexend:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #F4EFE6;
@@ -585,6 +585,8 @@
                         <span style="font-size:13px; font-weight:600; color:#475569;" id="lblFont">Okuma Dostu Yazı Tipi:</span><br>
                         <button class="theme-btn active" onclick="setFont('Lexend', this)">Lexend</button>
                         <button class="theme-btn" onclick="setFont('Atkinson Hyperlegible', this)">Atkinson Hyperlegible</button>
+                        <button class="theme-btn" onclick="setFont('Inclusive Sans', this)">Inclusive Sans</button>
+                        <button class="theme-btn" onclick="setFont('Noto Sans', this)">Noto Sans</button>
                     </div>
                 </div>
 
@@ -1393,11 +1395,16 @@ function setBg(bodyColor, cardColor, textColor, btnEl) {
 }
 
 function setFont(fontName, btnEl) {
-    const allowedFonts = ['Lexend', 'Atkinson Hyperlegible'];
+    const allowedFonts = ['Lexend', 'Atkinson Hyperlegible', 'Inclusive Sans', 'Noto Sans'];
     const safeFont = allowedFonts.includes(fontName) ? fontName : 'Lexend';
     document.documentElement.style.setProperty('--font-choice', `'${safeFont}', sans-serif`);
     document.querySelectorAll('.theme-btn').forEach(b => {
-        if (b.innerText.includes('Lexend') || b.innerText.includes('Atkinson Hyperlegible')) {
+        if (
+            b.innerText.includes('Lexend') ||
+            b.innerText.includes('Atkinson Hyperlegible') ||
+            b.innerText.includes('Inclusive Sans') ||
+            b.innerText.includes('Noto Sans')
+        ) {
             b.classList.remove('active');
         }
     });
@@ -2502,14 +2509,16 @@ function finishBreak() {
 }
 
 // OCR — API anahtarı yok; Tesseract.js tarayıcıda çalışır.
-// Ekran görüntülerinde hızlı tek geçiş; gerçek fotoğraflarda düşük güven algılanırsa
-// ikinci, daha güçlü kontrast/binarizasyon geçişi otomatik denenir.
+// Akış:
+// 1) Temiz ekran görüntüsü / dijital sayfa -> hızlı OCR.
+// 2) Güven düşükse fotoğraf modu devreye girer.
+// 3) OpenCV.js yalnız gerektiğinde yüklenir.
+// 4) Sayfa sınırı bulunabilirse perspektif otomatik düzeltilir.
+// 5) Normal + siyah-beyaz OCR sonuçları karşılaştırılır ve en iyisi seçilir.
 
 function makeOcrBaseCanvas(img) {
     const canvas = document.createElement('canvas');
 
-    // Küçük fotoğrafları biraz büyütmek harf kenarlarını belirginleştirir.
-    // Çok büyük fotoğrafları ise tarayıcıyı yormamak için sınırlarız.
     const MAX_WIDTH = 2200;
     const MIN_TARGET_WIDTH = 1500;
 
@@ -2547,24 +2556,28 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const d = imageData.data;
 
-    // Gri ton histogramı oluştur.
     const hist = new Uint32Array(256);
     const grays = new Uint8Array(d.length / 4);
 
     for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-        const gray = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+        const gray = Math.round(
+            0.299 * d[i] +
+            0.587 * d[i + 1] +
+            0.114 * d[i + 2]
+        );
         grays[p] = gray;
         hist[gray]++;
     }
 
     const total = grays.length;
 
-    // Gölgeleri/parlamaları kırpmak için %2 - %98 aralığını normalize et.
+    // Fotoğraftaki gölge / parlama uçlarını kırp.
     const lowTarget = total * 0.02;
     const highTarget = total * 0.98;
 
     let cumulative = 0;
     let low = 0;
+
     for (let i = 0; i < 256; i++) {
         cumulative += hist[i];
         if (cumulative >= lowTarget) {
@@ -2575,6 +2588,7 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
 
     cumulative = 0;
     let high = 255;
+
     for (let i = 0; i < 256; i++) {
         cumulative += hist[i];
         if (cumulative >= highTarget) {
@@ -2588,16 +2602,20 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
         high = 255;
     }
 
-    // Önce normalize edilmiş gri görüntü.
     const normalized = new Uint8Array(grays.length);
     const normHist = new Uint32Array(256);
 
     for (let p = 0; p < grays.length; p++) {
-        let v = Math.round((grays[p] - low) * 255 / (high - low));
+        let v = Math.round(
+            (grays[p] - low) * 255 / (high - low)
+        );
+
         v = Math.max(0, Math.min(255, v));
 
-        // Hafif gamma düzeltmesi: açık sayfa + koyu harf ayrımını güçlendirir.
-        v = Math.round(255 * Math.pow(v / 255, 0.90));
+        // Açık kâğıt / koyu harf ayrımını hafifçe güçlendir.
+        v = Math.round(
+            255 * Math.pow(v / 255, 0.90)
+        );
 
         normalized[p] = v;
         normHist[v]++;
@@ -2606,9 +2624,11 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
     let threshold = 150;
 
     if (makeBinary) {
-        // Otsu eşikleme: gölgeli/çekilmiş kağıt fotoğraflarında ikinci geçiş için.
+        // Otsu eşikleme.
         let sum = 0;
-        for (let i = 0; i < 256; i++) sum += i * normHist[i];
+        for (let i = 0; i < 256; i++) {
+            sum += i * normHist[i];
+        }
 
         let sumB = 0;
         let wB = 0;
@@ -2625,7 +2645,9 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
 
             const mB = sumB / wB;
             const mF = (sum - sumB) / wF;
-            const variance = wB * wF * Math.pow(mB - mF, 2);
+
+            const variance =
+                wB * wF * Math.pow(mB - mF, 2);
 
             if (variance > maxVariance) {
                 maxVariance = variance;
@@ -2633,8 +2655,10 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
             }
         }
 
-        // Çok agresif eşiklemeyi engelle.
-        threshold = Math.max(105, Math.min(205, threshold));
+        threshold = Math.max(
+            105,
+            Math.min(205, threshold)
+        );
     }
 
     for (let i = 0, p = 0; i < d.length; i += 4, p++) {
@@ -2644,7 +2668,9 @@ function normalizeOcrCanvas(sourceCanvas, makeBinary = false) {
             v = v >= threshold ? 255 : 0;
         }
 
-        d[i] = d[i + 1] = d[i + 2] = v;
+        d[i] = v;
+        d[i + 1] = v;
+        d[i + 2] = v;
         d[i + 3] = 255;
     }
 
@@ -2662,28 +2688,488 @@ function cleanOcrText(text) {
 }
 
 function scoreOcrResult(result) {
-    const confidence = Number(result?.data?.confidence || 0);
-    const text = cleanOcrText(result?.data?.text || '');
+    const confidence =
+        Number(result?.data?.confidence || 0);
 
-    // Güven ana ölçüt; metin uzunluğu eşitlik bozucu olarak küçük katkı yapar.
-    return confidence + Math.min(8, text.length / 120);
+    const text =
+        cleanOcrText(result?.data?.text || '');
+
+    const letterCount =
+        (text.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
+
+    const weirdCount =
+        (text.match(/[^\sA-Za-z0-9ÇĞİÖŞÜçğıöşü.,;:!?'"“”‘’()\-–—*/%]/g) || []).length;
+
+    // Güven ana ölçüt.
+    // Okunabilir harf sayısı küçük bonus,
+    // garip OCR karakterleri küçük ceza alır.
+    return (
+        confidence +
+        Math.min(8, letterCount / 110) -
+        Math.min(10, weirdCount * 0.8)
+    );
+}
+
+async function ensureOpenCvLoaded() {
+    const resolveCv = async () => {
+        if (!window.cv) return null;
+
+        if (typeof window.cv.then === 'function') {
+            try {
+                window.cv = await window.cv;
+            } catch {
+                return null;
+            }
+        }
+
+        if (
+            window.cv &&
+            typeof window.cv.imread === 'function' &&
+            typeof window.cv.warpPerspective === 'function'
+        ) {
+            return window.cv;
+        }
+
+        return null;
+    };
+
+    let ready = await resolveCv();
+    if (ready) return ready;
+
+    if (!document.getElementById('opencvJsLazy')) {
+        const script = document.createElement('script');
+        script.id = 'opencvJsLazy';
+        script.src = 'https://docs.opencv.org/4.x/opencv.js';
+        script.async = true;
+
+        document.head.appendChild(script);
+    }
+
+    const started = Date.now();
+
+    while (Date.now() - started < 15000) {
+        ready = await resolveCv();
+        if (ready) return ready;
+
+        await new Promise(resolve =>
+            setTimeout(resolve, 180)
+        );
+    }
+
+    throw new Error(
+        currentLang === 'en'
+            ? 'Photo correction tools could not load.'
+            : 'Fotoğraf düzeltme araçları yüklenemedi.'
+    );
+}
+
+function orderQuadPoints(points) {
+    const pts = points.map(p => ({
+        x: Number(p.x),
+        y: Number(p.y)
+    }));
+
+    const sumSorted = [...pts].sort(
+        (a, b) => (a.x + a.y) - (b.x + b.y)
+    );
+
+    const diffSorted = [...pts].sort(
+        (a, b) => (a.y - a.x) - (b.y - b.x)
+    );
+
+    return {
+        tl: sumSorted[0],
+        br: sumSorted[3],
+        tr: diffSorted[0],
+        bl: diffSorted[3]
+    };
+}
+
+function pointDistance(a, b) {
+    return Math.hypot(
+        a.x - b.x,
+        a.y - b.y
+    );
+}
+
+async function autoPerspectiveCorrectCanvas(sourceCanvas) {
+    const cv = await ensureOpenCvLoaded();
+
+    let src = null;
+    let small = null;
+    let gray = null;
+    let blur = null;
+    let edges = null;
+    let contours = null;
+    let hierarchy = null;
+
+    try {
+        src = cv.imread(sourceCanvas);
+
+        const MAX_DETECT_WIDTH = 1200;
+        const scale =
+            src.cols > MAX_DETECT_WIDTH
+                ? MAX_DETECT_WIDTH / src.cols
+                : 1;
+
+        small = new cv.Mat();
+
+        if (scale < 1) {
+            cv.resize(
+                src,
+                small,
+                new cv.Size(
+                    Math.round(src.cols * scale),
+                    Math.round(src.rows * scale)
+                ),
+                0,
+                0,
+                cv.INTER_AREA
+            );
+        } else {
+            src.copyTo(small);
+        }
+
+        gray = new cv.Mat();
+        blur = new cv.Mat();
+        edges = new cv.Mat();
+
+        cv.cvtColor(
+            small,
+            gray,
+            cv.COLOR_RGBA2GRAY
+        );
+
+        cv.GaussianBlur(
+            gray,
+            blur,
+            new cv.Size(5, 5),
+            0,
+            0,
+            cv.BORDER_DEFAULT
+        );
+
+        cv.Canny(
+            blur,
+            edges,
+            45,
+            140
+        );
+
+        // Sayfa kenarındaki küçük kopuklukları birleştir.
+        const kernel = cv.getStructuringElement(
+            cv.MORPH_RECT,
+            new cv.Size(5, 5)
+        );
+
+        cv.morphologyEx(
+            edges,
+            edges,
+            cv.MORPH_CLOSE,
+            kernel
+        );
+
+        kernel.delete();
+
+        contours = new cv.MatVector();
+        hierarchy = new cv.Mat();
+
+        cv.findContours(
+            edges,
+            contours,
+            hierarchy,
+            cv.RETR_EXTERNAL,
+            cv.CHAIN_APPROX_SIMPLE
+        );
+
+        const imageArea =
+            small.cols * small.rows;
+
+        let best = null;
+
+        for (let i = 0; i < contours.size(); i++) {
+            const contour = contours.get(i);
+
+            try {
+                const area = Math.abs(
+                    cv.contourArea(contour)
+                );
+
+                // Çok küçük şekilleri ve neredeyse tüm fotoğraf çerçevesini ele.
+                if (
+                    area < imageArea * 0.18 ||
+                    area > imageArea * 0.97
+                ) {
+                    continue;
+                }
+
+                const peri = cv.arcLength(
+                    contour,
+                    true
+                );
+
+                const approx = new cv.Mat();
+
+                try {
+                    cv.approxPolyDP(
+                        contour,
+                        approx,
+                        0.02 * peri,
+                        true
+                    );
+
+                    if (
+                        approx.rows !== 4 ||
+                        !cv.isContourConvex(approx)
+                    ) {
+                        continue;
+                    }
+
+                    const raw = [];
+
+                    for (let r = 0; r < 4; r++) {
+                        raw.push({
+                            x: approx.intPtr(r, 0)[0],
+                            y: approx.intPtr(r, 0)[1]
+                        });
+                    }
+
+                    const ordered =
+                        orderQuadPoints(raw);
+
+                    const widthTop =
+                        pointDistance(ordered.tl, ordered.tr);
+
+                    const widthBottom =
+                        pointDistance(ordered.bl, ordered.br);
+
+                    const heightLeft =
+                        pointDistance(ordered.tl, ordered.bl);
+
+                    const heightRight =
+                        pointDistance(ordered.tr, ordered.br);
+
+                    const width =
+                        Math.max(widthTop, widthBottom);
+
+                    const height =
+                        Math.max(heightLeft, heightRight);
+
+                    if (
+                        width < 250 ||
+                        height < 350
+                    ) {
+                        continue;
+                    }
+
+                    const ratio =
+                        width / height;
+
+                    // Tek sayfa için portre biçimini hafifçe tercih et,
+                    // ama farklı belgeleri tamamen dışlama.
+                    const ratioPenalty =
+                        ratio > 1.35
+                            ? 0.72
+                            : ratio < 0.40
+                                ? 0.75
+                                : 1;
+
+                    const score =
+                        area * ratioPenalty;
+
+                    if (
+                        !best ||
+                        score > best.score
+                    ) {
+                        best = {
+                            score,
+                            ordered
+                        };
+                    }
+                } finally {
+                    approx.delete();
+                }
+            } finally {
+                contour.delete();
+            }
+        }
+
+        if (!best) {
+            return sourceCanvas;
+        }
+
+        // Küçük tespit görüntüsündeki noktaları asıl görüntü ölçeğine getir.
+        const invScale = 1 / scale;
+
+        const q = {
+            tl: {
+                x: best.ordered.tl.x * invScale,
+                y: best.ordered.tl.y * invScale
+            },
+            tr: {
+                x: best.ordered.tr.x * invScale,
+                y: best.ordered.tr.y * invScale
+            },
+            br: {
+                x: best.ordered.br.x * invScale,
+                y: best.ordered.br.y * invScale
+            },
+            bl: {
+                x: best.ordered.bl.x * invScale,
+                y: best.ordered.bl.y * invScale
+            }
+        };
+
+        const maxWidth = Math.max(
+            pointDistance(q.tl, q.tr),
+            pointDistance(q.bl, q.br)
+        );
+
+        const maxHeight = Math.max(
+            pointDistance(q.tl, q.bl),
+            pointDistance(q.tr, q.br)
+        );
+
+        let outWidth =
+            Math.round(maxWidth);
+
+        let outHeight =
+            Math.round(maxHeight);
+
+        const MAX_SIDE = 2200;
+
+        if (
+            outWidth > MAX_SIDE ||
+            outHeight > MAX_SIDE
+        ) {
+            const s =
+                Math.min(
+                    MAX_SIDE / outWidth,
+                    MAX_SIDE / outHeight
+                );
+
+            outWidth =
+                Math.round(outWidth * s);
+
+            outHeight =
+                Math.round(outHeight * s);
+        }
+
+        if (
+            outWidth < 350 ||
+            outHeight < 450
+        ) {
+            return sourceCanvas;
+        }
+
+        const srcPts = cv.matFromArray(
+            4,
+            1,
+            cv.CV_32FC2,
+            [
+                q.tl.x, q.tl.y,
+                q.tr.x, q.tr.y,
+                q.br.x, q.br.y,
+                q.bl.x, q.bl.y
+            ]
+        );
+
+        const dstPts = cv.matFromArray(
+            4,
+            1,
+            cv.CV_32FC2,
+            [
+                0, 0,
+                outWidth - 1, 0,
+                outWidth - 1, outHeight - 1,
+                0, outHeight - 1
+            ]
+        );
+
+        const transform =
+            cv.getPerspectiveTransform(
+                srcPts,
+                dstPts
+            );
+
+        const warped = new cv.Mat();
+
+        try {
+            cv.warpPerspective(
+                src,
+                warped,
+                transform,
+                new cv.Size(
+                    outWidth,
+                    outHeight
+                ),
+                cv.INTER_CUBIC,
+                cv.BORDER_CONSTANT,
+                new cv.Scalar(255, 255, 255, 255)
+            );
+
+            const canvas =
+                document.createElement('canvas');
+
+            canvas.width =
+                outWidth;
+
+            canvas.height =
+                outHeight;
+
+            cv.imshow(
+                canvas,
+                warped
+            );
+
+            return canvas;
+        } finally {
+            srcPts.delete();
+            dstPts.delete();
+            transform.delete();
+            warped.delete();
+        }
+
+    } catch (err) {
+        console.warn(
+            'Perspective correction skipped:',
+            err
+        );
+
+        return sourceCanvas;
+
+    } finally {
+        if (src) src.delete();
+        if (small) small.delete();
+        if (gray) gray.delete();
+        if (blur) blur.delete();
+        if (edges) edges.delete();
+        if (contours) contours.delete();
+        if (hierarchy) hierarchy.delete();
+    }
 }
 
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const prog = document.getElementById('aiProgress');
+    const prog =
+        document.getElementById('aiProgress');
+
     prog.style.display = 'block';
-    prog.innerText = currentLang === 'en'
-        ? '📸 Preparing the page...'
-        : '📸 Sayfa hazırlanıyor...';
+
+    prog.innerText =
+        currentLang === 'en'
+            ? '📸 Preparing the page...'
+            : '📸 Sayfa hazırlanıyor...';
 
     const reader = new FileReader();
+
     reader.readAsDataURL(file);
 
     reader.onload = (event) => {
         const img = new Image();
+
         img.src = event.target.result;
 
         img.onload = async () => {
@@ -2696,60 +3182,168 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                     );
                 }
 
-                const baseCanvas = makeOcrBaseCanvas(img);
-                const cleanCanvas = normalizeOcrCanvas(baseCanvas, false);
-                const ocrLang = currentLang === 'en' ? 'eng' : 'tur+eng';
+                const baseCanvas =
+                    makeOcrBaseCanvas(img);
 
-                const runOcr = async (canvas, passLabel) => {
-                    return await Tesseract.recognize(canvas, ocrLang, {
-                        logger: (m) => {
-                            if (m.status === 'recognizing text') {
-                                const pct = Math.round((m.progress || 0) * 100);
-                                prog.innerText = currentLang === 'en'
-                                    ? `🔎 ${passLabel} ${pct}%`
-                                    : `🔎 ${passLabel} %${pct}`;
-                            } else if (m.status === 'loading language traineddata') {
-                                prog.innerText = currentLang === 'en'
-                                    ? '📚 Loading reading tools...'
-                                    : '📚 Okuma araçları hazırlanıyor...';
-                            }
-                        }
-                    });
-                };
-
-                // 1. geçiş: ekran görüntüsü ve temiz belgelerde genellikle yeterli.
-                let bestResult = await runOcr(
-                    cleanCanvas,
-                    currentLang === 'en' ? 'Reading the page...' : 'Sayfa okunuyor...'
-                );
-
-                let bestText = cleanOcrText(bestResult?.data?.text || '');
-                let bestConfidence = Number(bestResult?.data?.confidence || 0);
-
-                // Fotoğraf gölgeli/eğik/bulanıksa güven düşer.
-                // O zaman ikinci, daha keskin siyah-beyaz geçişi otomatik dene.
-                const needsSecondPass =
-                    bestConfidence < 82 ||
-                    bestText.length < 35 ||
-                    (bestText.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length < Math.max(12, bestText.length * 0.45);
-
-                if (needsSecondPass) {
-                    prog.innerText = currentLang === 'en'
-                        ? '🪄 Photo detected as tricky — enhancing letters...'
-                        : '🪄 Fotoğraf biraz zorlayıcı — harfler netleştiriliyor...';
-
-                    const binaryCanvas = normalizeOcrCanvas(baseCanvas, true);
-
-                    const secondResult = await runOcr(
-                        binaryCanvas,
-                        currentLang === 'en' ? 'Trying enhanced reading...' : 'Geliştirilmiş okuma deneniyor...'
+                const cleanCanvas =
+                    normalizeOcrCanvas(
+                        baseCanvas,
+                        false
                     );
 
-                    if (scoreOcrResult(secondResult) > scoreOcrResult(bestResult)) {
-                        bestResult = secondResult;
-                        bestText = cleanOcrText(secondResult?.data?.text || '');
-                        bestConfidence = Number(secondResult?.data?.confidence || 0);
+                const ocrLang =
+                    currentLang === 'en'
+                        ? 'eng'
+                        : 'tur+eng';
+
+                const runOcr = async (
+                    canvas,
+                    passLabel
+                ) => {
+                    return await Tesseract.recognize(
+                        canvas,
+                        ocrLang,
+                        {
+                            logger: (m) => {
+                                if (
+                                    m.status ===
+                                    'recognizing text'
+                                ) {
+                                    const pct =
+                                        Math.round(
+                                            (m.progress || 0) * 100
+                                        );
+
+                                    prog.innerText =
+                                        currentLang === 'en'
+                                            ? `🔎 ${passLabel} ${pct}%`
+                                            : `🔎 ${passLabel} %${pct}`;
+                                } else if (
+                                    m.status ===
+                                    'loading language traineddata'
+                                ) {
+                                    prog.innerText =
+                                        currentLang === 'en'
+                                            ? '📚 Loading reading tools...'
+                                            : '📚 Okuma araçları hazırlanıyor...';
+                                }
+                            }
+                        }
+                    );
+                };
+
+                // 1) Hızlı okuma:
+                // ekran görüntüsü ve dijital belgelerde genellikle burada biter.
+                let bestResult =
+                    await runOcr(
+                        cleanCanvas,
+                        currentLang === 'en'
+                            ? 'Reading the page...'
+                            : 'Sayfa okunuyor...'
+                    );
+
+                let bestText =
+                    cleanOcrText(
+                        bestResult?.data?.text || ''
+                    );
+
+                let bestConfidence =
+                    Number(
+                        bestResult?.data?.confidence || 0
+                    );
+
+                const letters =
+                    (
+                        bestText.match(
+                            /[A-Za-zÇĞİÖŞÜçğıöşü]/g
+                        ) || []
+                    ).length;
+
+                const needsPhotoMode =
+                    bestConfidence < 84 ||
+                    bestText.length < 45 ||
+                    letters <
+                        Math.max(
+                            15,
+                            bestText.length * 0.48
+                        );
+
+                if (needsPhotoMode) {
+                    prog.innerText =
+                        currentLang === 'en'
+                            ? '📐 Book photo detected — straightening the page...'
+                            : '📐 Kitap fotoğrafı algılandı — sayfa düzeltiliyor...';
+
+                    // OpenCV yüklenemezse mevcut OCR akışı yine devam eder.
+                    let correctedCanvas =
+                        baseCanvas;
+
+                    try {
+                        correctedCanvas =
+                            await autoPerspectiveCorrectCanvas(
+                                baseCanvas
+                            );
+                    } catch (cvErr) {
+                        console.warn(
+                            'OpenCV unavailable:',
+                            cvErr
+                        );
                     }
+
+                    const correctedClean =
+                        normalizeOcrCanvas(
+                            correctedCanvas,
+                            false
+                        );
+
+                    const correctedBinary =
+                        normalizeOcrCanvas(
+                            correctedCanvas,
+                            true
+                        );
+
+                    const photoPasses = [
+                        {
+                            canvas: correctedClean,
+                            label:
+                                currentLang === 'en'
+                                    ? 'Reading corrected page...'
+                                    : 'Düzeltilmiş sayfa okunuyor...'
+                        },
+                        {
+                            canvas: correctedBinary,
+                            label:
+                                currentLang === 'en'
+                                    ? 'Trying sharper letters...'
+                                    : 'Harfler netleştirilerek okunuyor...'
+                        }
+                    ];
+
+                    for (const pass of photoPasses) {
+                        const candidate =
+                            await runOcr(
+                                pass.canvas,
+                                pass.label
+                            );
+
+                        if (
+                            scoreOcrResult(candidate) >
+                            scoreOcrResult(bestResult)
+                        ) {
+                            bestResult =
+                                candidate;
+                        }
+                    }
+
+                    bestText =
+                        cleanOcrText(
+                            bestResult?.data?.text || ''
+                        );
+
+                    bestConfidence =
+                        Number(
+                            bestResult?.data?.confidence || 0
+                        );
                 }
 
                 if (!bestText) {
@@ -2760,37 +3354,52 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                     );
                 }
 
-                document.getElementById('textInput').value = bestText;
+                document.getElementById(
+                    'textInput'
+                ).value = bestText;
+
                 resetAndDisplayChunks();
 
-                if (bestConfidence >= 78) {
-                    prog.innerText = currentLang === 'en'
-                        ? '✅ Page transferred!'
-                        : '✅ Sayfa metne aktarıldı!';
+                if (bestConfidence >= 80) {
+                    prog.innerText =
+                        currentLang === 'en'
+                            ? '✅ Page transferred!'
+                            : '✅ Sayfa metne aktarıldı!';
                 } else {
-                    prog.innerText = currentLang === 'en'
-                        ? '⚠️ Page transferred — please quickly check the text.'
-                        : '⚠️ Sayfa aktarıldı — fotoğraf zorlayıcıydı, metni hızlıca kontrol et.';
+                    prog.innerText =
+                        currentLang === 'en'
+                            ? '⚠️ Page transferred — please quickly check the text.'
+                            : '⚠️ Sayfa aktarıldı — fotoğraf zorlayıcıydı, metni hızlıca kontrol et.';
                 }
 
                 setTimeout(() => {
                     prog.style.display = 'none';
-                }, bestConfidence >= 78 ? 900 : 2200);
+                }, bestConfidence >= 80 ? 900 : 2400);
 
             } catch (err) {
                 prog.style.display = 'none';
+
                 alert(err.message);
+
             } finally {
-                document.getElementById('imageInput').value = '';
+                document.getElementById(
+                    'imageInput'
+                ).value = '';
             }
         };
 
         img.onerror = () => {
             prog.style.display = 'none';
-            document.getElementById('imageInput').value = '';
-            alert(currentLang === 'en'
-                ? 'Image could not be opened.'
-                : 'Görsel açılamadı.');
+
+            document.getElementById(
+                'imageInput'
+            ).value = '';
+
+            alert(
+                currentLang === 'en'
+                    ? 'Image could not be opened.'
+                    : 'Görsel açılamadı.'
+            );
         };
     };
 });
