@@ -2540,8 +2540,11 @@ function buildOcrCanvas(img, strong = false) {
 }
 
 function buildVisionOcrDataUrl(img) {
-    const MAX_SIDE = 1600;
-    const MAX_PIXELS = 2000000;
+    // OCR needs more detail than ordinary image preview.
+    // Keep enough resolution for small printed text while still compressing
+    // before sending it to the Worker.
+    const MAX_SIDE = 2400;
+    const MAX_PIXELS = 5000000;
 
     let width = img.naturalWidth || img.width;
     let height = img.naturalHeight || img.height;
@@ -2567,7 +2570,7 @@ function buildVisionOcrDataUrl(img) {
     ctx.drawImage(img, 0, 0, width, height);
 
     // Fotoğrafı Worker'a gereksiz büyük göndermemek için sıkıştır.
-    return canvas.toDataURL('image/jpeg', 0.88);
+    return canvas.toDataURL('image/jpeg', 0.94);
 }
 
 function cleanOcrText(text) {
