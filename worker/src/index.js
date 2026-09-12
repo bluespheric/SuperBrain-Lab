@@ -53,9 +53,10 @@ export default {
       const body = await request.json();
       const action = body.action || "image";
 
-      // --------------------------------------------------
-      // 1) HİKÂYEDEN 2 SADIK GÖRSEL SAHNE ÜRET
-      // --------------------------------------------------
+      // ==================================================
+      // 1) HERHANGİ BİR METNİ ANALİZ ET VE 2 GÖRSEL PLANLA
+      // ==================================================
+
       if (action === "scenes") {
         const text =
           typeof body.text === "string"
@@ -77,93 +78,222 @@ export default {
           );
         }
 
-        const captionRule =
+        const captionLanguage =
           lang === "en"
-            ? "Write each caption in English."
-            : "Write each caption in Turkish.";
+            ? "English"
+            : "Turkish";
 
         const systemPrompt = `
-You are a storyboard director for an educational dual-coding tool for children.
+You are the visual-planning engine of a general educational dual-coding tool.
 
-Your highest priority is VISUAL FIDELITY to the source story, not creativity.
+The source may be ANY kind of text:
 
-Create exactly 2 visually distinct scenes that together represent the most important events in the story.
+- story
+- science
+- history
+- biography
+- instructions
+- process
+- explanation
+- cause-effect text
+- comparison
+- description
+- poem
+- abstract concept
+- mixed educational text
 
-STRICT RULES:
+Your job is NOT to make two generic pretty pictures.
 
-1. Use ONLY characters, animals, objects, places and events that are actually present in the source text.
+Your job is to choose TWO visuals that help a learner understand and remember the exact source text.
 
-2. Never invent humans, animals, fantasy creatures, vehicles or props that are not in the source.
+STEP 1 — CLASSIFY THE TEXT
 
-3. If the source contains no humans, explicitly include "no humans" in every image_prompt.
+Choose one text_type:
 
-4. Keep recurring characters visually consistent across both scenes.
-Repeat their species, approximate size, fur or hair color, clothing if any, and distinctive traits in EACH image_prompt.
+"narrative"
+"informational"
+"process"
+"cause_effect"
+"historical"
+"comparison"
+"descriptive"
+"abstract"
+"mixed"
 
-5. Do not rely on character names alone.
-Translate names into visible descriptions.
-Example:
-Instead of only "Tonton", say:
-"a small cute white rabbit with soft white fur".
+STEP 2 — CHOOSE THE TWO MOST USEFUL VISUALS
 
-6. Choose concrete, drawable actions.
-Show who is doing what, where, and with which important objects.
+Use these rules:
 
-7. The two scenes should not be generic summaries.
-They should depict two specific story moments.
+NARRATIVE:
+Show two specific important events.
+Prefer a cause or turning point and then a consequence or resolution.
 
-8. image_prompt MUST ALWAYS be written in clear ENGLISH,
-even when the story is Turkish.
+INFORMATIONAL OR SCIENCE:
+Show the central concept first.
+Then show its mechanism, relationship, effect, or important example.
 
-9. Each image_prompt should be self-contained and around 60-120 words.
+PROCESS OR INSTRUCTIONS:
+Show two important stages in chronological order.
 
-10. ${captionRule}
+CAUSE-EFFECT:
+Scene 1 should clearly show the cause.
+Scene 2 should clearly show the effect.
 
-11. Absolutely no text should appear inside the generated image:
-no words,
-no letters,
-no titles,
-no captions,
-no signs,
-no labels,
-no speech bubbles,
-no numbers,
-no logos,
-no watermarks.
+HISTORICAL OR BIOGRAPHICAL:
+Show a source-grounded important event.
+Then show another important event, consequence, or context.
 
-12. Do not request:
-a poster,
-book cover,
-page,
-infographic,
-comic panel,
-title card,
-typography.
+COMPARISON:
+Make the two scenes clearly represent the two sides being compared.
 
-13. Prefer one coherent children's storybook scene with a clear foreground, background and action.
+DESCRIPTIVE:
+Show two representative source-grounded aspects.
 
-14. Preserve important quantities and objects from the story when visually relevant,
-such as a basket full of carrots, nuts, berries, books, tools, or other story-specific items.
+ABSTRACT:
+First try to find literal imagery already present in the source.
+If the idea cannot be visualized literally, use a simple educational metaphor
+and set scene_mode to "symbolic".
 
-Return exactly this JSON structure:
+MIXED:
+Choose the two visuals that preserve the greatest learning value.
+
+STRICT SOURCE FIDELITY
+
+1. For literal scenes, use only concrete people, animals, objects, places,
+actions, quantities, relationships, and time-period details supported
+by the source text.
+
+2. Do NOT invent random people, animals, fantasy creatures, buildings,
+vehicles, foods, objects, scenery, or events simply to make the image prettier.
+
+3. If the source explicitly identifies something, preserve it.
+Examples:
+A squirrel must not become a rabbit.
+A microscope must not become a telescope.
+A ship must not become a car.
+
+4. Do not rely on names alone.
+
+Turn important named entities into visible descriptions.
+
+For example, if the text says:
+"Tonton is a small white rabbit"
+
+do not only write:
+"Tonton"
+
+write:
+"a small white rabbit with soft white fur"
+
+5. Preserve objects, actions, quantities, relationships and settings
+that carry the meaning of the source.
+
+6. If a person, character, object, place or other entity appears in both scenes,
+repeat its important visual characteristics in both prompts.
+
+7. Do NOT assume that the text contains animals or characters.
+Analyze what is actually present.
+
+8. Do NOT automatically add children or human characters to educational scenes.
+
+9. If the source is abstract and a metaphor is necessary,
+keep the metaphor simple and clearly symbolic.
+Do not present a symbolic invention as if it literally happened in the source.
+
+VISUAL PROMPT RULES
+
+10. image_prompt MUST ALWAYS be written in clear ENGLISH,
+even when the source text is Turkish.
+
+11. caption MUST be written in ${captionLanguage}.
+
+12. Every scene must contain a short scene_goal.
+This describes what the learner should understand or remember from the image.
+
+13. Every scene must contain a must_include list.
+Include 2 to 8 concrete visual requirements.
+
+14. Every scene must contain a must_avoid list.
+Include 2 to 8 things that would make the scene inaccurate,
+misleading, or irrelevant.
+
+15. image_prompt must be concrete and visually drawable.
+
+Bad:
+"Show friendship."
+
+Better:
+"Two friends share food with each other while smiling."
+
+16. Never request visible text inside the generated image.
+
+NO:
+words
+letters
+numbers
+titles
+captions
+signs
+labels
+speech bubbles
+logos
+watermarks
+
+17. Do NOT request:
+
+poster
+book cover
+infographic
+worksheet
+title card
+page layout
+labeled diagram
+
+18. Choose clarity over decoration.
+
+The important educational elements must be large,
+recognizable and central to the composition.
+
+Return EXACTLY this JSON structure:
 
 {
+  "text_type": "one allowed type",
   "scenes": [
     {
-      "caption": "short child-friendly caption",
-      "image_prompt": "detailed English visual prompt"
+      "caption": "short learner-friendly caption",
+      "scene_mode": "literal or symbolic",
+      "scene_goal": "what this visual should teach or remind",
+      "must_include": [
+        "important visual element",
+        "important visual element"
+      ],
+      "must_avoid": [
+        "misleading element",
+        "irrelevant element"
+      ],
+      "image_prompt": "clear English visual description"
     },
     {
-      "caption": "short child-friendly caption",
-      "image_prompt": "detailed English visual prompt"
+      "caption": "short learner-friendly caption",
+      "scene_mode": "literal or symbolic",
+      "scene_goal": "what this visual should teach or remind",
+      "must_include": [
+        "important visual element",
+        "important visual element"
+      ],
+      "must_avoid": [
+        "misleading element",
+        "irrelevant element"
+      ],
+      "image_prompt": "clear English visual description"
     }
   ]
 }
         `.trim();
 
         const userPrompt =
-          `SOURCE STORY:\n${text}\n\n` +
-          `Build two faithful visual scenes from this exact story.`;
+          `SOURCE TEXT:\n${text}\n\n` +
+          `Create the two most educationally useful visuals for this exact text.`;
 
         let response;
 
@@ -182,9 +312,9 @@ Return exactly this JSON structure:
                 },
               ],
 
-              temperature: 0.15,
+              temperature: 0.1,
 
-              max_tokens: 900,
+              max_tokens: 1100,
 
               response_format: {
                 type: "json_schema",
@@ -193,6 +323,10 @@ Return exactly this JSON structure:
                   type: "object",
 
                   properties: {
+                    text_type: {
+                      type: "string",
+                    },
+
                     scenes: {
                       type: "array",
 
@@ -207,6 +341,28 @@ Return exactly this JSON structure:
                             type: "string",
                           },
 
+                          scene_mode: {
+                            type: "string",
+                          },
+
+                          scene_goal: {
+                            type: "string",
+                          },
+
+                          must_include: {
+                            type: "array",
+                            items: {
+                              type: "string",
+                            },
+                          },
+
+                          must_avoid: {
+                            type: "array",
+                            items: {
+                              type: "string",
+                            },
+                          },
+
                           image_prompt: {
                             type: "string",
                           },
@@ -214,6 +370,10 @@ Return exactly this JSON structure:
 
                         required: [
                           "caption",
+                          "scene_mode",
+                          "scene_goal",
+                          "must_include",
+                          "must_avoid",
                           "image_prompt",
                         ],
                       },
@@ -221,6 +381,7 @@ Return exactly this JSON structure:
                   },
 
                   required: [
+                    "text_type",
                     "scenes",
                   ],
                 },
@@ -243,10 +404,11 @@ Return exactly this JSON structure:
           response?.response;
 
         if (typeof sceneData === "string") {
-          const clean = sceneData
-            .replace(/```json/gi, "")
-            .replace(/```/g, "")
-            .trim();
+          const clean =
+            sceneData
+              .replace(/```json/gi, "")
+              .replace(/```/g, "")
+              .trim();
 
           const start =
             clean.indexOf("{");
@@ -254,11 +416,12 @@ Return exactly this JSON structure:
           const end =
             clean.lastIndexOf("}");
 
-          sceneData = JSON.parse(
-            start !== -1 && end !== -1
-              ? clean.slice(start, end + 1)
-              : clean
-          );
+          sceneData =
+            JSON.parse(
+              start !== -1 && end !== -1
+                ? clean.slice(start, end + 1)
+                : clean
+            );
         }
 
         if (
@@ -279,33 +442,94 @@ Return exactly this JSON structure:
 
         const scenes =
           sceneData.scenes.map((scene) => {
+
             const caption =
               String(scene.caption || "")
                 .replace(/\s+/g, " ")
                 .trim()
                 .slice(0, 140);
 
-            const imagePrompt =
+            const mode =
+              scene.scene_mode === "symbolic"
+                ? "symbolic"
+                : "literal";
+
+            const goal =
+              String(scene.scene_goal || "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .slice(0, 220);
+
+            const mustInclude =
+              Array.isArray(scene.must_include)
+                ? scene.must_include
+                    .map((x) =>
+                      String(x)
+                        .replace(/\s+/g, " ")
+                        .trim()
+                    )
+                    .filter(Boolean)
+                    .slice(0, 8)
+                : [];
+
+            const mustAvoid =
+              Array.isArray(scene.must_avoid)
+                ? scene.must_avoid
+                    .map((x) =>
+                      String(x)
+                        .replace(/\s+/g, " ")
+                        .trim()
+                    )
+                    .filter(Boolean)
+                    .slice(0, 8)
+                : [];
+
+            const basePrompt =
               String(scene.image_prompt || "")
                 .replace(/\s+/g, " ")
                 .trim()
+                .slice(0, 1050);
+
+            const structuredPrompt =
+              [
+                `MODE: ${mode}.`,
+
+                goal
+                  ? `LEARNING GOAL: ${goal}.`
+                  : "",
+
+                mustInclude.length
+                  ? `MUST INCLUDE: ${mustInclude.join("; ")}.`
+                  : "",
+
+                mustAvoid.length
+                  ? `MUST AVOID: ${mustAvoid.join("; ")}.`
+                  : "",
+
+                `VISUAL DESCRIPTION: ${basePrompt}`,
+              ]
+                .filter(Boolean)
+                .join(" ")
                 .slice(0, 1500);
 
             return {
               caption,
-              image_prompt: imagePrompt,
+              image_prompt: structuredPrompt,
             };
           });
 
         return json({
           success: true,
+          text_type:
+            sceneData.text_type || "mixed",
           scenes,
         });
       }
 
-      // --------------------------------------------------
-      // 2) SAHNE PROMPTUNDAN GÖRSEL ÜRET
-      // --------------------------------------------------
+      // ==================================================
+      // 2) PLANLANAN SAHNEDEN GÖRSEL ÜRET
+      // ==================================================
+
       if (action === "image") {
         const prompt =
           typeof body.prompt === "string"
@@ -326,39 +550,51 @@ Return exactly this JSON structure:
           prompt
             .replace(/\s+/g, " ")
             .trim()
-            .slice(0, 1450);
+            .slice(0, 1500);
 
         const finalPrompt = (
-          `Faithful children's storybook illustration of this exact scene. ` +
+          `Clear educational illustration for a dual-coding learning tool. ` +
 
-          `Show only the characters, animals, objects and setting described below. ` +
+          `Follow the requested scene faithfully. ` +
 
-          `Do not substitute different species or add unrelated people, animals or objects. ` +
+          `Prioritize factual and visual accuracy over decoration. ` +
 
-          `Keep the main characters large, recognizable and central to the action. ` +
+          `Do not add unrelated people, animals, objects, scenery or events. ` +
 
-          `Warm polished 2D storybook art, natural proportions, clear composition, expressive but not exaggerated faces. ` +
+          `If the scene is scientific, historical or informational, ` +
+          `prioritize clarity and source fidelity over cuteness. ` +
 
-          `Clean illustration only. ` +
+          `If the scene is symbolic, make the metaphor visually simple ` +
+          `and easy to understand. ` +
+
+          `Main learning-relevant elements should be large, recognizable and central. ` +
+
+          `Single full-bleed illustration. ` +
+
+          `Not a poster. ` +
+          `Not a book cover. ` +
+          `Not an infographic. ` +
+          `Not a labeled diagram. ` +
 
           `Absolutely ZERO visible typography: ` +
-          `no text, no words, no letters, no numbers, no title, no caption, ` +
-          `no signs, no labels, no speech bubbles, no logo, no watermark, ` +
-          `no book-cover layout, no poster layout. ` +
+          `no text, no words, no letters, no numbers, ` +
+          `no title, no caption, no signs, no labels, ` +
+          `no speech bubbles, no logo, no watermark. ` +
 
-          `SCENE: ${compactPrompt}`
-        ).slice(0, 1950);
+          `SCENE INSTRUCTIONS: ${compactPrompt}`
+        ).slice(0, 1980);
 
         let result;
 
         try {
-          result = await env.AI.run(
-            "@cf/black-forest-labs/flux-1-schnell",
-            {
-              prompt: finalPrompt,
-              steps: 4,
-            }
-          );
+          result =
+            await env.AI.run(
+              "@cf/black-forest-labs/flux-1-schnell",
+              {
+                prompt: finalPrompt,
+                steps: 4,
+              }
+            );
 
         } catch (aiError) {
           return json(
