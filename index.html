@@ -629,7 +629,7 @@
                     </label>
                 </div>
 
-                <!-- 4 AÇIK VE RENKLİ SES KARTI (EVRENSEL GÜVENLİ EMOJİLERLE - YALNIZCA İNGİLİZCE) -->
+                <!-- 4 AÇIK VE RENKLİ SES KARTI (YALNIZCA İNGİLİZCE) -->
                 <div id="englishVoiceBar" class="voice-section">
                     <div class="voice-section-title">
                         <span>🎧</span> <span>Storyteller Characters (Tap to play / stop):</span>
@@ -717,7 +717,7 @@
                     <div id="jigsawEdges" class="jigsaw-grid"></div>
                 </div>
 
-                <!-- Dual Coding Sonucu -->
+                <!-- Dual Coding Sonucu (FLUX Motoru & Auto-Heal Kalkanı) -->
                 <div id="dualBox" class="dual-box">
                     <div style="font-weight:700; font-size:16px; color:#9A3412; margin-bottom:8px;" id="lblDualScenesTitle">🎬 ZİHİN SİNEMASI SAHNELERİ</div>
                     <div class="dual-grid" id="dualGrid"></div>
@@ -811,7 +811,7 @@
                     </div>
                 </div>
 
-                <!-- 3. İSTASYON: KELİME PİSTİ (DOKUNMATİK VE TABLET KLAVYESİ DESTEĞİ) -->
+                <!-- 3. İSTASYON: KELİME PİSTİ -->
                 <div id="subTrack" class="sub-content">
                     <h3 style="margin:0 0 8px 0; color:#1E3A8A;" id="lblTrackTitle">✍️ 3. İstasyon: Kelime Pisti</h3>
                     <p style="color:#475569; font-size:14px; margin-top:0;" id="lblTrackDesc">Hedef kelimeyi harf harf yaz veya kutuya dokunup klavyeni aç:</p>
@@ -1498,7 +1498,6 @@ function changeChunk(direction) {
     }
 }
 
-// 4 AÇIK KARTLI SESLENDİRME MOTORU (TABLETTE DE NET ERKEK/KADIN TONU)
 function pickAndPlayVoice(voiceType) {
     if (!('speechSynthesis' in window)) return;
 
@@ -1685,7 +1684,7 @@ async function runJigsaw() {
     finally { btn.disabled = false; }
 }
 
-// ZİHİN SİNEMASI: FLUX MOTORU & SANAT YÖNETMENİ PROMPTU İLE KESİNTİSİZ ÇİZİM
+// ZİHİN SİNEMASI: GÜÇLENDİRİLMİŞ SANAT YÖNETMENİ VE AUTO-HEAL KALKANI
 async function runDualCoding() {
     const textInput = document.getElementById('textInput');
     if (!textInput || !textInput.value.trim()) return;
@@ -1696,7 +1695,6 @@ async function runDualCoding() {
     grid.innerHTML = "";
     box.style.display = 'block';
 
-    // Geçici yükleme kartları
     grid.innerHTML = `
         <div class="dual-card" style="padding:40px; color:#EA580C; font-weight:700; background:#FFF7ED; border:2px dashed #FED7AA;">
             🎨 1. Sahne çiziliyor, boyalar hazırlanıyor...
@@ -1748,12 +1746,12 @@ Strictly return JSON format only:
                 grid.appendChild(card);
             };
 
+            // AUTO-HEAL: Eğer dış sunucu metin basar veya resim yüklenemezse anında güvenli illüstrasyon kartına düş
             img.onerror = () => {
+                const fallbackUrl = `https://image.pollinations.ai/prompt/colorful%20children%20book%20illustration%20fairy%20tale%20cute%20scene?width=600&height=420&nologo=true&seed=${seed + 99}`;
                 card.innerHTML = `
-                    <div style="padding:30px; color:#475569; font-weight:600;">
-                        🖼️ <b>${cleanMarkdown(scene.caption)}</b><br>
-                        <span style="font-size:13px; color:#64748B;">Zihninde canlandır: ${cleanMarkdown(scene.visual_prompt.split(',')[0])}</span>
-                    </div>
+                    <img src="${fallbackUrl}" alt="${scene.caption}">
+                    <div class="dual-card-caption">🎬 ${cleanMarkdown(scene.caption)}</div>
                 `;
                 grid.appendChild(card);
             };
@@ -2174,7 +2172,7 @@ function lockStepToTimer(taskTitle) {
     const cleanTitle = taskTitle.replace(/^[0-9]+[\.\:\s]*/, '').replace(/^Step\s*[0-9]+[\.\:\s]*/i, '').replace(/^Adım\s*[0-9]+[\.\:\s]*/i, '');
     const noticeEl = document.getElementById('currentTargetLockNotice');
     if (noticeEl) {
-        noticeEl.innerText = (currentLang === 'en' ? `🎯 Focus Task: ` : `🎯 Şu anki Görev: `) + cleanTitle;
+        noticeEl.innerText = (currentLang === 'en' ? `🎯 Focus Task: ` : `🎯 Şu anki Hedef: `) + cleanTitle;
     }
     document.querySelector('[data-mod="module4"]').click();
     window.scrollTo({ top: document.getElementById('currentTargetLockNotice').offsetTop - 60, behavior: 'smooth' });
