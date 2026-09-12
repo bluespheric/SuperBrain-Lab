@@ -1732,17 +1732,29 @@ async function runDualCoding() {
 
     try {
         // 1) Metni gerçekten görsel olarak tarif edecek sahne promptları üret
-        const scenePrompt = currentLang === 'en'
-            ? `Story text: "${textInput.value.trim()}"
-Break this into 2 sequential key visual scenes. For each scene write a short child-friendly caption AND a detailed image-generation prompt describing exactly what should be drawn (setting, characters, actions, colors), in the style of a warm children's storybook illustration. The image must contain NO text, NO letters, NO words anywhere in it.
-Return JSON only:
-{"scenes":[{"caption":"...", "image_prompt":"..."},{"caption":"...", "image_prompt":"..."}]}`
-            : `Hikâye metni: "${textInput.value.trim()}"
-Bu metni 2 ardışık ana görsel sahneye böl. Her sahne için: kısa bir çocuk dostu başlık VE tam olarak neyin çizileceğini anlatan detaylı bir görsel üretim tarifi (mekân, karakterler, hareket, renkler) yaz. Stil: sıcak, sevimli bir çocuk kitabı illüstrasyonu. Görselde KESİNLİKLE hiçbir yazı, harf veya kelime olmamalı.
-Sadece JSON ver:
-{"scenes":[{"caption":"...", "image_prompt":"..."},{"caption":"...", "image_prompt":"..."}]}`;
+        const workerUrl = "https://gentle-dream-d716.bluerisma8.workers.dev/";
 
-        const reply = await askGemini(scenePrompt, null, 'dualscenes_' + textInput.value.trim());
+const sceneRes = await fetch(workerUrl, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        action: "scenes",
+        text: textInput.value.trim(),
+        lang: currentLang
+    })
+});
+
+const data = await sceneRes.json();
+
+if (!sceneRes.ok || !data.success || !Array.isArray(data.scenes)) {
+    throw new Error(
+        currentLang === "en"
+            ? "Scenes could not be prepared, please try again."
+            : "Sahneler hazırlanamadı, lütfen tekrar dene."
+    );
+}
         const data = parseCleanJSON(reply);
 
         grid.innerHTML = data.scenes.map((_, i) => loadingCardHTML(
