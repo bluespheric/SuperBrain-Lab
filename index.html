@@ -2594,8 +2594,8 @@ function looksLikeUsableText(text) {
 async function runCloudflareVisionOcr(img, prog) {
     prog.innerText =
         currentLang === 'en'
-            ? '👁️ Photo detected — AI is reading the page...'
-            : '👁️ Fotoğraf algılandı — yapay zekâ sayfayı okuyor...';
+            ? '👁️ Photo mode — AI is reading the page directly...'
+            : '👁️ Fotoğraf modu — yapay zekâ sayfayı doğrudan okuyor...';
 
     const imageDataUrl = buildVisionOcrDataUrl(img);
 
@@ -2660,16 +2660,26 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                 // JPEG + yüksek çözünürlük çoğunlukla telefon/kamera fotoğrafıdır.
                 // Böyle görselleri Tesseract'ta uzun süre bekletmek yerine
                 // doğrudan vision OCR'a gönderiyoruz.
+                const fileName =
+                    String(file.name || '').toLowerCase();
+
                 const isJpeg =
-                    /^image\/jpe?g$/i.test(file.type || '');
+                    /^image\/jpe?g$/i.test(file.type || '') ||
+                    fileName.endsWith('.jpg') ||
+                    fileName.endsWith('.jpeg');
 
-                const looksLikeCameraPhoto =
+                const isLikelyPhoto =
                     isJpeg ||
-                    (img.naturalWidth >= 1800 &&
-                     img.naturalHeight >= 1200 &&
-                     !/^image\/png$/i.test(file.type || ''));
+                    (
+                        img.naturalWidth >= 1800 &&
+                        img.naturalHeight >= 1200 &&
+                        !/^image\/png$/i.test(file.type || '')
+                    );
 
-                if (looksLikeCameraPhoto) {
+                // IMPORTANT:
+                // Real camera/book photos DO NOT go through Tesseract first.
+                // They go directly to Cloudflare Vision OCR.
+                if (isLikelyPhoto) {
                     try {
                         finalText =
                             await runCloudflareVisionOcr(img, prog);
