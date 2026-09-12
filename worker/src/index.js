@@ -264,7 +264,7 @@ QUALITY RULES:
         textModel: "Llama 3.3 70B FP8 Fast",
         fallbackTextModel: "Llama 3.1 8B Fast",
         imageModel: "FLUX.2 Klein 4B",
-        ocr: "Hybrid OCR: browser + Gemma 4 26B Vision verification",
+        ocr: "Browser Tesseract only (non-generative, hallucination-safe)",
       });
     }
 
@@ -873,211 +873,19 @@ Set priority 1-5.`
       }
 
       // ==================================================
-      // 10) BELGE / FOTOĞRAF OCR — STABLE VISION PATH
-      //     Llama 3.2 11B Vision (Cloudflare documented input)
-      //     + optional Cloudflare document-conversion fallback
+      // 10) OCR ENDPOINT DISABLED BY DESIGN
+      // Photos/scanned PDFs are OCR'd locally in the browser with Tesseract.
+      // This prevents generative vision models from hallucinating document text.
       // ==================================================
       if (action === "ocr") {
-        const imageDataUrl =
-          typeof body.image === "string"
-            ? body.image.trim()
-            : "";
-
-        if (!imageDataUrl || !imageDataUrl.startsWith("data:image/")) {
-          return json(
-            {
-              success: false,
-              error: "A valid image data URL is required.",
-            },
-            400
-          );
-        }
-
-        const OCR_MODEL = "@cf/google/gemma-4-26b-a4b-it";
-
-        const cleanVisionText = (value) =>
-          cleanMultiLine(
-            String(value || "")
-              .replace(/```(?:text)?/gi, "")
-              .replace(/```/g, "")
-              .replace(
-                /^(transcription|transcript|metin|transkripsiyon)\s*:\s*/i,
-                ""
-              ),
-            26000
-          );
-
-        const looksLikeTranscript = (value) => {
-          const text = cleanVisionText(value);
-          if (text.length < 18) return false;
-
-          const badPhrases = [
-            "no image",
-            "image is not",
-            "image was not",
-            "cannot see the image",
-            "can't see the image",
-            "please upload",
-            "please provide",
-            "görsel bir dosya",
-            "görsel eklenmemiş",
-            "fotoğrafını yükleyin",
-            "fotoğraf yükleyin",
-            "görseli yükleyin"
-          ];
-
-          const lower = text.toLowerCase();
-
-          if (badPhrases.some((phrase) => lower.includes(phrase))) {
-            return false;
-          }
-
-          const letters =
-            (text.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
-
-          return letters >= Math.max(8, text.length * 0.28);
-        };
-
-        const primaryPrompt =
-          lang === "en"
-            ? `Transcribe ALL readable printed text from the main document/book page in the attached image.
-
-STRICT OCR RULES:
-- Return ONLY the transcription.
-- Do not summarize, explain, answer questions, or describe the image.
-- Preserve paragraph order, headings, punctuation and numbers where visible.
-- Do not invent missing words.
-- Do not rewrite grammar or style.
-- Ignore hands, desk/background, page edges and unrelated neighboring pages.
-- If a word is genuinely unreadable, write [unclear].
-- Pay special attention to short words, proper names and Turkish/English characters.`
-            : `Ekli görseldeki ana kitap/doküman sayfasında okunabilen basılı metnin TAMAMINI aktar.
-
-SIKI OCR KURALLARI:
-- YALNIZCA transkripsiyonu döndür.
-- Özetleme, açıklama, soruları cevaplama veya görseli tarif etme.
-- Görülebiliyorsa paragraf sırasını, başlıkları, noktalama işaretlerini ve sayıları koru.
-- Eksik kelime uydurma.
-- Dilbilgisi veya üslubu yeniden yazma.
-- El, masa/arka plan, sayfa kenarı ve ilgisiz komşu sayfayı görmezden gel.
-- Gerçekten okunamayan kelimede [okunamadı] yaz.
-- Kısa kelimelere, özel adlara ve Türkçe/İngilizce karakterlere özellikle dikkat et.`;
-
-        const verifyPrompt = (candidate) =>
-          lang === "en"
-            ? `Check the candidate OCR transcript below against the SAME attached image.
-
-Correct only errors that are directly visible in the image:
-- missing visible words or lines
-- wrong letters or words
-- punctuation and numbers
-- Turkish/English characters
-- accidental neighboring-page text
-
-Do not rewrite for fluency.
-Do not add unsupported words.
-Return ONLY the corrected full transcription.
-
-CANDIDATE:
-${candidate}`
-            : `Aşağıdaki aday OCR metnini AYNI ekli görselle karşılaştır.
-
-Yalnızca görselden doğrudan doğrulayabildiğin hataları düzelt:
-- eksik görünen kelime veya satırlar
-- yanlış harf veya kelimeler
-- noktalama ve sayılar
-- Türkçe/İngilizce karakterler
-- komşu sayfadan yanlışlıkla alınan metin
-
-Akıcı olsun diye yeniden yazma.
-Görselde olmayan kelime ekleme.
-YALNIZCA düzeltilmiş tam transkripsiyonu döndür.
-
-ADAY:
-${candidate}`;
-
-        const runVision = async (prompt) => {
-          // Cloudflare's documented vision input uses the full data:image/... URL.
-          return await env.AI.run(
-            OCR_MODEL,
-            {
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are a precision OCR engine. Read the attached image itself. Fidelity is more important than fluency."
-                },
-                {
-                  role: "user",
-                  content: prompt
-                }
-              ],
-              image: imageDataUrl,
-              temperature: 0,
-              max_tokens: 7000
-            }
-          );
-        };
-
-        try {
-          const firstResult = await runVision(primaryPrompt);
-          const firstText =
-            cleanVisionText(extractModelPayload(firstResult));
-
-          if (!looksLikeTranscript(firstText)) {
-            return json(
-              {
-                success: false,
-                where: "vision_ocr_primary",
-                error:
-                  "The vision model did not return a usable transcription.",
-                debug_preview: firstText.slice(0, 220),
-              },
-              500
-            );
-          }
-
-          let finalText = firstText;
-          let verified = false;
-
-          try {
-            const verifyResult =
-              await runVision(verifyPrompt(firstText));
-
-            const checked =
-              cleanVisionText(extractModelPayload(verifyResult));
-
-            if (
-              looksLikeTranscript(checked) &&
-              checked.length >= Math.max(20, firstText.length * 0.50)
-            ) {
-              finalText = checked;
-              verified = true;
-            }
-          } catch (verifyError) {
-            console.log(
-              "OCR verification pass skipped:",
-              safeErrorText(verifyError)
-            );
-          }
-
-          return json({
-            success: true,
-            text: finalText,
-            model: "gemma-4-26b-a4b-it",
-            verified,
-          });
-
-        } catch (aiError) {
-          return json(
-            {
-              success: false,
-              where: "vision_ocr",
-              error: safeErrorText(aiError),
-            },
-            500
-          );
-        }
+        return json(
+          {
+            success: false,
+            error:
+              "AI OCR is disabled for safety. Use the browser document reader.",
+          },
+          410
+        );
       }
 
       // ==================================================
