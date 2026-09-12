@@ -2545,6 +2545,88 @@ function safeOcrRemoveGarbageLines(text) {
         .trim();
 }
 
+
+function safeOcrTrimEdgeNoise(text) {
+    const lines = safeOcrClean(text).split('\n');
+
+    const scoreLine = (line) => {
+        const t = String(line || '').trim();
+        if (!t) return 0;
+
+        const letters = (t.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
+        const digits = (t.match(/[0-9]/g) || []).length;
+        const words = t.split(/\s+/).filter(Boolean);
+        const visible = t.replace(/\s/g, '').length || 1;
+        const letterRatio = letters / visible;
+
+        // Strong positive signals for real prose.
+        let score = 0;
+        if (words.length >= 5) score += 2;
+        if (letters >= 18) score += 2;
+        if (letterRatio >= 0.68) score += 2;
+        if (/[.!?,"'’”):;]$/.test(t)) score += 1;
+
+        // Negative signals typical of OCR edge garbage.
+        if (visible <= 5) score -= 3;
+        if (words.length <= 3 && letters < 12) score -= 2;
+        if (letterRatio < 0.48) score -= 3;
+        if (/^[^A-Za-zÇĞİÖŞÜçğıöşü0-9]{2,}/.test(t)) score -= 1;
+
+        return score;
+    };
+
+    // Trim only from the top.
+    let start = 0;
+    const topLimit = Math.min(lines.length, 6);
+    while (start < topLimit) {
+        const line = lines[start].trim();
+
+        if (!line) {
+            start++;
+            continue;
+        }
+
+        // Keep page number if it is a plain number like 148.
+        if (/^\d{1,4}$/.test(line)) {
+            start++;
+            continue;
+        }
+
+        if (scoreLine(line) <= 0) {
+            start++;
+            continue;
+        }
+
+        break;
+    }
+
+    // Trim only from the bottom.
+    let end = lines.length;
+    const bottomFloor = Math.max(start, lines.length - 7);
+
+    while (end > bottomFloor) {
+        const line = lines[end - 1].trim();
+
+        if (!line) {
+            end--;
+            continue;
+        }
+
+        if (scoreLine(line) <= 0) {
+            end--;
+            continue;
+        }
+
+        break;
+    }
+
+    return lines
+        .slice(start, end)
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
 function safeOcrLoadImage(dataUrl) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -2751,7 +2833,7 @@ async function safeOcrRecognizeImage(img, language, onProgress) {
         );
 
         return {
-            text: safeOcrRemoveGarbageLines(result?.data?.text || ''),
+            text: safeOcrTrimEdgeNoise(safeOcrRemoveGarbageLines(result?.data?.text || '')),
             confidence: Number(result?.data?.confidence || 0)
         };
     };
