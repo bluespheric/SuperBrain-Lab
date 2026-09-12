@@ -1,0 +1,8 @@
+{
+  "name": "gentle-dream-d716",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-12",
+  "ai": {
+    "binding": "AI"
+  }
+}
