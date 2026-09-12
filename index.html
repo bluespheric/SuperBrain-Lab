@@ -167,7 +167,7 @@
         .path-box:hover, .path-box.active { border-color: var(--primary); background: #F8FAFC; }
         .path-divider { font-weight: 700; color: #64748B; font-size: 14px; }
 
-        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI & PARÇA SAYFALAMA */
+        /* DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI */
         .output-wrapper { max-width: 650px; margin: 16px 0; }
         .output-container {
             position: relative; background-color: var(--text-bg); padding: 24px 26px;
@@ -185,6 +185,19 @@
         .text-content-layer { position: relative; z-index: 2; }
         .syllable-a { color: #1E3A8A; font-weight: 600; }
         .syllable-b { color: #0F172A; font-weight: 600; }
+
+        /* SESLENDİRME ÇUBUĞU (SADECE İNGİLİZCE) */
+        .voice-bar {
+            display: none; background: #EFF6FF; border: 2px solid #BFDBFE; border-radius: 16px;
+            padding: 12px 16px; margin: 12px 0; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+        .voice-selector {
+            padding: 8px 12px; border-radius: 12px; border: 1.5px solid #93C5FD; font-family: inherit; font-size: 14px; font-weight: 600; color: #1E40AF; background: #FFFFFF; outline: none;
+        }
+        .voice-btn-play {
+            background: #2563EB; color: white; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .voice-btn-play:hover { background: #1D4ED8; }
 
         /* BELİRGİN AŞAĞI SAYFALAMA BUTONLARI */
         .bottom-chunk-navigation {
@@ -242,7 +255,7 @@
         .dual-card img { width: 100%; height: 320px; object-fit: cover; }
         .dual-card-caption { padding: 14px; font-weight: 600; font-size: 15px; color: #9A3412; }
 
-        /* MODÜL 2: KADEMELİ GÖREV ZİNCİRİ (STEPPED WIZARD) */
+        /* MODÜL 2: KADEMELİ GÖREV ZİNCİRİ */
         .station-pipeline {
             display: flex; align-items: center; justify-content: space-between;
             background: #FFFFFF; border: 2px solid #E2D7C5; border-radius: 20px;
@@ -267,7 +280,6 @@
         .sub-content { display: none; }
         .sub-content.active { display: block; }
 
-        /* ZİHİN EVİ - MERKEZİ GÖZ ÖNÜNDEKİ ODALARA DAĞIT BUTONU */
         .palace-action-banner {
             background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 2px dashed #93C5FD;
             border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px;
@@ -470,24 +482,24 @@
             <div class="avatar-grid" id="avatarGrid">
                 <div class="avatar-card selected" data-icon="🦊" data-name="Pupa">
                     <span class="avatar-icon">🦊</span>
-                    <b>Pupa</b> (Meraklı Tilki)
+                    <b class="avatar-title-text">Pupa (Meraklı Tilki)</b>
                 </div>
                 <div class="avatar-card" data-icon="🦉" data-name="Nova">
                     <span class="avatar-icon">🦉</span>
-                    <b>Nova</b> (Bilge Gece Kuşu)
+                    <b class="avatar-title-text">Nova (Bilge Gece Kuşu)</b>
                 </div>
                 <div class="avatar-card" data-icon="🤖" data-name="Bolt">
                     <span class="avatar-icon">🤖</span>
-                    <b>Bolt</b> (Robotik Çırak)
+                    <b class="avatar-title-text">Bolt (Robotik Çırak)</b>
                 </div>
                 <div class="avatar-card" data-icon="🐻" data-name="Baron">
                     <span class="avatar-icon">🐻</span>
-                    <b>Baron</b> (Koca Yürekli Ayı)
+                    <b class="avatar-title-text">Baron (Koca Yürekli Ayı)</b>
                 </div>
             </div>
             
             <div style="text-align:right;">
-                <button class="rename-toggle-btn" onclick="toggleRenameInput()">✏️ Yol Arkadaşının Adını Değiştir</button>
+                <button class="rename-toggle-btn" id="btnRenameToggle" onclick="toggleRenameInput()">✏️ Yol Arkadaşının Adını Değiştir</button>
             </div>
             <div id="renameInputContainer" style="display:none; margin-top:6px;">
                 <input type="text" id="companionCustomName" value="Pupa" placeholder="Arkadaşına yeni bir isim ver...">
@@ -581,7 +593,8 @@
                 </div>
                 <div id="aiProgress" style="display:none; color:var(--primary); font-size:13px; font-weight:600; text-align:center; margin-bottom:8px;">✨ Sayfa aktarılıyor...</div>
 
-                <textarea id="textInput" oninput="resetAndDisplayChunks()" placeholder="Fotoğraf yüklemediysen sorun değil! Metnini buraya yazabilir veya yapıştırabilirsin...">Astronauts live in the space station to explore the universe. They float in microgravity and eat special space food. Every day they do experiments and exercise to stay strong. Working in space takes courage and daily practice.</textarea>
+                <!-- VARSAYILAN OLARAK BOMBOŞ DEFTER -->
+                <textarea id="textInput" oninput="resetAndDisplayChunks()" placeholder="Metnini buraya yazabilir veya yapıştırabilirsin..."></textarea>
 
                 <!-- Okuma Yardımcıları -->
                 <div style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap;">
@@ -591,6 +604,23 @@
                     <label style="cursor:pointer; font-weight:600; font-size:14px; display:flex; align-items:center; gap:6px; min-height:44px;">
                         <input type="checkbox" id="syllableToggle" onchange="updateTextDisplay()" style="width:20px; height:20px;"> 🪄 <span id="lblSyllable">Sihirli Hece Ayrımı</span>
                     </label>
+                </div>
+
+                <!-- SESLENDİRME ÇUBUĞU (YALNIZCA İNGİLİZCE MODUNDA GÖRÜNÜR) -->
+                <div id="englishVoiceBar" class="voice-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:18px;">🎧</span>
+                        <span style="font-weight:700; color:#1E40AF; font-size:14px;">Storyteller Voice:</span>
+                        <select id="voiceSelect" class="voice-selector">
+                            <option value="US_F">✨ Starlight Pixie (US Accent • Soft)</option>
+                            <option value="UK_F">🫖 Tea Fairy (UK Accent • Calm)</option>
+                            <option value="US_M">🚀 Cosmo Buddy (US Accent • Energetic)</option>
+                            <option value="UK_M">🧙 Royal Wizard (UK Accent • Deep)</option>
+                        </select>
+                    </div>
+                    <button class="voice-btn-play" onclick="toggleReadAloud()">
+                        <span id="playIcon">▶</span> <span id="playText">Read to Me</span>
+                    </button>
                 </div>
 
                 <!-- DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI -->
@@ -616,21 +646,21 @@
                 <div style="margin-top:20px;">
                     <div class="tool-action-card">
                         <div class="tool-action-info">
-                            <div class="tool-action-title">🧩 1. Kâşif Adımı: Parçalara Ayır</div>
-                            <div class="tool-action-desc">Bu uzun metni minik yapboz parçaları gibi adım adım inceleyelim mi? Büyük resim anında ortaya çıksın!</div>
+                            <div class="tool-action-title" id="lblJigsawCardTitle">🧩 1. Kâşif Adımı: Parçalara Ayır</div>
+                            <div class="tool-action-desc" id="lblJigsawCardDesc">Bu metni minik yapboz parçaları gibi adım adım inceleyelim mi? Büyük resim anında ortaya çıksın!</div>
                         </div>
                         <button id="btnJigsaw" class="btn-action-large btn-jigsaw-style" onclick="runJigsaw()">
-                            🧩 Parçalara Ayır
+                            🧩 <span id="btnJigsawText">Parçalara Ayır</span>
                         </button>
                     </div>
 
                     <div class="tool-action-card">
                         <div class="tool-action-info">
-                            <div class="tool-action-title">🎬 2. Kâşif Adımı: Zihin Sineması</div>
-                            <div class="tool-action-desc">Okuduğun hikâyeyi zihninde canlanan renkli bir çizgi filme dönüştür! Gözlerinin önünde iki capcanlı sahne belirecek.</div>
+                            <div class="tool-action-title" id="lblDualCardTitle">🎬 2. Kâşif Adımı: Zihin Sineması</div>
+                            <div class="tool-action-desc" id="lblDualCardDesc">Okuduğun hikâyeyi zihninde canlanan renkli bir çizgi filme dönüştür! İki capcanlı sahne belirecek.</div>
                         </div>
                         <button id="btnDual" class="btn-action-large btn-dual-style" onclick="runDualCoding()">
-                            🎬 Zihin Sineması
+                            🎬 <span id="btnDualText">Zihin Sineması</span>
                         </button>
                     </div>
                     <span id="moduleLoading" style="display:none; font-weight:600; color:var(--primary); margin-top:8px;">⏳ Hazırlanıyor...</span>
@@ -646,15 +676,15 @@
 
             <!-- Jigsaw -->
             <div id="jigsawBox" class="jigsaw-box">
-                <div style="font-weight:700; font-size:15px; color:#0369A1; margin-bottom:8px;">🌟 GÖREVİN ÇEKİRDEĞİ</div>
+                <div style="font-weight:700; font-size:15px; color:#0369A1; margin-bottom:8px;" id="lblJigsawBigTitle">🌟 GÖREVİN ÇEKİRDEĞİ</div>
                 <div id="jigsawCover" class="jigsaw-hero"></div>
-                <div style="font-weight:700; font-size:15px; color:#0369A1; margin-top:16px; margin-bottom:8px;">🧩 GÖREV ADIMLARI</div>
+                <div style="font-weight:700; font-size:15px; color:#0369A1; margin-top:16px; margin-bottom:8px;" id="lblJigsawStepsTitle">🧩 GÖREV ADIMLARI</div>
                 <div id="jigsawEdges" class="jigsaw-grid"></div>
             </div>
 
             <!-- Dual Coding -->
             <div id="dualBox" class="dual-box">
-                <div style="font-weight:700; font-size:16px; color:#9A3412; margin-bottom:8px;">🎬 ZİHİN SİNEMASI SAHNELERİ</div>
+                <div style="font-weight:700; font-size:16px; color:#9A3412; margin-bottom:8px;" id="lblDualScenesTitle">🎬 ZİHİN SİNEMASI SAHNELERİ</div>
                 <div class="dual-grid" id="dualGrid"></div>
             </div>
         </div>
@@ -664,50 +694,49 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "3 istasyonu sırayla tamamla, zihnine mühürle ve kapıyı aç!"</span>
+                    <span id="m2Greeting"><b class="comp-name">Pupa</b> diyor ki: "3 istasyonu sırayla tamamla, zihnine mühürle ve kapıyı aç!"</span>
                 </div>
 
                 <!-- Kademeli Görev Zinciri (Oklarla Bağlı) -->
                 <div class="station-pipeline">
                     <div class="station-step active" id="stepPill1" onclick="switchPipelineStep(1)">
-                        <span>1. Odaları Gez 🏛️</span> <span id="checkStep1"></span>
+                        <span id="stTitle1">1. Odaları Gez 🏛️</span> <span id="checkStep1"></span>
                     </div>
                     <div class="station-arrow">➔</div>
                     <div class="station-step locked" id="stepPill2" onclick="switchPipelineStep(2)">
-                        <span>2. Tekerleme Söyle 🪄</span> <span id="checkStep2">🔒</span>
+                        <span id="stTitle2">2. Tekerleme Söyle 🪄</span> <span id="checkStep2">🔒</span>
                     </div>
                     <div class="station-arrow">➔</div>
                     <div class="station-step locked" id="stepPill3" onclick="switchPipelineStep(3)">
-                        <span>3. Kelimeyi Kilitle ✍️</span> <span id="checkStep3">🔒</span>
+                        <span id="stTitle3">3. Kelimeyi Kilitle ✍️</span> <span id="checkStep3">🔒</span>
                     </div>
                 </div>
 
                 <!-- 1. İSTASYON: ODALAR -->
                 <div id="subPalace" class="sub-content active">
-                    <!-- GÖZ ÖNÜNDE, MERKEZİ BUTONLU EYLEM ALANI -->
                     <div class="palace-action-banner">
-                        <div style="font-size:15px; font-weight:700; color:#1E3A8A; margin-bottom:10px;">
-                            🏰 Metindeki bilgileri zihninde unutulmaz eşyalar yapıp evinin odalarına dağıtalım mı?
+                        <div style="font-size:15px; font-weight:700; color:#1E3A8A; margin-bottom:10px;" id="lblPalaceBannerText">
+                            🏰 Metindeki bilgileri zihninde unutulmaz eşyalar yapıp odalara dağıtalım mı?
                         </div>
                         <button id="btnPalaceHero" class="btn-palace-hero" onclick="buildMemoryPalace()">
-                            ✨ Metinden Odalara Eşyaları Dağıt!
+                            ✨ <span id="btnPalaceHeroText">Metinden Odalara Eşyaları Dağıt!</span>
                         </button>
                         <div id="palaceLoading" style="display:none; font-weight:600; color:var(--memory); margin-top:8px;">⏳ Odalar döşeniyor...</div>
                     </div>
 
                     <div class="palace-container">
                         <div class="palace-room">
-                            <div class="room-header">🛋️ 1. Durak: Oturma Odası</div>
+                            <div class="room-header" id="room1Header">🛋️ 1. Durak: Oturma Odası</div>
                             <div class="palace-room-icon" id="room1Icon">🛋️</div>
-                            <div class="palace-cue" id="room1Cue">Önce yukarıdaki 'Metinden Odalara Dağıt' butonuna dokunmalısın!</div>
+                            <div class="palace-cue" id="room1Cue">Önce yukarıdaki butona dokunmalısın!</div>
                         </div>
                         <div class="palace-room">
-                            <div class="room-header">🍳 2. Durak: Mutfak Masası</div>
+                            <div class="room-header" id="room2Header">🍳 2. Durak: Mutfak Masası</div>
                             <div class="palace-room-icon" id="room2Icon">🍳</div>
                             <div class="palace-cue" id="room2Cue">Eşyalar bekleniyor...</div>
                         </div>
                         <div class="palace-room">
-                            <div class="room-header">🛏️ 3. Durak: Kitaplık</div>
+                            <div class="room-header" id="room3Header">🛏️ 3. Durak: Kitaplık</div>
                             <div class="palace-room-icon" id="room3Icon">📚</div>
                             <div class="palace-cue" id="room3Cue">Eşyalar bekleniyor...</div>
                         </div>
@@ -715,50 +744,49 @@
 
                     <div style="display:flex; justify-content:flex-end; margin-top:20px;">
                         <button id="btnProceedToMnemonic" class="btn-action-large btn-dual-style" style="opacity:0.5; cursor:not-allowed;" disabled onclick="proceedToStep(2)">
-                            2. İstasyon: Tekerleme Söyle'ye Geç 🪄 ➔
+                            <span id="btnProceedText1">2. İstasyon: Tekerleme Söyle'ye Geç 🪄 ➔</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- 2. İSTASYON: TEKERLEME -->
                 <div id="subMnemonic" class="sub-content">
-                    <h3 style="margin:0 0 8px 0; color:#1E3A8A;">🎵 2. İstasyon: Tekerleme Fabrikası</h3>
-                    <p style="color:#475569; font-size:14px; margin-top:0;">Öğrenmek istediğin kelimeye dokun veya kendin yaz, tekerlemeyi dinle:</p>
+                    <h3 style="margin:0 0 8px 0; color:#1E3A8A;" id="lblMnemonicTitle">🎵 2. İstasyon: Tekerleme Fabrikası</h3>
+                    <p style="color:#475569; font-size:14px; margin-top:0;" id="lblMnemonicDesc">Öğrenmek istediğin kelimeye dokun veya kendin yaz, kafiyeyi dinle:</p>
                     <div id="mnemonicChips" class="chip-container"></div>
                     
                     <div style="display:flex; gap:10px; margin-top:10px;">
                         <input type="text" id="customMnemonicInput" placeholder="Veya kendi istediğin kelimeyi buraya yaz..." style="margin-top:0; border-color:#94A3B8; background:#FFFFFF;">
-                        <button class="btn-action-large btn-jigsaw-style" onclick="generateCustomMnemonic()">🪄 Tekerleme Üret</button>
+                        <button class="btn-action-large btn-jigsaw-style" onclick="generateCustomMnemonic()"><span id="btnMakeMnemonicText">🪄 Tekerleme Üret</span></button>
                     </div>
                     <div id="mnemonicOutput" class="mnemonic-result" style="display:none;"></div>
 
                     <div style="display:flex; justify-content:flex-end; margin-top:20px;">
                         <button id="btnProceedToTrack" class="btn-action-large btn-dual-style" style="opacity:0.5; cursor:not-allowed;" disabled onclick="proceedToStep(3)">
-                            3. İstasyon: Kelimeyi Kilitle'ye Geç ✍️ ➔
+                            <span id="btnProceedText2">3. İstasyon: Kelimeyi Kilitle'ye Geç ✍️ ➔</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- 3. İSTASYON: KELİME PİSTİ -->
                 <div id="subTrack" class="sub-content">
-                    <h3 style="margin:0 0 8px 0; color:#1E3A8A;">✍️ 3. İstasyon: Kelime Pisti</h3>
-                    <p style="color:#475569; font-size:14px; margin-top:0;">Hedef kelimeyi klavyeden tuşla, harf kutucuklarını mühürle:</p>
+                    <h3 style="margin:0 0 8px 0; color:#1E3A8A;" id="lblTrackTitle">✍️ 3. İstasyon: Kelime Pisti</h3>
+                    <p style="color:#475569; font-size:14px; margin-top:0;" id="lblTrackDesc">Hedef kelimeyi klavyeden tuşla, harf kutucuklarını mühürle:</p>
                     
                     <div style="text-align:center;">
-                        <div id="targetWordDisplay" style="font-size:26px; font-weight:700; color:#1E3A8A; letter-spacing:0.06em;">astronot</div>
-                        <div id="targetSyllableCue" style="font-size:14px; color:#64748B; margin-bottom:12px;">İpucu: as - tro - not</div>
+                        <div id="targetWordDisplay" style="font-size:26px; font-weight:700; color:#1E3A8A; letter-spacing:0.06em;">kelime</div>
+                        <div id="targetSyllableCue" style="font-size:14px; color:#64748B; margin-bottom:12px;">İpucu: ke - li - me</div>
 
                         <div class="letter-slots-container" id="letterSlotsContainer"></div>
                         
                         <input type="text" id="trackInput" autofocus style="opacity:0; position:absolute; pointer-events:none;" oninput="handleTrackInput(this)">
-                        <button class="theme-btn" onclick="undoLastLetter()">⌫ Son Harfi Geri Al</button>
+                        <button class="theme-btn" onclick="undoLastLetter()"><span id="btnUndoLetterText">⌫ Son Harfi Geri Al</span></button>
                         <div id="trackFeedback" style="margin-top:12px; font-weight:700;"></div>
                     </div>
 
-                    <!-- TÜM ADIMLAR BİTMEDEN AÇILMAYAN GÜVENLİ KÖPRÜ -->
                     <div class="next-bridge-container">
                         <button id="bridgeToModule3Btn" class="next-bridge-btn" disabled onclick="goToModule(3)">
-                            🔒 3 İstasyonu Tamamlayınca Kapı Açılacak!
+                            <span id="lblM2LockStatus">🔒 3 İstasyonu Tamamlayınca Kapı Açılacak!</span>
                         </button>
                     </div>
                 </div>
@@ -770,7 +798,7 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Düşüncelerini bir ağaç gibi dallandır, her şey berraklaşsın!"</span>
+                    <span id="m3Greeting"><b class="comp-name">Pupa</b> diyor ki: "Düşüncelerini bir ağaç gibi dallandır, her şey berraklaşsın!"</span>
                 </div>
                 
                 <div style="margin-bottom:10px;">
@@ -788,23 +816,22 @@
 
             <!-- BİRLEŞİK ZİHİN KANCASI & SOHBET -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">💬 Yol Arkadaşın <span class="comp-name">Pupa</span> ile Zihin Kancası</h2>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblChatCardHeader">💬 Yol Arkadaşınla Zihin Kancası</h2>
                 <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblChatDesc">Metinde seni en çok meraklandıran şeyi yol arkadaşına anlat:</p>
                 
-                <div style="margin-bottom:8px;">
+                <div style="margin-bottom:8px;" id="chatStartersContainer">
                     <button class="sentence-starter-btn" onclick="addChatStarter('Bence ')">Bence...</button>
                     <button class="sentence-starter-btn" onclick="addChatStarter('Çünkü ')">Çünkü...</button>
                     <button class="sentence-starter-btn" onclick="addChatStarter('En çok şuna şaşırdım: ')">En çok şuna şaşırdım: ...</button>
-                    <button class="sentence-starter-btn" onclick="addChatStarter('Bana göre en önemli ipucu: ')">En önemli ipucu: ...</button>
+                    <button class="sentence-starter-btn" onclick="addChatStarter('En önemli ipucu: ')">En önemli ipucu: ...</button>
                     <button class="sentence-starter-btn" onclick="addChatStarter('Bunu şuna benzettim: ')">Bunu şuna benzettim: ...</button>
-                    <button class="sentence-starter-btn" onclick="addChatStarter('Acaba şöyle olsaydı: ')">Acaba şöyle olsaydı: ...</button>
                 </div>
 
                 <div class="chat-box">
                     <div class="chat-msg">
                         <span class="comp-icon" style="font-size:26px;">🦊</span>
                         <div class="chat-bubble bubble-bot" id="companionChatPrompt">
-                            "Metinde seni en çok şaşırtan veya meraklandıran şey ne oldu? Cümle kalıplarını kullanabilir veya sesinle anlatabilirsin!"
+                            "Metinde seni en çok şaşırtan şey ne oldu? Cümle kalıplarını kullanabilir veya sesinle anlatabilirsin!"
                         </div>
                     </div>
                     <div id="chatHistory"></div>
@@ -813,10 +840,10 @@
                         <input type="text" id="chatInput" placeholder="Mesajını yaz veya sesle konuş..." style="margin-top:0; flex:1;" onkeypress="if(event.key==='Enter') sendChatMessage()">
                         
                         <button class="voice-action-btn" id="voiceBtn" onclick="toggleSpeechToText()">
-                            🎙️ <span>Sesinle Konuş (Dilersen Sesle Yaz)</span>
+                            🎙️ <span id="lblMicText">Sesinle Konuş</span>
                         </button>
                         
-                        <button class="btn-action-large btn-dual-style" onclick="sendChatMessage()" style="min-height:48px;">Gönder ✨</button>
+                        <button class="btn-action-large btn-dual-style" onclick="sendChatMessage()" style="min-height:48px;"><span id="btnSendText">Gönder ✨</span></button>
                     </div>
                 </div>
 
@@ -834,28 +861,28 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Bitkini seç, süreni belirle ve odaklandıkça yeşermesini izle!"</span>
+                    <span id="m4Greeting"><b class="comp-name">Pupa</b> diyor ki: "Bitkini seç, süreni belirle ve odaklandıkça yeşermesini izle!"</span>
                 </div>
-                <h2 style="margin-top:0; color:#1E3A8A;">🌳 Odak Ormanı</h2>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblForestTitle">🌳 Odak Ormanı</h2>
 
                 <div class="plant-select-grid">
-                    <button class="plant-card-btn selected" data-plant="tree" onclick="selectPlant('tree', this)">🌲 Ulu Çam</button>
-                    <button class="plant-card-btn" data-plant="flower" onclick="selectPlant('flower', this)">🌻 Ayçiçeği</button>
-                    <button class="plant-card-btn" data-plant="cactus" onclick="selectPlant('cactus', this)">🌵 Kaktüs</button>
-                    <button class="plant-card-btn" data-plant="sprout" onclick="selectPlant('sprout', this)">🌸 Bahar Çiçeği</button>
+                    <button class="plant-card-btn selected" data-plant="tree" onclick="selectPlant('tree', this)">🌲 <span class="p-name">Ulu Çam</span></button>
+                    <button class="plant-card-btn" data-plant="flower" onclick="selectPlant('flower', this)">🌻 <span class="p-name">Ayçiçeği</span></button>
+                    <button class="plant-card-btn" data-plant="cactus" onclick="selectPlant('cactus', this)">🌵 <span class="p-name">Kaktüs</span></button>
+                    <button class="plant-card-btn" data-plant="sprout" onclick="selectPlant('sprout', this)">🌸 <span class="p-name">Bahar Çiçeği</span></button>
                 </div>
 
                 <div class="time-chips-container">
-                    <button class="time-chip-btn" onclick="selectForestTime(5, this)">5 dk</button>
-                    <button class="time-chip-btn" onclick="selectForestTime(10, this)">10 dk</button>
-                    <button class="time-chip-btn selected" onclick="selectForestTime(15, this)">15 dk</button>
-                    <button class="time-chip-btn" onclick="selectForestTime(25, this)">25 dk</button>
+                    <button class="time-chip-btn" onclick="selectForestTime(5, this)">5 min</button>
+                    <button class="time-chip-btn" onclick="selectForestTime(10, this)">10 min</button>
+                    <button class="time-chip-btn selected" onclick="selectForestTime(15, this)">15 min</button>
+                    <button class="time-chip-btn" onclick="selectForestTime(25, this)">25 min</button>
                 </div>
 
                 <div class="forest-card">
                     <div style="display:flex; justify-content:flex-end;">
                         <label style="font-size:13px; font-weight:600; cursor:pointer; color:#047857;">
-                            <input type="checkbox" id="calmModeToggle" onchange="toggleCalmTimer()"> 🧘 Sakin Mod (Sayıları Gizle)
+                            <input type="checkbox" id="calmModeToggle" onchange="toggleCalmTimer()"> 🧘 <span id="lblCalmMode">Sakin Mod (Sayıları Gizle)</span>
                         </label>
                     </div>
                     <div class="timer-circle-container">
@@ -868,19 +895,19 @@
                     <div id="treeVisual" style="font-size:70px; margin:6px 0;">🌱</div>
                     <div id="currentTargetLockNotice" style="font-size:13px; font-weight:600; color:#0F766E; margin-bottom:8px;"></div>
                     <div>
-                        <button id="startForestBtn" class="btn-action-large btn-dual-style" onclick="toggleForestTimer()">🚀 Odaklanmayı Başlat</button>
+                        <button id="startForestBtn" class="btn-action-large btn-dual-style" onclick="toggleForestTimer()"><span id="lblStartTimer">🚀 Odaklanmayı Başlat</span></button>
                     </div>
                 </div>
             </div>
 
             <!-- KÜÇÜK GÖREV DİLİMLERİ -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">🧩 Küçük Görev Dilimleri</h2>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblChunksCardTitle">🧩 Küçük Görev Dilimleri</h2>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <div style="position:relative; flex:1;">
                         <input type="text" id="chunkTaskInput" placeholder="Örn: Fen Bilimleri Proje Raporu..." style="margin-top:0;">
                     </div>
-                    <button id="btnChunk" class="btn-action-large btn-jigsaw-style" onclick="generateChunks()">✨ <span class="comp-name">Pupa</span> ile Parçala!</button>
+                    <button id="btnChunk" class="btn-action-large btn-jigsaw-style" onclick="generateChunks()">✨ <span id="btnChunkText">Pupa ile Parçala!</span></button>
                 </div>
                 <div id="chunkResults" style="display:none; margin-top:14px;"></div>
 
@@ -898,77 +925,77 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span><b class="comp-name">Pupa</b> diyor ki: "Her denemende beynin yeni süper güç yolları inşa ediyor!"</span>
+                    <span id="m5Greeting"><b class="comp-name">Pupa</b> diyor ki: "Her denemende beynin yeni süper güç yolları inşa ediyor!"</span>
                 </div>
 
-                <h2 style="margin-top:0; color:#1E3A8A;">🌱 'Henüz' ve Hedef Gücü Paneli</h2>
-                <p style="color:#475569; font-size:14px; margin-top:2px;">Geliştirmek istediğin hedefi yaz, tek tıkla güce çevirelim:</p>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblYetCardTitle">🌱 'Henüz' ve Hedef Gücü Paneli</h2>
+                <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblYetDesc">Geliştirmek istediğin hedefi yaz, tek tıkla güce çevirelim:</p>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <input type="text" id="yetInput" placeholder="Örn: Uzun kelimeleri okumak..." style="margin-top:0;">
-                    <button id="btnYet" class="btn-action-large btn-jigsaw-style" onclick="convertWithYet()">🌟 Güçlü Hedefe Çevir!</button>
+                    <button id="btnYet" class="btn-action-large btn-jigsaw-style" onclick="convertWithYet()"><span id="btnYetText">🌟 Güçlü Hedefe Çevir!</span></button>
                 </div>
                 
                 <div id="yetOutputCard" style="display:none; background:#F1F5F9; border-left:5px solid #2563EB; padding:16px; border-radius:14px; margin-top:14px; position:relative;">
-                    <button style="position:absolute; right:12px; top:12px; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#64748B;" onclick="resetYetGoal()">🔄 Yenisini Ekle</button>
+                    <button style="position:absolute; right:12px; top:12px; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#64748B;" onclick="resetYetGoal()"><span id="lblResetGoal">🔄 Yenisini Ekle</span></button>
                     <div id="yetOutputText" style="font-size:16px; font-weight:600; color:#0F172A; line-height:1.6;"></div>
                 </div>
             </div>
 
             <!-- BEYİN KASI ATÖLYESİ -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">💪 Beyin Kası Atölyesi</h2>
-                <p style="color:#475569; font-size:14px; margin-top:2px;">Bugün takıldığın veya zorlandığın bir kelimeyi at, zihin kasına çevirelim:</p>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblMuscleTitle">💪 Beyin Kası Atölyesi</h2>
+                <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblMuscleDesc">Bugün takıldığın veya zorlandığın bir kelimeyi at, zihin kasına çevirelim:</p>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" id="mistakeWordInput" placeholder="Örn: Bu uzun kelimede takıldım..." style="margin-top:0;">
-                    <button class="btn-action-large btn-dual-style" onclick="boostBrainMuscle()">⚡ Kas Yap!</button>
+                    <input type="text" id="mistakeWordInput" placeholder="Örn: Bu kelimede takıldım..." style="margin-top:0;">
+                    <button class="btn-action-large btn-dual-style" onclick="boostBrainMuscle()"><span id="btnMuscleText">⚡ Kas Yap!</span></button>
                 </div>
                 <div id="brainMuscleFeedback" style="display:none; background:#FEF3C7; border:2px solid #FCD34D; padding:14px; border-radius:14px; margin-top:12px; font-size:15px; font-weight:500; color:#78350F; line-height:1.6;"></div>
             </div>
 
             <!-- Rozet Vitrini -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;">🏆 Kâşif Rozet Vitrini</h2>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblBadgesTitle">🏆 Kâşif Rozet Vitrini</h2>
                 <div class="badge-grid">
-                    <div class="badge-card unlocked" id="badgeStart" onclick="showBadgeTip('Laboratuvara adım attığın için bu rozeti kazandın! 🚀')">
-                        <span class="badge-card-icon">🚀</span><b>Cesur Kâşif</b>
+                    <div class="badge-card unlocked" id="badgeStart" onclick="showBadgeTip('Başlangıç Rozeti! 🚀')">
+                        <span class="badge-card-icon">🚀</span><b class="b-name">Cesur Kâşif</b>
                     </div>
                     <div class="badge-card" id="badgeJigsaw" onclick="showBadgeTip('Metni adımlara ayırdığında açılır! 🧩')">
-                        <span class="badge-card-icon">🧩</span><b>Görev Mimarı</b>
+                        <span class="badge-card-icon">🧩</span><b class="b-name">Görev Mimarı</b>
                     </div>
                     <div class="badge-card" id="badgePalace" onclick="showBadgeTip('Zihin evinde 3 istasyonu bitirdiğinde açılır! 🏛️')">
-                        <span class="badge-card-icon">🏛️</span><b>Hafıza Ustası</b>
+                        <span class="badge-card-icon">🏛️</span><b class="b-name">Hafıza Ustası</b>
                     </div>
                     <div class="badge-card" id="badgeTree" onclick="showBadgeTip('Odak ormanında 1 tohum büyüttüğünde açılır! 🌳')">
-                        <span class="badge-card-icon">🌳</span><b>Odak Ormanı</b>
+                        <span class="badge-card-icon">🌳</span><b class="b-name">Odak Ormanı</b>
                     </div>
                     <div class="badge-card" id="badgeBreak" onclick="showBadgeTip('Kâşif molasında dinlendiğinde açılır! ☕')">
-                        <span class="badge-card-icon">🧘</span><b>Dingin Zihin</b>
+                        <span class="badge-card-icon">🧘</span><b class="b-name">Dingin Zihin</b>
                     </div>
                     <div class="badge-card" id="badgeGrowth" onclick="showBadgeTip('Hedefine güç kattığında açılır! 🌱')">
-                        <span class="badge-card-icon">🌱</span><b>Gelişen Beyin</b>
+                        <span class="badge-card-icon">🌱</span><b class="b-name">Gelişen Beyin</b>
                     </div>
                 </div>
 
                 <!-- Gün Sonu Değerlendirmesi -->
                 <div style="margin-top:20px; padding-top:16px; border-top:1px solid #E2D7C5;">
-                    <h3 style="color:#1E3A8A; margin-bottom:8px;">🌟 Gün Sonu Değerlendirmesi</h3>
+                    <h3 style="color:#1E3A8A; margin-bottom:8px;" id="lblReviewTitle">🌟 Gün Sonu Değerlendirmesi</h3>
                     
-                    <label style="font-size:14px; font-weight:600; color:#475569;">1. Bugün zihnini nasıl hissettin?</label>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 14px 0;">
+                    <label style="font-size:14px; font-weight:600; color:#475569;" id="lblReviewQ1">1. Bugün zihnini nasıl hissettin?</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 14px 0;" id="reviewQ1Btns">
                         <button class="theme-btn active" onclick="setDayMood('🦁 Süper Güçlü', this)">🦁 Süper Güçlü</button>
                         <button class="theme-btn" onclick="setDayMood('🌟 Meraklı & Parlak', this)">🌟 Meraklı & Parlak</button>
                         <button class="theme-btn" onclick="setDayMood('🌿 Dingin & Sakin', this)">🌿 Dingin & Sakin</button>
                     </div>
 
-                    <label style="font-size:14px; font-weight:600; color:#475569;">2. Yol arkadaşın <span class="comp-name">Pupa</span> ile nasıldınız?</label>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 16px 0;">
+                    <label style="font-size:14px; font-weight:600; color:#475569;" id="lblReviewQ2">2. Yol arkadaşınla nasıldınız?</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 16px 0;" id="reviewQ2Btns">
                         <button class="theme-btn active" onclick="setCompMood('🤝 Harika Bir İkiliydik', this)">🤝 Harika Bir İkiliydik</button>
                         <button class="theme-btn" onclick="setCompMood('💖 Çok Yardım Etti', this)">💖 Çok Yardım Etti</button>
                         <button class="theme-btn" onclick="setCompMood('🚀 Yarın Daha İyiyiz', this)">🚀 Yarın Daha İyiyiz</button>
                     </div>
 
                     <button class="sparkle-btn" onclick="generateCertificate()">
-                        📜 Başarı Sertifikamı Oluştur & İncele! 🎖️
+                        📜 <span id="lblGenCertText">Başarı Sertifikamı Oluştur & İncele! 🎖️</span>
                     </button>
                 </div>
             </div>
@@ -976,18 +1003,18 @@
             <!-- SERTİFİKA ÖNİZLEME ALANI -->
             <div id="certificatePrintArea" class="certificate-card">
                 <div style="font-size:44px;">🎓✨</div>
-                <h1 style="color:#1E3A8A; margin:8px 0; font-size:24px;">SÜPER BEYİN BAŞARI SERTİFİKASI</h1>
-                <p style="font-size:15px; color:#475569;">Bu resmi kâşif belgesi takdim edilmiştir:</p>
+                <h1 style="color:#1E3A8A; margin:8px 0; font-size:24px;" id="certMainTitle">SÜPER BEYİN BAŞARI SERTİFİKASI</h1>
+                <p style="font-size:15px; color:#475569;" id="certSubText">Bu resmi kâşif belgesi takdim edilmiştir:</p>
                 <h2 id="certName" style="color:#2563EB; font-size:28px; margin:8px 0; border-bottom:2px dashed #93C5FD; display:inline-block; padding:0 18px;">KÂŞİF</h2>
-                <p style="font-size:15px; color:#1E293B; max-width:540px; margin:12px auto; line-height:1.6;">
+                <p style="font-size:15px; color:#1E293B; max-width:540px; margin:12px auto; line-height:1.6;" id="certDesc">
                     Sadık yol arkadaşı <b id="certCompanion">Pupa</b> ile birlikte bugün gösterdiği üstün merak, sabır ve odaklanma için bu unvana layık görülmüştür.
                 </p>
                 <div style="font-size:14px; color:#475569; margin:10px 0;">
-                    <b>Günün Hissi:</b> <span id="certMood">🦁 Süper Güçlü</span> | <b>Arkadaşlık Bağı:</b> <span id="certCompMood">🤝 Harika Bir İkiliydik</span>
+                    <b id="certMoodLbl">Günün Hissi:</b> <span id="certMood">🦁 Süper Güçlü</span> | <b id="certBondLbl">Bağ:</b> <span id="certCompMood">🤝 Harika Bir İkiliydik</span>
                 </div>
                 <div id="certBadges" style="font-size:28px; margin:14px 0;">🚀 🧩 🏛️ 🌳 🧘 🌱</div>
-                <div style="font-size:13px; color:#64748B;">Süper Beyin Laboratuvarı Resmi Onayı • Tarih: <span id="certDate"></span></div>
-                <button class="btn-action-large btn-jigsaw-style" style="margin-top:14px;" onclick="window.print()">🖨️ Sertifikayı PDF İndir / Yazdır</button>
+                <div style="font-size:13px; color:#64748B;"><span id="certOfficeText">Süper Beyin Laboratuvarı Resmi Onayı</span> • <span id="certDate"></span></div>
+                <button class="btn-action-large btn-jigsaw-style" style="margin-top:14px;" onclick="window.print()">🖨️ <span id="btnPrintCertText">Sertifikayı PDF İndir / Yazdır</span></button>
             </div>
         </div>
     </div>
@@ -996,12 +1023,12 @@
 <!-- KÂŞİF MOLASI -->
 <div id="breakModal" class="modal-overlay">
     <div class="modal-card">
-        <h2 style="margin-top:0; color:#0D9488; font-size:22px;">☕ Kâşif Molası</h2>
+        <h2 style="margin-top:0; color:#0D9488; font-size:22px;" id="breakModalTitle">☕ Kâşif Molası</h2>
         <p id="breakStepTitle" style="font-weight:600; color:#475569; font-size:15px;">Kendi hızında rahatla...</p>
         <div id="gameScreen" class="game-screen"></div>
         <div style="display:flex; gap:8px; margin-top:12px;">
             <button id="breakCloseBtn" class="btn-action-large btn-dual-style" style="flex:1; justify-content:center;" onclick="closeBreakModal()">
-                🌸 Biraz Daha Dinlenmek İster misin?
+                <span id="breakCloseBtnText">🌸 Biraz Daha Dinlenmek İster misin?</span>
             </button>
         </div>
     </div>
@@ -1040,6 +1067,10 @@ let speechRecognizer = null;
 // METİN BÖLME
 let textChunks = [];
 let currentChunkIndex = 0;
+
+// SESLENDİRME DURUMU
+let isReadingAloud = false;
+let availableVoices = [];
 
 // MODÜL 2 ADIM TAMAMLANMA TAKİBİ
 let m2CompletedSteps = { 1: false, 2: false, 3: false };
@@ -1085,6 +1116,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const k = localStorage.getItem('superbrain_gemini_key');
     if (k) document.getElementById('apiKeyInput').value = k;
+
+    // Ses motorunu yükle
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            availableVoices = window.speechSynthesis.getVoices();
+        };
+    }
 });
 
 function selectMood(moodKey, el) {
@@ -1098,51 +1136,194 @@ function toggleRenameInput() {
     box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
+// DİL SEÇİMİ VE A2-B1 SEVİYESİ İNGİLİZCE ENTEGRASYONU
 function selectLang(lang, el) {
     currentLang = lang;
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
 
+    const voiceBar = document.getElementById('englishVoiceBar');
+
     if (lang === 'en') {
-        document.getElementById('onboardTitle').innerText = "🚀 Welcome to the Explorer Base!";
-        document.getElementById('onboardSub').innerText = "Ready to solve letters and ignite your mind on this journey?";
-        document.getElementById('onboardPill').innerHTML = "🌟 <b>Explorer Space:</b> Explore at your own pace, no rushing! When you need to unwind, click <b>'☕ Explorer Break'</b> anytime.";
+        if (voiceBar) voiceBar.style.display = 'flex';
+        currentTrackWord = "planet";
+        selectedDayMood = "🦁 Strong & Ready";
+        selectedCompMood = "🤝 Great Team";
+
+        // Giriş Ekranı
+        document.getElementById('onboardTitle').innerText = "🚀 Welcome to Explorer Base!";
+        document.getElementById('onboardSub').innerText = "Ready to discover words and unlock your superpower?";
+        document.getElementById('onboardPill').innerHTML = "🌟 <b>Explorer Space:</b> Go at your own pace, no rush! Whenever you need to rest, <b>'☕ Explorer Break'</b> is always here.";
         document.getElementById('lblExplorerName').innerText = "👤 Explorer Name:";
         document.getElementById('lblCompanionPick').innerText = "🐾 Choose Your Companion:";
+        document.getElementById('btnRenameToggle').innerText = "✏️ Rename Your Companion";
         document.getElementById('lblMoodTitle').innerText = "⚡ How is your mind feeling today?";
         document.getElementById('startBtn').innerText = "🌟 Start the Adventure!";
+        
+        // Karakter Başlıkları
+        const aTitles = document.querySelectorAll('.avatar-title-text');
+        if (aTitles[0]) aTitles[0].innerText = "Pupa (Curious Fox)";
+        if (aTitles[1]) aTitles[1].innerText = "Nova (Wise Owl)";
+        if (aTitles[2]) aTitles[2].innerText = "Bolt (Robot Apprentice)";
+        if (aTitles[3]) aTitles[3].innerText = "Baron (Warm Bear)";
+
+        // Duygu Butonları
+        const mChips = document.querySelectorAll('#moodGrid .mood-chip');
+        if (mChips[0]) mChips[0].innerText = "🚀 Full of Energy";
+        if (mChips[1]) mChips[1].innerText = "🤔 Curious";
+        if (mChips[2]) mChips[2].innerText = "😴 A Bit Tired";
+        if (mChips[3]) mChips[3].innerText = "🌪️ Wandering";
+
+        // Header & Nav
+        document.getElementById('mainHeaderTitle').innerText = "⚡ Super Brain Lab";
+        document.getElementById('headerExplorerPrefix').innerText = "Explorer";
         document.getElementById('breakBtnText').innerText = "Explorer Break";
         document.getElementById('nav1').innerText = "🪐 1. Text Discovery";
         document.getElementById('nav2').innerText = "🏛️ 2. Memory House";
         document.getElementById('nav3').innerText = "🌿 3. Mind Tree";
         document.getElementById('nav4').innerText = "🌳 4. Focus Forest";
         document.getElementById('nav5').innerText = "🏆 5. Trophy Room";
-        document.getElementById('lblAtmosphere').innerText = "Planet Atmosphere:";
+
+        // Modül 1
+        document.getElementById('lblAtmosphere').innerText = "Planet Theme:";
         document.getElementById('lblFont').innerText = "Typography:";
         document.getElementById('lblPath1Title').innerText = "Path 1: Upload a Photo";
         document.getElementById('lblPath1Desc').innerText = "Snap or choose your book page";
         document.getElementById('lblOr').innerText = "OR";
         document.getElementById('lblPath2Title').innerText = "Path 2: Write Here";
         document.getElementById('lblPath2Desc').innerText = "Type or paste your text";
-        document.getElementById('textInput').placeholder = "No photo? No problem! Type or paste your story here...";
+        document.getElementById('textInput').placeholder = "Type or paste your story here...";
         document.getElementById('lblRuler').innerText = "Laser Focus Window";
         document.getElementById('lblSyllable').innerText = "Magic Syllables";
-        document.getElementById('btnJigsawText').innerText = "Break into Steps";
-        document.getElementById('btnDualText').innerText = "Visualize in Mind";
-        document.getElementById('btnMindmapText').innerText = "Grow Mind Tree from Text";
-        document.getElementById('bridge1').innerText = "Enter Memory House";
-        document.getElementById('bridge3').innerText = "Plant Seeds in Focus Forest";
-        document.getElementById('bridge4').innerText = "Fly to Trophy Room";
-        document.getElementById('headerExplorerPrefix').innerText = "Explorer";
         document.getElementById('lblPrevChunk').innerText = "Previous Page";
         document.getElementById('lblNextChunk').innerText = "Next Page";
+        document.getElementById('lblJigsawCardTitle').innerText = "🧩 Explorer Step 1: Break into Steps";
+        document.getElementById('lblJigsawCardDesc').innerText = "Let's turn this story into bite-sized puzzle pieces! The big picture will appear in seconds.";
+        document.getElementById('btnJigsawText').innerText = "Break into Steps";
+        document.getElementById('lblDualCardTitle').innerText = "🎬 Explorer Step 2: Mind Movie";
+        document.getElementById('lblDualCardDesc').innerText = "Turn your story into colorful illustrations right before your eyes!";
+        document.getElementById('btnDualText').innerText = "Mind Movie";
+        document.getElementById('bridge1').innerText = "Enter Memory House";
+
+        // Modül 1 Jigsaw & Dual
+        document.getElementById('lblJigsawBigTitle').innerText = "🌟 THE BIG PICTURE";
+        document.getElementById('lblJigsawStepsTitle').innerText = "🧩 STORY STEPS";
+        document.getElementById('lblDualScenesTitle').innerText = "🎬 MIND MOVIE SCENES";
+
+        // Modül 2
+        document.getElementById('stTitle1').innerText = "1. Explore Rooms 🏛️";
+        document.getElementById('stTitle2').innerText = "2. Catchy Rhymes 🪄";
+        document.getElementById('stTitle3').innerText = "3. Lock the Word ✍️";
+        document.getElementById('lblPalaceBannerText').innerText = "🏰 Let's turn key facts into fun objects and place them in your rooms!";
+        document.getElementById('btnPalaceHeroText').innerText = "Spread Objects into Rooms!";
+        document.getElementById('room1Header').innerText = "🛋️ Stop 1: Living Room";
+        document.getElementById('room2Header').innerText = "🍳 Stop 2: Kitchen Table";
+        document.getElementById('room3Header').innerText = "🛏️ Stop 3: Bookshelf";
+        document.getElementById('room1Cue').innerText = "Click the button above to begin!";
+        document.getElementById('room2Cue').innerText = "Waiting for objects...";
+        document.getElementById('room3Cue').innerText = "Waiting for objects...";
+        document.getElementById('btnProceedText1').innerText = "Next: Sing a Rhyme 🪄 ➔";
+        document.getElementById('lblMnemonicTitle').innerText = "🎵 Step 2: Rhyme Factory";
+        document.getElementById('lblMnemonicDesc').innerText = "Pick a word from your text or write your own to hear the rhyme:";
+        document.getElementById('customMnemonicInput').placeholder = "Or type your own word here...";
+        document.getElementById('btnMakeMnemonicText').innerText = "Create Rhyme 🪄";
+        document.getElementById('btnProceedText2').innerText = "Next: Lock the Word ✍️ ➔";
+        document.getElementById('lblTrackTitle').innerText = "✍️ Step 3: Word Track";
+        document.getElementById('lblTrackDesc').innerText = "Type each letter on your keyboard to lock the boxes:";
+        document.getElementById('btnUndoLetterText').innerText = "⌫ Erase Last Letter";
+        document.getElementById('lblM2LockStatus').innerText = "🔒 Complete all 3 steps to open!";
+
+        // Modül 3
+        document.getElementById('btnMindmapText').innerText = "Grow Mind Tree from Text";
+        document.getElementById('lblChatCardHeader').innerText = "💬 Brain Hook Chat with Your Companion";
+        document.getElementById('lblChatDesc').innerText = "Tell your companion what made you curious in this story:";
+        document.getElementById('lblMicText').innerText = "Speak with Voice";
+        document.getElementById('btnSendText').innerText = "Send ✨";
+        document.getElementById('bridge3').innerText = "Plant Seeds in Focus Forest";
+        document.getElementById('companionChatPrompt').innerText = "What surprised you the most in this text? You can use sentence starters or talk to me!";
+
+        // Cümle Kalıpları EN
+        document.getElementById('chatStartersContainer').innerHTML = `
+            <button class="sentence-starter-btn" onclick="addChatStarter('I think ')">I think...</button>
+            <button class="sentence-starter-btn" onclick="addChatStarter('Because ')">Because...</button>
+            <button class="sentence-starter-btn" onclick="addChatStarter('I was surprised that ')">I was surprised that...</button>
+            <button class="sentence-starter-btn" onclick="addChatStarter('The best clue was ')">The best clue was...</button>
+            <button class="sentence-starter-btn" onclick="addChatStarter('What if ')">What if...</button>
+        `;
+
+        // Modül 4
+        document.getElementById('lblForestTitle').innerText = "🌳 Focus Forest";
+        document.getElementById('lblCalmMode').innerText = "Calm Mode (Hide Numbers)";
+        document.getElementById('lblStartTimer').innerText = "🚀 Start Focus Timer";
+        document.getElementById('lblChunksCardTitle').innerText = "🧩 Bite-Sized Steps";
+        document.getElementById('chunkTaskInput').placeholder = "e.g. Science Space Project...";
+        document.getElementById('btnChunkText').innerText = "Break with Companion!";
+        document.getElementById('bridge4').innerText = "Fly to Trophy Room";
+
+        // Bitki İsimleri EN
+        const pNames = document.querySelectorAll('.plant-select-grid .p-name');
+        if (pNames[0]) pNames[0].innerText = "Mighty Pine";
+        if (pNames[1]) pNames[1].innerText = "Sunflower";
+        if (pNames[2]) pNames[2].innerText = "Little Cactus";
+        if (pNames[3]) pNames[3].innerText = "Spring Bloom";
+
+        // Modül 5
+        document.getElementById('lblYetCardTitle').innerText = "🌱 The 'Power of Yet' Panel";
+        document.getElementById('lblYetDesc').innerText = "Write a goal you want to improve, turn it into superpower:";
+        document.getElementById('yetInput').placeholder = "e.g. Reading long words...";
+        document.getElementById('btnYetText').innerText = "🌟 Make it Powerful!";
+        document.getElementById('lblResetGoal').innerText = "🔄 Add Another";
+        document.getElementById('lblMuscleTitle').innerText = "💪 Brain Muscle Gym";
+        document.getElementById('lblMuscleDesc').innerText = "Type a tricky word here, let's turn it into mind strength:";
+        document.getElementById('mistakeWordInput').placeholder = "e.g. This tricky word...";
+        document.getElementById('btnMuscleText').innerText = "⚡ Build Muscle!";
+        document.getElementById('lblBadgesTitle').innerText = "🏆 Explorer Trophy Room";
+
+        // Rozet İsimleri EN
+        const bNames = document.querySelectorAll('.badge-grid .b-name');
+        if (bNames[0]) bNames[0].innerText = "Brave Explorer";
+        if (bNames[1]) bNames[1].innerText = "Task Architect";
+        if (bNames[2]) bNames[2].innerText = "Memory Master";
+        if (bNames[3]) bNames[3].innerText = "Focus Forest";
+        if (bNames[4]) bNames[4].innerText = "Calm Mind";
+        if (bNames[5]) bNames[5].innerText = "Growing Brain";
+
+        // Gün Sonu Değerlendirme EN
+        document.getElementById('lblReviewTitle').innerText = "🌟 Daily Reflection";
+        document.getElementById('lblReviewQ1').innerText = "1. How does your mind feel right now?";
+        document.getElementById('lblReviewQ2').innerText = "2. How was teamwork with your companion?";
+        document.getElementById('lblGenCertText').innerText = "Create & View Certificate! 🎖️";
+        document.getElementById('reviewQ1Btns').innerHTML = `
+            <button class="theme-btn active" onclick="setDayMood('🦁 Strong & Ready', this)">🦁 Strong & Ready</button>
+            <button class="theme-btn" onclick="setDayMood('🌟 Curious & Bright', this)">🌟 Curious & Bright</button>
+            <button class="theme-btn" onclick="setDayMood('🌿 Calm & Peaceful', this)">🌿 Calm & Peaceful</button>
+        `;
+        document.getElementById('reviewQ2Btns').innerHTML = `
+            <button class="theme-btn active" onclick="setCompMood('🤝 Great Team', this)">🤝 Great Team</button>
+            <button class="theme-btn" onclick="setCompMood('💖 Very Helpful', this)">💖 Very Helpful</button>
+            <button class="theme-btn" onclick="setCompMood('🚀 Even Better Tomorrow', this)">🚀 Even Better Tomorrow</button>
+        `;
+
+        // Sertifika EN
+        document.getElementById('certMainTitle').innerText = "SUPER BRAIN ACHIEVEMENT CERTIFICATE";
+        document.getElementById('certSubText').innerText = "This official award is proudly presented to:";
+        document.getElementById('certDesc').innerHTML = "Together with faithful companion <b id='certCompanion'>Pupa</b> for showing great curiosity, patience, and concentration!";
+        document.getElementById('certMoodLbl').innerText = "Feeling:";
+        document.getElementById('certBondLbl').innerText = "Teamwork:";
+        document.getElementById('certOfficeText').innerText = "Super Brain Lab Official Award";
+        document.getElementById('btnPrintCertText').innerText = "Print / Download PDF";
+
+        // Mola Modalı EN
+        document.getElementById('breakModalTitle').innerText = "☕ Explorer Break";
+        document.getElementById('breakCloseBtnText').innerText = "🌸 Would you like to rest a bit more?";
     } else {
+        if (voiceBar) voiceBar.style.display = 'none';
         location.reload();
     }
 }
 
 function startJourney() {
-    const explorerName = document.getElementById('explorerNameInput').value.trim() || 'Kâşif';
+    const explorerName = document.getElementById('explorerNameInput').value.trim() || (currentLang === 'en' ? 'Explorer' : 'Kâşif');
     const finalCompName = document.getElementById('companionCustomName').value.trim() || currentCompanion.name;
 
     document.getElementById('displayExplorerName').innerText = explorerName;
@@ -1151,9 +1332,13 @@ function startJourney() {
 
     const greetingEl = document.getElementById('companionDynamicGreeting');
     if (userSelectedMood === 'tired' || userSelectedMood === 'foggy') {
-        greetingEl.innerHTML = `<b class="comp-name">${finalCompName}</b> diyor ki: "Bugün acelemiz yok kâşif! Çok sakin, yavaş ve dinlenerek ilerleyeceğiz. Sen zaten harikasın!"`;
+        greetingEl.innerHTML = currentLang === 'en'
+            ? `<b class="comp-name">${finalCompName}</b> says: "No rush today, explorer! We will go slowly, breathe, and enjoy. You are already awesome!"`
+            : `<b class="comp-name">${finalCompName}</b> diyor ki: "Bugün acelemiz yok kâşif! Çok sakin, yavaş ve dinlenerek ilerleyeceğiz. Sen zaten harikasın!"`;
     } else {
-        greetingEl.innerHTML = `<b class="comp-name">${finalCompName}</b> diyor ki: "İster kitabının resmini yükle, ister metnini buraya yaz! Karar senin kâşif!"`;
+        greetingEl.innerHTML = currentLang === 'en'
+            ? `<b class="comp-name">${finalCompName}</b> says: "Snap a photo of your book or type your story here! You are in charge!"`
+            : `<b class="comp-name">${finalCompName}</b> diyor ki: "İster kitabının resmini yükle, ister metnini buraya yaz! Karar senin kâşif!"`;
     }
 
     document.getElementById('onboardingScreen').style.display = 'none';
@@ -1277,7 +1462,65 @@ function changeChunk(direction) {
         currentChunkIndex = newIdx;
         updateTextDisplay();
         playSuccessTone();
+        if (isReadingAloud) toggleReadAloud(); // Sayfa değişirse sesi durdur
     }
+}
+
+// 4 KARAKTERLİ SESLENDİRME MOTORU (YALNIZCA İNGİLİZCE)
+function toggleReadAloud() {
+    if (!('speechSynthesis' in window)) return;
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+
+    if (isReadingAloud) {
+        window.speechSynthesis.cancel();
+        isReadingAloud = false;
+        playIcon.innerText = "▶";
+        playText.innerText = "Read to Me";
+        return;
+    }
+
+    const currentText = textChunks[currentChunkIndex] || document.getElementById('textInput').value.trim();
+    if (!currentText) return;
+
+    const utterance = new SpeechSynthesisUtterance(currentText);
+    const selectedVoiceType = document.getElementById('voiceSelect').value;
+
+    // Tarayıcıdaki sesleri tara ve eşleştir
+    let matchVoice = null;
+    const all = window.speechSynthesis.getVoices();
+
+    if (selectedVoiceType === 'US_F') {
+        matchVoice = all.find(v => (v.lang === 'en-US' || v.lang.includes('US')) && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Female') || v.name.includes('Google US English')));
+        utterance.pitch = 1.1; // Tatlı, sevimli peri tonu
+    } else if (selectedVoiceType === 'UK_F') {
+        matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang.includes('GB')) && (v.name.includes('Hazel') || v.name.includes('Female') || v.name.includes('Google UK English Female')));
+        utterance.pitch = 1.0;
+    } else if (selectedVoiceType === 'US_M') {
+        matchVoice = all.find(v => (v.lang === 'en-US' || v.lang.includes('US')) && (v.name.includes('David') || v.name.includes('Male') || v.name.includes('Google US English')));
+        utterance.pitch = 1.0;
+    } else if (selectedVoiceType === 'UK_M') {
+        matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang.includes('GB')) && (v.name.includes('George') || v.name.includes('Male') || v.name.includes('Google UK English Male')));
+        utterance.pitch = 0.9; // Bilge büyücü tonu
+    }
+
+    if (!matchVoice) {
+        matchVoice = all.find(v => v.lang.startsWith('en'));
+    }
+
+    if (matchVoice) utterance.voice = matchVoice;
+    utterance.rate = 0.9; // Çocuklar için sakin ve takip edilebilir hız
+
+    utterance.onend = () => {
+        isReadingAloud = false;
+        playIcon.innerText = "▶";
+        playText.innerText = "Read to Me";
+    };
+
+    window.speechSynthesis.speak(utterance);
+    isReadingAloud = true;
+    playIcon.innerText = "⏹";
+    playText.innerText = "Stop Reading";
 }
 
 function toggleRuler() {
@@ -1298,7 +1541,10 @@ function moveRuler(e) {
 
 function cheerFromCompanion() {
     playSuccessTone();
-    alert(`🌟 ${currentCompanion.name}: "Harika gidiyorsun! Zihnindeki tüm süper güçleri açığa çıkaracağız!"`);
+    const msg = currentLang === 'en' 
+        ? `🌟 ${currentCompanion.name}: "You are doing amazing! Let's unlock every superpower in your mind!"`
+        : `🌟 ${currentCompanion.name}: "Harika gidiyorsun! Zihnindeki tüm süper güçleri açığa çıkaracağız!"`;
+    alert(msg);
 }
 
 function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
@@ -1324,12 +1570,12 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
     const apiKey = localStorage.getItem('superbrain_gemini_key');
     if (!apiKey) {
         openSettingsModal();
-        throw new Error("Lütfen önce ayarlar simgesinden API anahtarını kaydet!");
+        throw new Error(currentLang === 'en' ? "Please click the settings gear (⚙️) and save your API key first!" : "Lütfen önce ayarlar simgesinden API anahtarını kaydet!");
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     const langRule = currentLang === 'en' 
-        ? "Respond strictly in simple, child-friendly English. Never include pedagogical explanations, psychological analysis, or author names." 
+        ? "Respond strictly in simple, child-friendly English (A2-B1 Level). Never use complex academic terms, never include pedagogical explanations, psychological analysis, or author names." 
         : "Yalnızca 8-10 yaşındaki bir çocuğun okuyacağı basit, tertemiz Türkçe ile cevap ver. Asla pedagojik analiz, kuramcı ismi veya parantez içi açıklamalar ekleme.";
     
     const fullPrompt = `${langRule}\n${promptText}`;
@@ -1344,7 +1590,7 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
         });
         const data = await res.json();
         if (data.error) {
-            throw new Error(`Yol arkadaşın ${currentCompanion.name} biraz nefesleniyor, birkaç saniye sonra tekrar deneyelim ✨`);
+            throw new Error(`Companion ${currentCompanion.name} is catching its breath, try again in a few seconds ✨`);
         }
         const result = data.candidates[0].content.parts[0].text.trim();
         if (cacheKey) aiCache.set(cacheKey, result);
@@ -1370,7 +1616,7 @@ async function runJigsaw() {
 
     try {
         const prompt = currentLang === 'en'
-            ? `Text: "${textInput.value.trim()}"\nReturn JSON only:\n{"buyuk_resim": "Main exciting idea in 1 sentence", "kenar_parcalari": ["Step 1", "Step 2", "Step 3"]}`
+            ? `Text: "${textInput.value.trim()}"\nReturn JSON only:\n{"buyuk_resim": "Main exciting idea in 1 simple sentence", "kenar_parcalari": ["Step 1", "Step 2", "Step 3"]}`
             : `Metin: "${textInput.value.trim()}"\nJSON ver:\n{"buyuk_resim": "Metnin ana fikri (tek sevimli cümle)", "kenar_parcalari": ["1. Olay", "2. Olay", "3. Olay"]}`;
         
         const reply = await askGemini(prompt, null, 'jigsaw_' + textInput.value.trim());
@@ -1400,7 +1646,7 @@ async function runDualCoding() {
     grid.innerHTML = "";
 
     try {
-        const prompt = `Text: "${textInput.value.trim()}"\nReturn JSON only:\n{"scenes": [{"caption": "Scene 1 short title", "keyword": "astronaut in spaceship close-up"}, {"caption": "Scene 2 short title", "keyword": "space galaxy station close-up"}]}`;
+        const prompt = `Text: "${textInput.value.trim()}"\nReturn JSON only:\n{"scenes": [{"caption": "Scene 1 short title", "keyword": "character illustration colorful"}, {"caption": "Scene 2 short title", "keyword": "adventure story scene"}]}`;
         const reply = await askGemini(prompt, null, 'dual_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
         box.style.display = 'block';
@@ -1409,7 +1655,7 @@ async function runDualCoding() {
             const card = document.createElement('div');
             card.className = 'dual-card';
             const img = document.createElement('img');
-            img.src = `https://image.pollinations.ai/prompt/colorful%20storybook%20vector%20illustration%20of%20${encodeURIComponent(scene.keyword)}%20close-up%20character%20centered?width=520&height=400&nologo=true&seed=${i + Math.floor(Math.random()*100)}`;
+            img.src = `https://image.pollinations.ai/prompt/colorful%20storybook%20vector%20illustration%20of%20${encodeURIComponent(scene.keyword)}%20close-up%20centered?width=520&height=400&nologo=true&seed=${i + Math.floor(Math.random()*100)}`;
             img.onload = () => {
                 card.innerHTML = `<img src="${img.src}"><div class="dual-card-caption">🎬 ${cleanMarkdown(scene.caption)}</div>`;
                 grid.appendChild(card);
@@ -1424,11 +1670,11 @@ async function runDualCoding() {
 // 2. İSTASYON: KADEMELİ GÖREV PİPELİNE'I
 function switchPipelineStep(step) {
     if (step === 2 && !m2CompletedSteps[1]) {
-        alert("Önce 1. İstasyon olan 'Odaları Gez'i tamamlamalısın! 🛋️");
+        alert(currentLang === 'en' ? "Complete Room Exploring first! 🛋️" : "Önce 1. İstasyon olan 'Odaları Gez'i tamamlamalısın! 🛋️");
         return;
     }
     if (step === 3 && !m2CompletedSteps[2]) {
-        alert("Önce 2. İstasyon olan 'Tekerleme Söyle'yi tamamlamalısın! 🎵");
+        alert(currentLang === 'en' ? "Complete Rhyme Factory first! 🎵" : "Önce 2. İstasyon olan 'Tekerleme Söyle'yi tamamlamalısın! 🎵");
         return;
     }
 
@@ -1472,12 +1718,10 @@ async function buildMemoryPalace() {
         document.getElementById('room3Icon').innerText = data.room3_icon || "📚";
         document.getElementById('room3Cue').innerText = cleanMarkdown(data.room3_cue);
         
-        // 1. Adım Tamamlandı
         m2CompletedSteps[1] = true;
         document.getElementById('checkStep1').innerText = "✓";
         document.getElementById('stepPill1').classList.add('completed');
         
-        // 2. Adımın Kilidini Aç
         const p2 = document.getElementById('stepPill2');
         p2.classList.remove('locked');
         document.getElementById('checkStep2').innerText = "";
@@ -1521,7 +1765,7 @@ async function generateCustomMnemonic() {
 async function fetchMnemonic(word) {
     const out = document.getElementById('mnemonicOutput');
     out.style.display = 'block';
-    out.innerHTML = "🪄 <i>Tekerleme dokunuyor...</i>";
+    out.innerHTML = "🪄 <i>Creating rhyme...</i>";
     try {
         const prompt = currentLang === 'en'
             ? `Word: "${word}"\nWrite a 2-line rhyming cute poem for a child in English. Strictly 2 separate lines. Never use asterisks or markdown.`
@@ -1531,12 +1775,10 @@ async function fetchMnemonic(word) {
         const lines = res.split('\n').filter(l => l.trim().length > 0).slice(0, 2);
         out.innerHTML = `🎵 <b>${cleanMarkdown(word)}:</b><br><br>"${cleanMarkdown(lines[0] || res)}"<br>"${cleanMarkdown(lines[1] || '')}"`;
         
-        // 2. Adım Tamamlandı
         m2CompletedSteps[2] = true;
         document.getElementById('checkStep2').innerText = "✓";
         document.getElementById('stepPill2').classList.add('completed');
 
-        // 3. Adımın Kilidini Aç
         const p3 = document.getElementById('stepPill3');
         p3.classList.remove('locked');
         document.getElementById('checkStep3').innerText = "";
@@ -1559,7 +1801,7 @@ function setupTrackWord(word) {
     for (let i = 0; i < word.length; i += 2) {
         cue += word.slice(i, i + 2) + (i + 2 < word.length ? " - " : "");
     }
-    document.getElementById('targetSyllableCue').innerText = `İpucu: ${cue}`;
+    document.getElementById('targetSyllableCue').innerText = (currentLang === 'en' ? 'Clue: ' : 'İpucu: ') + cue;
 
     const container = document.getElementById('letterSlotsContainer');
     container.innerHTML = "";
@@ -1596,12 +1838,15 @@ function handleTrackInput(inputEl) {
             document.getElementById('checkStep3').innerText = "✓";
             document.getElementById('stepPill3').classList.add('completed');
 
-            document.getElementById('trackFeedback').innerHTML = `🎉 Harika! Beynin harfleri ellerinle kilitledi!`;
+            document.getElementById('trackFeedback').innerHTML = currentLang === 'en' 
+                ? `🎉 Awesome! Your brain locked the word with your hands!`
+                : `🎉 Harika! Beynin harfleri ellerinle kilitledi!`;
             
-            // Tüm 3 İstasyon Bitince Modül 3 Köprüsünü Aç
             const bridgeBtn = document.getElementById('bridgeToModule3Btn');
             bridgeBtn.disabled = false;
-            bridgeBtn.innerHTML = `🌿 3 İstasyon da Tamamlandı: Zihin Ağacına İlerle ➔`;
+            bridgeBtn.innerHTML = currentLang === 'en'
+                ? `🌿 All Steps Done: Enter Mind Tree ➔`
+                : `🌿 3 İstasyon da Tamamlandı: Zihin Ağacına İlerle ➔`;
             bridgeBtn.style.background = "#EFF6FF";
             bridgeBtn.style.borderColor = "#2563EB";
             bridgeBtn.style.color = "#1E40AF";
@@ -1642,7 +1887,7 @@ async function buildMindMap() {
         const data = parseCleanJSON(reply);
         document.getElementById('mindmapRoot').innerText = "🌳 " + cleanMarkdown(data.root);
         document.getElementById('mindmapBranches').innerHTML = data.branches.map((b, idx) => `
-            <div class="tree-node"><b>${idx + 1}. Dal:</b> ${cleanMarkdown(b.replace(/^[0-9]+[\.\:\s]*/, ''))}</div>
+            <div class="tree-node"><b>${currentLang === 'en' ? 'Branch' : 'Dal'} ${idx + 1}:</b> ${cleanMarkdown(b.replace(/^[0-9]+[\.\:\s]*/, ''))}</div>
         `).join('');
         document.getElementById('mindmapDisplay').style.display = 'block';
         playSuccessTone();
@@ -1658,19 +1903,19 @@ function addChatStarter(starter) {
 
 function toggleSpeechToText() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert("Tarayıcın sesle yazmayı desteklemiyor. Klavyeden yazmaya devam edebilirsin!");
+        alert(currentLang === 'en' ? "Speech recognition is not supported in this browser. You can type on the keyboard!" : "Tarayıcın sesle yazmayı desteklemiyor. Klavyeden yazmaya devam edebilirsin!");
         return;
     }
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!speechRecognizer) {
         speechRecognizer = new SpeechRec();
         speechRecognizer.lang = currentLang === 'en' ? 'en-US' : 'tr-TR';
-        speechRecognizer.onstart = () => { document.getElementById('voiceBtn').innerHTML = "🔴 <span>Dinliyorum...</span>"; };
+        speechRecognizer.onstart = () => { document.getElementById('voiceBtn').innerHTML = "🔴 <span>Listening...</span>"; };
         speechRecognizer.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             document.getElementById('chatInput').value += " " + transcript;
         };
-        speechRecognizer.onend = () => { document.getElementById('voiceBtn').innerHTML = "🎙️ <span>Sesinle Konuş (Dilersen Sesle Yaz)</span>"; };
+        speechRecognizer.onend = () => { document.getElementById('voiceBtn').innerHTML = "🎙️ <span>" + (currentLang === 'en' ? 'Speak with Voice' : 'Sesinle Konuş') + "</span>"; };
     }
     speechRecognizer.start();
 }
@@ -1730,7 +1975,7 @@ function toggleForestTimer() {
     const btn = document.getElementById('startForestBtn');
     if (!forestRunning) {
         forestRunning = true;
-        btn.innerText = "⏸️ Mola Ver";
+        btn.innerText = currentLang === 'en' ? "⏸️ Pause" : "⏸️ Mola Ver";
         btn.style.background = "#F59E0B";
         const total = forestMinutes * 60;
 
@@ -1746,18 +1991,18 @@ function toggleForestTimer() {
             if (--forestDuration < 0) {
                 clearInterval(forestInterval);
                 forestRunning = false;
-                btn.innerText = "🏆 Tamamlandı!";
+                btn.innerText = currentLang === 'en' ? "🏆 Done!" : "🏆 Tamamlandı!";
                 btn.style.background = "#0D9488";
                 unlockBadge('badgeTree');
                 playSuccessTone();
-                alert("🎉 Harikasın! Odaklanma süren bitti. Şimdi 5 dk Kâşif Molası Zamanı! ☕");
+                alert(currentLang === 'en' ? "🎉 Awesome! Focus time finished. Time for Explorer Break! ☕" : "🎉 Harikasın! Odaklanma süren bitti. Şimdi 5 dk Kâşif Molası Zamanı! ☕");
                 openBreakModal();
             }
         }, 1000);
     } else {
         clearInterval(forestInterval);
         forestRunning = false;
-        btn.innerText = "▶️ Devam Et";
+        btn.innerText = currentLang === 'en' ? "▶️ Resume" : "▶️ Devam Et";
         btn.style.background = "#0D9488";
     }
 }
@@ -1781,7 +2026,7 @@ async function generateChunks() {
     const box = document.getElementById('chunkResults');
     btn.disabled = true;
     box.style.display = 'block';
-    box.innerHTML = "⏳ Görev dilimleri hazırlanıyor...";
+    box.innerHTML = currentLang === 'en' ? "⏳ Preparing steps..." : "⏳ Görev dilimleri hazırlanıyor...";
 
     try {
         const prompt = currentLang === 'en'
@@ -1793,8 +2038,8 @@ async function generateChunks() {
         box.innerHTML = data.chunks.map((c, idx) => `
             <div class="task-checklist-item" id="chkItem_${idx}">
                 <input type="checkbox" onchange="toggleTaskDone(${idx}, this)" style="width:20px; height:20px;">
-                <span style="flex:1;"><b>${idx + 1}. Adım:</b> ${cleanMarkdown(c.replace(/^[0-9]+[\.\:\s]*/, ''))}</span>
-                <button class="theme-btn" style="margin:0; font-size:12px;" onclick="lockStepToTimer('${cleanMarkdown(c).replace(/'/g, "\\'")}')">Bu Adıma Odaklan ⏱️</button>
+                <span style="flex:1;"><b>${currentLang === 'en' ? 'Step' : 'Adım'} ${idx + 1}:</b> ${cleanMarkdown(c.replace(/^[0-9]+[\.\:\s]*/, ''))}</span>
+                <button class="theme-btn" style="margin:0; font-size:12px;" onclick="lockStepToTimer('${cleanMarkdown(c).replace(/'/g, "\\'")}')">${currentLang === 'en' ? 'Focus on Step ⏱️' : 'Bu Adıma Odaklan ⏱️'}</button>
             </div>
         `).join('');
         playSuccessTone();
@@ -1813,7 +2058,7 @@ function toggleTaskDone(idx, chk) {
 }
 
 function lockStepToTimer(taskTitle) {
-    document.getElementById('currentTargetLockNotice').innerText = `🎯 Şu anki Hedef: ${taskTitle}`;
+    document.getElementById('currentTargetLockNotice').innerText = (currentLang === 'en' ? `🎯 Current Goal: ` : `🎯 Şu anki Hedef: `) + taskTitle;
     document.querySelector('[data-mod="module4"]').click();
 }
 
@@ -1826,15 +2071,16 @@ async function convertWithYet() {
     const out = document.getElementById('yetOutputText');
     btn.disabled = true;
     card.style.display = 'block';
-    out.innerHTML = "🪄 Güce dönüştürülüyor...";
+    out.innerHTML = currentLang === 'en' ? "🪄 Turning into superpower..." : "🪄 Güce dönüştürülüyor...";
 
     try {
         const prompt = currentLang === 'en'
-            ? `Goal: "${input}". Convert this into a single, punchy 1-sentence growth mindset slogan for a child. Strictly NO pedagogical talk, NO author names.`
+            ? `Goal: "${input}". Convert this into a single, punchy 1-sentence growth mindset slogan for a child (A2 Level). Strictly NO pedagogical talk, NO author names.`
             : `Hedef: "${input}". Bunu çocuk için doğrudan tek cümlelik sevimli bir büyüme zihniyeti sloganına çevir. Asla kuramcı ismi veya pedagojik açıklama ekleme.`;
         
         const reply = await askGemini(prompt, null, 'yet_' + input);
-        out.innerHTML = `🌟 <b>${currentCompanion.name} diyor ki:</b><br>"${cleanMarkdown(reply)}" <span class="yet-stamp">HENÜZ! 🌟</span>`;
+        const yetStampWord = currentLang === 'en' ? 'YET! 🌟' : 'HENÜZ! 🌟';
+        out.innerHTML = `🌟 <b>${currentCompanion.name} ${(currentLang === 'en' ? 'says' : 'diyor ki')}:</b><br>"${cleanMarkdown(reply)}" <span class="yet-stamp">${yetStampWord}</span>`;
         unlockBadge('badgeGrowth');
         playSuccessTone();
     } catch(e) { out.innerHTML = e.message; }
@@ -1847,10 +2093,12 @@ function resetYetGoal() {
 }
 
 function boostBrainMuscle() {
-    const word = document.getElementById('mistakeWordInput').value.trim() || "bu çalışma";
+    const word = document.getElementById('mistakeWordInput').value.trim() || (currentLang === 'en' ? "this practice" : "bu çalışma");
     const box = document.getElementById('brainMuscleFeedback');
     box.style.display = 'block';
-    box.innerHTML = `💪 <b>Harika Bir Beyin Jimnastiği!</b><br>'${cleanMarkdown(word)}' üzerinde düşünürken zihninde yepyeni süper güç yolları bağlandı. Tam şu an beyin kasların güçlendi!`;
+    box.innerHTML = currentLang === 'en'
+        ? `💪 <b>Great Brain Exercise!</b><br>Thinking about '${cleanMarkdown(word)}' just connected brand new superpower roads in your brain!`
+        : `💪 <b>Harika Bir Beyin Jimnastiği!</b><br>'${cleanMarkdown(word)}' üzerinde düşünürken zihninde yepyeni süper güç yolları bağlandı. Tam şu an beyin kasların güçlendi!`;
     playSuccessTone();
 }
 
@@ -1866,10 +2114,10 @@ function setCompMood(mood, el) {
 }
 
 function generateCertificate() {
-    const explorer = document.getElementById('displayExplorerName').innerText || 'Kâşif';
+    const explorer = document.getElementById('displayExplorerName').innerText || (currentLang === 'en' ? 'Explorer' : 'Kâşif');
     document.getElementById('certName').innerText = explorer.toUpperCase();
     document.getElementById('certCompanion').innerText = currentCompanion.name + " " + currentCompanion.icon;
-    document.getElementById('certDate').innerText = new Date().toLocaleDateString('tr-TR');
+    document.getElementById('certDate').innerText = new Date().toLocaleDateString(currentLang === 'en' ? 'en-US' : 'tr-TR');
     document.getElementById('certMood').innerText = selectedDayMood;
     document.getElementById('certCompMood').innerText = selectedCompMood;
 
@@ -1884,7 +2132,7 @@ let breakStep = 1;
 function openBreakModal() {
     breakStep = 1;
     document.getElementById('breakModal').style.display = 'flex';
-    document.getElementById('breakCloseBtn').innerText = "🌸 Biraz Daha Dinlenmek İster misin?";
+    document.getElementById('breakCloseBtnText').innerText = currentLang === 'en' ? "🌸 Would you like to rest a bit more?" : "🌸 Biraz Daha Dinlenmek İster misin?";
     loadBreakStep();
 }
 function closeBreakModal() { document.getElementById('breakModal').style.display = 'none'; }
@@ -1894,19 +2142,19 @@ function loadBreakStep() {
     const screen = document.getElementById('gameScreen');
 
     if (breakStep === 1) {
-        title.innerHTML = `Mavi balonlara sakince dokunarak gevşeyelim...`;
+        title.innerHTML = currentLang === 'en' ? `Tap the blue balloons gently to relax...` : `Mavi balonlara sakince dokunarak gevşeyelim...`;
         screen.innerHTML = `<div id="bArea" style="width:100%; height:150px; position:relative;"></div>`;
         spawnBalloons();
     } else if (breakStep === 2) {
-        title.innerText = "Yıldızlara dokunarak dikkatini toplayabilirsin ✨";
+        title.innerText = currentLang === 'en' ? "Tap the stars to gather your focus ✨" : "Yıldızlara dokunarak dikkatini toplayabilirsin ✨";
         screen.innerHTML = `<div id="sArea" style="width:100%; height:150px; position:relative;"></div>`;
         moveStar(0);
     } else if (breakStep === 3) {
-        title.innerText = "Daireyle birlikte sakince nefes alıp verelim 🌸";
-        screen.innerHTML = `<div class="breath-circle">Nefes</div>`;
+        title.innerText = currentLang === 'en' ? "Breathe in and out gently with the circle 🌸" : "Daireyle birlikte sakince nefes alıp verelim 🌸";
+        screen.innerHTML = `<div class="breath-circle">Breathe</div>`;
         setTimeout(() => { breakStep = 4; loadBreakStep(); }, 5500);
     } else if (breakStep === 4) {
-        title.innerText = "Zihnin dinlendi ve tazelendi 💎";
+        title.innerText = currentLang === 'en' ? "Your mind is rested and renewed 💎" : "Zihnin dinlendi ve tazelendi 💎";
         screen.innerHTML = `<div style="font-size:56px; cursor:pointer;" onclick="finishBreak()">💎</div>`;
     }
 }
@@ -1962,9 +2210,9 @@ function finishBreak() {
     const title = document.getElementById('breakStepTitle');
     const screen = document.getElementById('gameScreen');
     const closeBtn = document.getElementById('breakCloseBtn');
-    title.innerText = "Zihnin Harika Dinlendi!";
-    screen.innerHTML = `<div style="font-weight:700; color:#0D9488; font-size:18px;">Gözlerin ve zihnin ferahladı ✨</div>`;
-    closeBtn.innerText = "🚀 Hazırsan Göreve Yavaşça Dönelim mi?";
+    title.innerText = currentLang === 'en' ? "Your Mind Feels Great!" : "Zihnin Harika Dinlendi!";
+    screen.innerHTML = `<div style="font-weight:700; color:#0D9488; font-size:18px;">${currentLang === 'en' ? 'Eyes and mind are refreshed ✨' : 'Gözlerin ve zihnin ferahladı ✨'}</div>`;
+    closeBtn.innerText = currentLang === 'en' ? "🚀 Ready to gently return to adventure?" : "🚀 Hazırsan Göreve Yavaşça Dönelim mi?";
     closeBtn.style.background = "#0D9488";
     closeBtn.style.color = "#FFFFFF";
     unlockBadge('badgeBreak');
@@ -1992,7 +2240,8 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
             canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
             try {
-                const resultText = await askGemini("Bu görseldeki metni harfi harfine aktar. Yalnızca metni yaz.", canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+                const prompt = currentLang === 'en' ? "Transcribe the text in this image word for word. Output text only." : "Bu görseldeki metni harfi harfine aktar. Yalnızca metni yaz.";
+                const resultText = await askGemini(prompt, canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
                 document.getElementById('textInput').value = resultText;
                 resetAndDisplayChunks();
             } catch (err) { alert(err.message); }
