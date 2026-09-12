@@ -4,5 +4,43 @@
   "compatibility_date": "2026-09-12",
   "ai": {
     "binding": "AI"
-  }
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://bluespheric.github.io",
+    "ALLOW_LOCAL_DEV": "false"
+  },
+  "ratelimits": [
+    {
+      "name": "SITE_RATE_LIMITER",
+      "namespace_id": "7812401",
+      "simple": {
+        "limit": 240,
+        "period": 60
+      }
+    },
+    {
+      "name": "CLIENT_RATE_LIMITER",
+      "namespace_id": "7812402",
+      "simple": {
+        "limit": 50,
+        "period": 60
+      }
+    },
+    {
+      "name": "HEAVY_RATE_LIMITER",
+      "namespace_id": "7812403",
+      "simple": {
+        "limit": 15,
+        "period": 60
+      }
+    },
+    {
+      "name": "MISSION_RATE_LIMITER",
+      "namespace_id": "7812404",
+      "simple": {
+        "limit": 12,
+        "period": 60
+      }
+    }
+  ]
 }
