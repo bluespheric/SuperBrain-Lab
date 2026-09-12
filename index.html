@@ -489,7 +489,7 @@
         </div>
 
         <div style="text-align:left; margin-top:16px;">
-            <label><b id="lblCompanionPick">🐾 Yol Arkadaşını Seç:</b></label>
+            <label><b id="lblCompanionPick">🐾 Macera Arkadaşını Seç:</b></label>
             <div class="avatar-grid" id="avatarGrid">
                 <div class="avatar-card selected" data-icon="🦊" data-name="Pupa">
                     <span class="avatar-icon">🦊</span>
@@ -510,7 +510,7 @@
             </div>
             
             <div style="text-align:right;">
-                <button class="rename-toggle-btn" id="btnRenameToggle" onclick="toggleRenameInput()">✏️ Yol Arkadaşının Adını Değiştir</button>
+                <button class="rename-toggle-btn" id="btnRenameToggle" onclick="toggleRenameInput()">✏️ Arkadaşının Adını Değiştir</button>
             </div>
             <div id="renameInputContainer" style="display:none; margin-top:6px;">
                 <input type="text" id="companionCustomName" value="Pupa" placeholder="Arkadaşına yeni bir isim ver...">
@@ -538,7 +538,7 @@
             <div class="header-left">
                 <div>
                     <h1 style="margin:0; font-size:22px;" id="mainHeaderTitle">⚡ Süper Beyin Laboratuvarı</h1>
-                    <div style="font-size:13px; opacity:0.9; margin-top:3px;"><span id="headerExplorerPrefix">Kâşif</span> <span id="displayExplorerName"></span> ve Yol Arkadaşı <span class="comp-name">Pupa</span> <span class="comp-icon">🦊</span></div>
+                    <div style="font-size:13px; opacity:0.9; margin-top:3px;"><span id="headerExplorerPrefix">Kâşif</span> <span id="displayExplorerName"></span> ve <span id="headerBuddyLabel">Yol Arkadaşı</span> <span class="comp-name">Pupa</span> <span class="comp-icon">🦊</span> <span id="headerMissionSuffix">Görevde!</span></div>
                 </div>
             </div>
             <div class="header-actions">
@@ -568,7 +568,7 @@
             <div class="card">
                 <div class="companion-helper" onclick="cheerFromCompanion()">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span id="companionDynamicGreeting"><b class="comp-name">Pupa</b> diyor ki: "İster kitabının resmini yükle, ister metnini buraya yaz! Karar senin kâşif!"</span>
+                    <span id="companionDynamicGreeting"><b class="comp-name">Pupa</b> <span class="says-label">diyor ki:</span> "İster kitabının resmini yükle, ister metnini buraya yaz! Karar senin kâşif!"</span>
                 </div>
 
                 <!-- Font & Zemin Filtresi -->
@@ -620,7 +620,7 @@
                 <!-- YAN YANA AÇIK SES KARTLARI (YALNIZCA İNGİLİZCE MODUNDA GÖRÜNÜR) -->
                 <div id="englishVoiceBar" class="voice-section">
                     <div class="voice-section-title">
-                        <span>🎧</span> <span>Storyteller Characters (Tap one to listen!):</span>
+                        <span>🎧</span> <span>Storyteller Voices (Tap one to listen!):</span>
                     </div>
                     <div class="voice-cards-grid">
                         <div class="voice-pick-card" id="card_US_F" onclick="pickAndPlayVoice('US_F')">
@@ -725,7 +725,7 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span id="m2Greeting"><b class="comp-name">Pupa</b> diyor ki: "3 istasyonu sırayla tamamla, zihnine mühürle ve kapıyı aç!"</span>
+                    <span id="m2Greeting"><b class="comp-name">Pupa</b> <span class="says-label">diyor ki:</span> "3 istasyonu sırayla tamamla, zihnine mühürle ve kapıyı aç!"</span>
                 </div>
 
                 <!-- Kademeli Görev Zinciri (Oklarla Bağlı) -->
@@ -829,7 +829,7 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span id="m3Greeting"><b class="comp-name">Pupa</b> diyor ki: "Düşüncelerini bir ağaç gibi dallandır, her şey berraklaşsın!"</span>
+                    <span id="m3Greeting"><b class="comp-name">Pupa</b> <span class="says-label">diyor ki:</span> "Düşüncelerini bir ağaç gibi dallandır, her şey berraklaşsın!"</span>
                 </div>
                 
                 <div style="margin-bottom:10px;">
@@ -847,8 +847,8 @@
 
             <!-- BİRLEŞİK ZİHİN KANCASI & SOHBET -->
             <div class="card">
-                <h2 style="margin-top:0; color:#1E3A8A;" id="lblChatCardHeader">💬 Yol Arkadaşınla Zihin Kancası</h2>
-                <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblChatDesc">Metinde seni en çok meraklandıran şeyi yol arkadaşına anlat:</p>
+                <h2 style="margin-top:0; color:#1E3A8A;" id="lblChatCardHeader">💬 Macera Arkadaşınla Zihin Kancası</h2>
+                <p style="color:#475569; font-size:14px; margin-top:2px;" id="lblChatDesc">Metinde seni en çok meraklandıran şeyi arkadaşına anlat:</p>
                 
                 <div style="margin-bottom:8px;" id="chatStartersContainer">
                     <button class="sentence-starter-btn" onclick="addChatStarter('Bence ')">Bence...</button>
@@ -892,7 +892,7 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span id="m4Greeting"><b class="comp-name">Pupa</b> diyor ki: "Bitkini seç, süreni belirle ve odaklandıkça yeşermesini izle!"</span>
+                    <span id="m4Greeting"><b class="comp-name">Pupa</b> <span class="says-label">diyor ki:</span> "Bitkini seç, süreni belirle ve odaklandıkça yeşermesini izle!"</span>
                 </div>
                 <h2 style="margin-top:0; color:#1E3A8A;" id="lblForestTitle">🌳 Odak Ormanı</h2>
 
@@ -956,7 +956,7 @@
             <div class="card">
                 <div class="companion-helper">
                     <span class="comp-icon" style="font-size:24px;">🦊</span>
-                    <span id="m5Greeting"><b class="comp-name">Pupa</b> diyor ki: "Her denemende beynin yeni süper güç yolları inşa ediyor!"</span>
+                    <span id="m5Greeting"><b class="comp-name">Pupa</b> <span class="says-label">diyor ki:</span> "Her denemende beynin yeni süper güç yolları inşa ediyor!"</span>
                 </div>
 
                 <h2 style="margin-top:0; color:#1E3A8A;" id="lblYetCardTitle">🌱 'Henüz' ve Hedef Gücü Paneli</h2>
@@ -1018,7 +1018,7 @@
                         <button class="theme-btn" onclick="setDayMood('🌿 Dingin & Sakin', this)">🌿 Dingin & Sakin</button>
                     </div>
 
-                    <label style="font-size:14px; font-weight:600; color:#475569;" id="lblReviewQ2">2. Yol arkadaşınla nasıldınız?</label>
+                    <label style="font-size:14px; font-weight:600; color:#475569;" id="lblReviewQ2">2. Macera arkadaşınla nasıldınız?</label>
                     <div style="display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 16px 0;" id="reviewQ2Btns">
                         <button class="theme-btn active" onclick="setCompMood('🤝 Harika Bir İkiliydik', this)">🤝 Harika Bir İkiliydik</button>
                         <button class="theme-btn" onclick="setCompMood('💖 Çok Yardım Etti', this)">💖 Çok Yardım Etti</button>
@@ -1038,7 +1038,7 @@
                 <p style="font-size:15px; color:#475569;" id="certSubText">Bu resmi kâşif belgesi takdim edilmiştir:</p>
                 <h2 id="certName" style="color:#2563EB; font-size:28px; margin:8px 0; border-bottom:2px dashed #93C5FD; display:inline-block; padding:0 18px;">KÂŞİF</h2>
                 <p style="font-size:15px; color:#1E293B; max-width:540px; margin:12px auto; line-height:1.6;" id="certDesc">
-                    Sadık yol arkadaşı <b id="certCompanion">Pupa</b> ile birlikte bugün gösterdiği üstün merak, sabır ve odaklanma için bu unvana layık görülmüştür.
+                    Sadık macera arkadaşı <b id="certCompanion">Pupa</b> ile birlikte bugün gösterdiği üstün merak, sabır ve odaklanma için bu unvana layık görülmüştür.
                 </p>
                 <div style="font-size:14px; color:#475569; margin:10px 0;">
                     <b id="certMoodLbl">Günün Hissi:</b> <span id="certMood">🦁 Süper Güçlü</span> | <b id="certBondLbl">Bağ:</b> <span id="certCompMood">🤝 Harika Bir İkiliydik</span>
@@ -1159,7 +1159,7 @@ function toggleRenameInput() {
     box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
-// DİL SEÇİMİ VE A2-B1 SEVİYESİ İNGİLİZCE ENTEGRASYONU
+// DİL SEÇİMİ VE A2-B1 SEVİYESİ İNGİLİZCE ENTEGRASYONU (SIFIR TÜRKÇE SIZINTISI)
 function selectLang(lang, el) {
     currentLang = lang;
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
@@ -1178,8 +1178,8 @@ function selectLang(lang, el) {
         document.getElementById('onboardSub').innerText = "Ready to discover words and unlock your superpower?";
         document.getElementById('onboardPill').innerHTML = "🌟 <b>Explorer Space:</b> Go at your own pace, no rush! Whenever you need to rest, <b>'☕ Explorer Break'</b> is always here.";
         document.getElementById('lblExplorerName').innerText = "👤 Explorer Name:";
-        document.getElementById('lblCompanionPick').innerText = "🐾 Choose Your Companion:";
-        document.getElementById('btnRenameToggle').innerText = "✏️ Rename Your Companion";
+        document.getElementById('lblCompanionPick').innerText = "🐾 Choose Your Adventure Buddy:";
+        document.getElementById('btnRenameToggle').innerText = "✏️ Rename Your Adventure Buddy";
         document.getElementById('lblMoodTitle').innerText = "⚡ How is your mind feeling today?";
         document.getElementById('startBtn').innerText = "🌟 Start the Adventure!";
         
@@ -1200,12 +1200,17 @@ function selectLang(lang, el) {
         // Header & Nav
         document.getElementById('mainHeaderTitle').innerText = "⚡ Super Brain Lab";
         document.getElementById('headerExplorerPrefix').innerText = "Explorer";
+        document.getElementById('headerBuddyLabel').innerText = "Adventure Buddy";
+        document.getElementById('headerMissionSuffix').innerText = "on Mission!";
         document.getElementById('breakBtnText').innerText = "Explorer Break";
         document.getElementById('nav1').innerText = "🪐 1. Text Discovery";
         document.getElementById('nav2').innerText = "🏛️ 2. Memory House";
         document.getElementById('nav3').innerText = "🌿 3. Mind Tree";
         document.getElementById('nav4').innerText = "🌳 4. Focus Forest";
         document.getElementById('nav5').innerText = "🏆 5. Trophy Room";
+
+        // Konuşma Balonları (Says Etiketi)
+        document.querySelectorAll('.says-label').forEach(el => el.innerText = "says:");
 
         // Modül 1
         document.getElementById('lblAtmosphere').innerText = "Planet Theme:";
@@ -1258,8 +1263,8 @@ function selectLang(lang, el) {
 
         // Modül 3
         document.getElementById('btnMindmapText').innerText = "Grow Mind Tree from Text";
-        document.getElementById('lblChatCardHeader').innerText = "💬 Brain Hook Chat with Your Companion";
-        document.getElementById('lblChatDesc').innerText = "Tell your companion what made you curious in this story:";
+        document.getElementById('lblChatCardHeader').innerText = "💬 Brain Hook Chat with Your Adventure Buddy";
+        document.getElementById('lblChatDesc').innerText = "Tell your buddy what made you curious in this story:";
         document.getElementById('lblMicText').innerText = "Speak with Voice";
         document.getElementById('btnSendText').innerText = "Send ✨";
         document.getElementById('bridge3').innerText = "Plant Seeds in Focus Forest";
@@ -1280,7 +1285,7 @@ function selectLang(lang, el) {
         document.getElementById('lblStartTimer').innerText = "🚀 Start Focus Timer";
         document.getElementById('lblChunksCardTitle').innerText = "🧩 Bite-Sized Steps";
         document.getElementById('chunkTaskInput').placeholder = "e.g. Science Space Project...";
-        document.getElementById('btnChunkText').innerText = "Break with Companion!";
+        document.getElementById('btnChunkText').innerText = "Break with Buddy!";
         document.getElementById('bridge4').innerText = "Fly to Trophy Room";
 
         // Bitki İsimleri EN
@@ -1314,7 +1319,7 @@ function selectLang(lang, el) {
         // Gün Sonu Değerlendirme EN
         document.getElementById('lblReviewTitle').innerText = "🌟 Daily Reflection";
         document.getElementById('lblReviewQ1').innerText = "1. How does your mind feel right now?";
-        document.getElementById('lblReviewQ2').innerText = "2. How was teamwork with your companion?";
+        document.getElementById('lblReviewQ2').innerText = "2. How was teamwork with your adventure buddy?";
         document.getElementById('lblGenCertText').innerText = "Create & View Certificate! 🎖️";
         document.getElementById('reviewQ1Btns').innerHTML = `
             <button class="theme-btn active" onclick="setDayMood('🦁 Strong & Ready', this)">🦁 Strong & Ready</button>
@@ -1330,7 +1335,7 @@ function selectLang(lang, el) {
         // Sertifika EN
         document.getElementById('certMainTitle').innerText = "SUPER BRAIN ACHIEVEMENT CERTIFICATE";
         document.getElementById('certSubText').innerText = "This official award is proudly presented to:";
-        document.getElementById('certDesc').innerHTML = "Together with faithful companion <b id='certCompanion'>Pupa</b> for showing great curiosity, patience, and concentration!";
+        document.getElementById('certDesc').innerHTML = "Together with faithful adventure buddy <b id='certCompanion'>Pupa</b> for showing great curiosity, patience, and concentration!";
         document.getElementById('certMoodLbl').innerText = "Feeling:";
         document.getElementById('certBondLbl').innerText = "Teamwork:";
         document.getElementById('certOfficeText').innerText = "Super Brain Lab Official Award";
@@ -1362,6 +1367,14 @@ function startJourney() {
         greetingEl.innerHTML = currentLang === 'en'
             ? `<b class="comp-name">${finalCompName}</b> says: "Snap a photo of your book or type your story here! You are in charge!"`
             : `<b class="comp-name">${finalCompName}</b> diyor ki: "İster kitabının resmini yükle, ister metnini buraya yaz! Karar senin kâşif!"`;
+    }
+
+    // Modül selamlama metinleri
+    if (currentLang === 'en') {
+        document.getElementById('m2Greeting').innerHTML = `<b class="comp-name">${finalCompName}</b> says: "Complete the 3 stops one by one to unlock the door!"`;
+        document.getElementById('m3Greeting').innerHTML = `<b class="comp-name">${finalCompName}</b> says: "Branch your thoughts like a tree so everything stays crystal clear!"`;
+        document.getElementById('m4Greeting').innerHTML = `<b class="comp-name">${finalCompName}</b> says: "Pick your plant, set your timer, and watch it grow as you focus!"`;
+        document.getElementById('m5Greeting').innerHTML = `<b class="comp-name">${finalCompName}</b> says: "With every try, your brain builds brand new superpower roads!"`;
     }
 
     document.getElementById('onboardingScreen').style.display = 'none';
@@ -1493,7 +1506,6 @@ function changeChunk(direction) {
 function pickAndPlayVoice(voiceType) {
     if (!('speechSynthesis' in window)) return;
 
-    // Aynı ses çalıyorsa durdur
     if (currentlyPlayingVoiceType === voiceType) {
         stopReadingAloud();
         return;
@@ -1536,7 +1548,6 @@ function pickAndPlayVoice(voiceType) {
     window.speechSynthesis.speak(utterance);
     currentlyPlayingVoiceType = voiceType;
 
-    // Arayüz kartını aktif yap
     document.querySelectorAll('.voice-pick-card').forEach(c => c.classList.remove('active'));
     document.getElementById(`card_${voiceType}`).classList.add('active');
     document.getElementById(`icon_${voiceType}`).innerText = "⏹";
@@ -1619,7 +1630,7 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
         });
         const data = await res.json();
         if (data.error) {
-            throw new Error(`Companion ${currentCompanion.name} is catching its breath, try again in a few seconds ✨`);
+            throw new Error(`Buddy ${currentCompanion.name} is catching breath, try again in a few seconds ✨`);
         }
         const result = data.candidates[0].content.parts[0].text.trim();
         if (cacheKey) aiCache.set(cacheKey, result);
@@ -2100,7 +2111,7 @@ async function convertWithYet() {
     const out = document.getElementById('yetOutputText');
     btn.disabled = true;
     card.style.display = 'block';
-    out.innerHTML = "🪄 Güce dönüştürülüyor...";
+    out.innerHTML = currentLang === 'en' ? "🪄 Turning into superpower..." : "🪄 Güce dönüştürülüyor...";
 
     try {
         const prompt = currentLang === 'en'
