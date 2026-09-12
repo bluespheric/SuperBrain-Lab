@@ -1631,43 +1631,49 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
 // GERÇEK GÖRSEL ÜRETİMİ: Gemini'nin görsel üretebilen modeli (gemini-2.5-flash-image).
 // Metinden çıkarılan sahne tarifini alır, o sahneye özel bir illüstrasyon (base64) döndürür.
 async function askGeminiImage(promptText, cacheKey = null) {
-    if (cacheKey && aiCache.has(cacheKey)) return aiCache.get(cacheKey);
-
-    const apiKey = localStorage.getItem('superbrain_gemini_key');
-    if (!apiKey) {
-        openSettingsModal();
-        throw new Error(currentLang === 'en' ? "Please save your API key first!" : "Lütfen önce API anahtarını kaydet!");
+    if (cacheKey && aiCache.has(cacheKey)) {
+        return aiCache.get(cacheKey);
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
-    const body = {
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: { responseModalities: ["IMAGE"] }
-    };
+    const workerUrl = "https://gentle-dream-d716.bluerisma8.workers.dev/";
 
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (data.error) {
-        throw new Error(currentLang === 'en' ? "Image could not be created, try again." : "Görsel oluşturulamadı, tekrar dene.");
+    try {
+        const res = await fetch(workerUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: promptText
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success || !data.image) {
+            throw new Error(
+                currentLang === "en"
+                    ? "Image could not be created, please try again."
+                    : "Görsel oluşturulamadı, lütfen tekrar dene."
+            );
+        }
+
+        if (cacheKey) {
+            aiCache.set(cacheKey, data.image);
+        }
+
+        return data.image;
+
+    } catch (err) {
+        console.error("Cloudflare image error:", err);
+
+        throw new Error(
+            currentLang === "en"
+                ? "Image could not be created, please try again."
+                : "Görsel oluşturulamadı, lütfen tekrar dene."
+        );
     }
-
-    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
-    const imgPart = parts.find(p => p.inlineData || p.inline_data);
-    if (!imgPart) {
-        throw new Error(currentLang === 'en' ? "No image returned." : "Görsel dönmedi.");
-    }
-    const inline = imgPart.inlineData || imgPart.inline_data;
-    const mime = inline.mimeType || inline.mime_type || 'image/png';
-    const dataUrl = `data:${mime};base64,${inline.data}`;
-
-    if (cacheKey) aiCache.set(cacheKey, dataUrl);
-    return dataUrl;
 }
-
 function parseCleanJSON(raw) {
     let clean = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
     const start = clean.indexOf('{');
