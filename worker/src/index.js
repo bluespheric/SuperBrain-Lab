@@ -32,7 +32,7 @@ export default {
       ? {
           "Access-Control-Allow-Origin": origin,
           "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, X-Client-Id, X-Lesson-Delete-Token",
+          "Access-Control-Allow-Headers": "Content-Type, X-Client-Id, X-Lesson-Delete-Token, X-Lesson-Manage-Token",
           "Access-Control-Max-Age": "86400",
         }
       : {};
@@ -417,6 +417,8 @@ QUALITY RULES:
     const SHARED_LESSON_MAX_BYTES = 6 * 1024 * 1024;
     const SHARED_MEDIA_MAX_CHARS = 2500000;
     const LESSON_ID_RE = /^[A-Za-z0-9_-]{16,40}$/;
+    const RUN_ID_RE = /^[A-Za-z0-9_-]{16,80}$/;
+    const SHARED_RESULT_MAX_BYTES = 16 * 1024;
 
     const expectedLessonTypes = {
       1:"fener",2:"kablo",3:"vana",4:"kargo",5:"mikroskop",
@@ -508,6 +510,8 @@ QUALITY RULES:
 
     const validClientId = (request.headers.get("x-client-id") || "").match(/^[A-Za-z0-9_-]{16,80}$/);
     const lessonPathMatch = pathname.match(/^\/lessons\/([A-Za-z0-9_-]{16,40})$/);
+    const lessonResultsPathMatch = pathname.match(/^\/lessons\/([A-Za-z0-9_-]{16,40})\/results$/);
+    const lessonResultItemPathMatch = pathname.match(/^\/lessons\/([A-Za-z0-9_-]{16,40})\/results\/([A-Za-z0-9_-]{16,80})$/);
 
     // Fetch an immutable shared lesson snapshot.
     if (request.method === "GET" && lessonPathMatch) {
@@ -585,14 +589,125 @@ QUALITY RULES:
 
       const lessonId = randomToken(15);
       const deleteToken = randomToken(24);
+      const manageToken = randomToken(24);
       const deleteHash = await sha256Hex(deleteToken);
+      const manageHash = await sha256Hex(manageToken);
       const createdAt = new Date().toISOString();
       await env.LESSONS.put(
         `lesson:${lessonId}`,
-        JSON.stringify({ version: 1, createdAt, deleteHash, lesson })
+        JSON.stringify({ version: 2, createdAt, deleteHash, manageHash, lesson })
       );
 
-      return json({ success: true, lessonId, deleteToken, createdAt }, 201);
+      return json({ success: true, lessonId, deleteToken, manageToken, createdAt }, 201);
+    }
+
+    // Submit one completed student run for a shared lesson. Students can write results
+    // but cannot read classroom analytics. Only minimal, non-sensitive fields are stored.
+    if (request.method === "POST" && lessonResultsPathMatch) {
+      if (!originAllowed) return json({ success: false, error: "Origin not allowed." }, 403);
+      if (!validClientId) return json({ success: false, error: "Missing or invalid anonymous client id." }, 400);
+      if (!env.LESSONS || typeof env.LESSONS.get !== "function" || typeof env.LESSONS.put !== "function") {
+        return json({ success: false, error: "Lesson analytics storage is not configured." }, 503);
+      }
+
+      const lessonId = lessonResultsPathMatch[1];
+      const stored = await env.LESSONS.get(`lesson:${lessonId}`, { type: "json" });
+      if (!stored || !stored.lesson) return json({ success: false, error: "Shared lesson not found or no longer available." }, 404);
+
+      const contentType = request.headers.get("content-type") || "";
+      if (!contentType.toLowerCase().startsWith("application/json")) {
+        return json({ success: false, error: "Content-Type must be application/json." }, 415);
+      }
+      const declaredLength = Number(request.headers.get("content-length") || "0");
+      if (Number.isFinite(declaredLength) && declaredLength > SHARED_RESULT_MAX_BYTES) {
+        return json({ success: false, error: "Student result is too large." }, 413);
+      }
+      const raw = await request.text();
+      if (new TextEncoder().encode(raw).byteLength > SHARED_RESULT_MAX_BYTES) {
+        return json({ success: false, error: "Student result is too large." }, 413);
+      }
+      let body;
+      try { body = JSON.parse(raw); }
+      catch { return json({ success: false, error: "Invalid JSON." }, 400); }
+
+      const runId = cleanSharedString(body?.runId, 80);
+      if (!RUN_ID_RE.test(runId)) return json({ success: false, error: "Invalid run id." }, 400);
+      const nickname = cleanSharedString(body?.nickname, 24).trim() || "Explorer";
+      const role = cleanSharedString(body?.role, 80).trim();
+      const scoreNum = Math.max(0, Math.min(5000, Math.round(Number(body?.score) || 0)));
+      const mistakes = Array.isArray(body?.mistakes)
+        ? [...new Set(body.mistakes.map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 30))].slice(0, 30)
+        : [];
+      const postFeeling = cleanSharedString(body?.postFeeling, 100).trim();
+      const keyTakeaway = cleanSharedString(body?.keyTakeaway, 300).trim();
+
+      const rateLimit = async (binding, key) => {
+        if (!binding || typeof binding.limit !== "function") return true;
+        const result = await binding.limit({ key });
+        return !!result?.success;
+      };
+      const clientId = request.headers.get("x-client-id") || "";
+      if (!(await rateLimit(env.CLIENT_RATE_LIMITER, `lesson-result-client:${clientId}`)) ||
+          !(await rateLimit(env.SHARE_RATE_LIMITER, `lesson-result:${lessonId}:${clientId}`))) {
+        return json({ success: false, error: "Student result submission limit reached. Please wait a moment." }, 429, { "Retry-After": "60" });
+      }
+
+      const submittedAt = new Date().toISOString();
+      const record = {
+        id: runId, lessonId, submittedAt, nickname, role, score: scoreNum,
+        mistakes, postFeeling, keyTakeaway
+      };
+      await env.LESSONS.put(`result:${lessonId}:${runId}`, JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 180 });
+      return json({ success: true, saved: true, runId, submittedAt }, 201);
+    }
+
+    // Teacher-only analytics read. The management token never appears in the student link.
+    if (request.method === "GET" && lessonResultsPathMatch) {
+      if (!originAllowed) return json({ success: false, error: "Origin not allowed." }, 403);
+      if (!validClientId) return json({ success: false, error: "Missing or invalid anonymous client id." }, 400);
+      if (!env.LESSONS || typeof env.LESSONS.get !== "function" || typeof env.LESSONS.list !== "function") {
+        return json({ success: false, error: "Lesson analytics storage is not configured." }, 503);
+      }
+      const lessonId = lessonResultsPathMatch[1];
+      const stored = await env.LESSONS.get(`lesson:${lessonId}`, { type: "json" });
+      if (!stored) return json({ success: false, error: "Shared lesson not found." }, 404);
+      const token = request.headers.get("x-lesson-manage-token") || "";
+      if (!/^[A-Za-z0-9_-]{24,80}$/.test(token) || !stored.manageHash || (await sha256Hex(token)) !== stored.manageHash) {
+        return json({ success: false, error: "Analytics authorization failed." }, 403);
+      }
+      const clientId = request.headers.get("x-client-id") || "";
+      const rateLimit = async (binding, key) => {
+        if (!binding || typeof binding.limit !== "function") return true;
+        const result = await binding.limit({ key });
+        return !!result?.success;
+      };
+      if (!(await rateLimit(env.SHARE_RATE_LIMITER, `lesson-analytics-read:${clientId}`))) {
+        return json({ success: false, error: "Too many analytics requests. Please wait." }, 429, { "Retry-After": "60" });
+      }
+
+      const listed = await env.LESSONS.list({ prefix: `result:${lessonId}:`, limit: 100 });
+      const keys = listed.keys.slice(-50);
+      const records = (await Promise.all(keys.map((k) => env.LESSONS.get(k.name, { type: "json" })))).filter(Boolean);
+      records.sort((a, b) => String(b.submittedAt || "").localeCompare(String(a.submittedAt || "")));
+      return json({ success: true, lessonId, results: records.slice(0, 50) });
+    }
+
+    // Teacher-only deletion of one analytics row.
+    if (request.method === "DELETE" && lessonResultItemPathMatch) {
+      if (!originAllowed) return json({ success: false, error: "Origin not allowed." }, 403);
+      if (!validClientId) return json({ success: false, error: "Missing or invalid anonymous client id." }, 400);
+      if (!env.LESSONS || typeof env.LESSONS.get !== "function" || typeof env.LESSONS.delete !== "function") {
+        return json({ success: false, error: "Lesson analytics storage is not configured." }, 503);
+      }
+      const lessonId = lessonResultItemPathMatch[1];
+      const runId = lessonResultItemPathMatch[2];
+      const stored = await env.LESSONS.get(`lesson:${lessonId}`, { type: "json" });
+      const token = request.headers.get("x-lesson-manage-token") || "";
+      if (!stored || !/^[A-Za-z0-9_-]{24,80}$/.test(token) || !stored.manageHash || (await sha256Hex(token)) !== stored.manageHash) {
+        return json({ success: false, error: "Analytics authorization failed." }, 403);
+      }
+      await env.LESSONS.delete(`result:${lessonId}:${runId}`);
+      return json({ success: true, deleted: true, runId });
     }
 
     // Delete a shared snapshot only with the unguessable deletion token returned at creation.
@@ -625,6 +740,8 @@ QUALITY RULES:
         return json({ success: false, error: "Too many delete requests. Please wait." }, 429, { "Retry-After": "60" });
       }
 
+      const resultKeys = await env.LESSONS.list({ prefix: `result:${lessonId}:`, limit: 1000 });
+      await Promise.all(resultKeys.keys.map((k) => env.LESSONS.delete(k.name)));
       await env.LESSONS.delete(`lesson:${lessonId}`);
       return json({ success: true, deleted: true, lessonId });
     }
