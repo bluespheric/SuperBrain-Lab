@@ -35,6 +35,18 @@ export default {
       );
     }
 
+    const safeErrorText = (err) => {
+      if (!err) return "Unknown error";
+      if (typeof err === "string") return err;
+      if (err.message) return err.message;
+      if (err.description) return err.description;
+      try {
+        return JSON.stringify(err);
+      } catch {
+        return "Unknown error";
+      }
+    };
+
     try {
       const body = await request.json();
       const action = body.action || "image";
@@ -62,11 +74,12 @@ export default {
 Return exactly 2 sequential visual scenes.
 Captions must be short and child-friendly.
 Image prompts must clearly describe setting, characters, actions and colors.
+Keep image prompts concise and clear.
 The images must contain no text, letters, captions, labels or words.`
             : `Çocuklar için eğitsel dual coding sahneleri hazırlıyorsun.
 Tam olarak 2 ardışık görsel sahne üret.
 Başlıklar kısa, açık ve çocuk dostu olsun.
-Görsel tariflerinde mekânı, karakterleri, hareketleri ve renkleri açıkça anlat.
+Görsel tarifleri kısa ama net olsun; mekânı, karakterleri, hareketleri ve renkleri açıkça anlat.
 Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
 
         const userPrompt =
@@ -78,17 +91,11 @@ Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
           "@cf/meta/llama-3.1-8b-instruct-fast",
           {
             messages: [
-              {
-                role: "system",
-                content: systemPrompt,
-              },
-              {
-                role: "user",
-                content: userPrompt,
-              },
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
             ],
             temperature: 0.4,
-            max_tokens: 500,
+            max_tokens: 400,
             response_format: {
               type: "json_schema",
               json_schema: {
@@ -101,12 +108,8 @@ Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
                     items: {
                       type: "object",
                       properties: {
-                        caption: {
-                          type: "string",
-                        },
-                        image_prompt: {
-                          type: "string",
-                        },
+                        caption: { type: "string" },
+                        image_prompt: { type: "string" },
                       },
                       required: ["caption", "image_prompt"],
                     },
@@ -120,7 +123,6 @@ Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
 
         let sceneData = response.response;
 
-        // Bazı durumlarda JSON string olarak dönebilir
         if (typeof sceneData === "string") {
           sceneData = JSON.parse(sceneData);
         }
@@ -132,6 +134,15 @@ Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
         ) {
           throw new Error("Scene generation failed.");
         }
+
+        // Güvenlik için image promptları fazla uzunsa kısalt
+        sceneData.scenes = sceneData.scenes.map((scene) => ({
+          caption: String(scene.caption || "").trim().slice(0, 120),
+          image_prompt: String(scene.image_prompt || "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 1200),
+        }));
 
         return Response.json(
           {
@@ -160,32 +171,65 @@ Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
           );
         }
 
-        const finalPrompt = `
-Warm, colorful children's storybook illustration.
-Educational dual-coding visual for a child.
-Clear composition and expressive actions.
-Friendly, age-appropriate characters.
-No text, no letters, no words, no labels, no captions inside the image.
+        const compactPrompt = String(prompt)
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 1400);
 
-Scene:
-${prompt}
-        `.trim();
+        const finalPrompt = (
+          `Warm colorful children's storybook illustration. ` +
+          `Friendly age-appropriate characters. ` +
+          `Clear action and easy-to-understand composition. ` +
+          `No text, no letters, no labels, no captions inside the image. ` +
+          `Scene: ${compactPrompt}`
+        ).slice(0, 1800);
 
-        const result = await env.AI.run(
-          "@cf/black-forest-labs/flux-1-schnell",
-          {
-            prompt: finalPrompt,
-            steps: 4,
-            seed: Math.floor(Math.random() * 1000000),
-          }
-        );
-
-        if (!result || !result.image) {
-          throw new Error("No image returned from model.");
+        let result;
+        try {
+          result = await env.AI.run(
+            "@cf/black-forest-labs/flux-1-schnell",
+            {
+              prompt: finalPrompt,
+              steps: 4,
+              seed: Math.floor(Math.random() * 1000000),
+            }
+          );
+        } catch (aiError) {
+          return Response.json(
+            {
+              success: false,
+              where: "image_generation",
+              error: safeErrorText(aiError),
+            },
+            {
+              status: 500,
+              headers: corsHeaders,
+            }
+          );
         }
 
-        const dataUrl =
-          `data:image/jpeg;charset=utf-8;base64,${result.image}`;
+        if (!result || !result.image) {
+          return Response.json(
+            {
+              success: false,
+              where: "image_generation",
+              error: "No image returned from model.",
+              raw: (() => {
+                try {
+                  return JSON.stringify(result).slice(0, 500);
+                } catch {
+                  return "Could not stringify model response.";
+                }
+              })(),
+            },
+            {
+              status: 500,
+              headers: corsHeaders,
+            }
+          );
+        }
+
+        const dataUrl = `data:image/jpeg;charset=utf-8;base64,${result.image}`;
 
         return Response.json(
           {
@@ -208,14 +252,11 @@ ${prompt}
           headers: corsHeaders,
         }
       );
-
     } catch (error) {
-      console.error(error);
-
       return Response.json(
         {
           success: false,
-          error: error?.message || "AI request failed.",
+          error: safeErrorText(error),
         },
         {
           status: 500,
