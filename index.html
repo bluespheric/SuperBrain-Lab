@@ -1600,6 +1600,43 @@ function unlockBadge(id) {
 }
 function showBadgeTip(msg) { alert(msg); }
 
+const SUPERBRAIN_WORKER_URL = "https://gentle-dream-d716.bluerisma8.workers.dev/";
+
+async function askSuperBrainAI(action, payload = {}, cacheKey = null) {
+    if (cacheKey && aiCache.has(cacheKey)) return aiCache.get(cacheKey);
+
+    try {
+        const res = await fetch(SUPERBRAIN_WORKER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action,
+                lang: currentLang,
+                ...payload
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+            throw new Error(
+                (data && data.error) ||
+                (currentLang === 'en'
+                    ? `Buddy ${currentCompanion.name} needs a tiny break. Please try again.`
+                    : `${currentCompanion.name} minicik bir nefes molasında. Birazdan tekrar dene ✨`)
+            );
+        }
+
+        if (cacheKey) aiCache.set(cacheKey, data);
+        return data;
+    } catch (err) {
+        console.error(`SuperBrain AI error (${action}):`, err);
+        throw err;
+    }
+}
+
+// GEÇİCİ: Bu eski Gemini fonksiyonu yalnızca fotoğraftan yazı okuma (OCR) için tutuluyor.
+// Metin modülleri artık Cloudflare Worker üzerinden çalışıyor.
 async function askGemini(promptText, base64Image = null, cacheKey = null) {
     if (cacheKey && aiCache.has(cacheKey)) return aiCache.get(cacheKey);
 
@@ -1636,15 +1673,13 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
 
 // GERÇEK GÖRSEL ÜRETİMİ: Cloudflare Workers AI üzerindeki FLUX modeli.
 // Metinden çıkarılan sahne tarifini alır, o sahneye özel bir illüstrasyon (base64) döndürür.
-async function askGeminiImage(promptText, cacheKey = null) {
+async function askSuperBrainImage(promptText, cacheKey = null) {
     if (cacheKey && aiCache.has(cacheKey)) {
         return aiCache.get(cacheKey);
     }
 
-    const workerUrl = "https://gentle-dream-d716.bluerisma8.workers.dev/";
-
     try {
-        const res = await fetch(workerUrl, {
+        const res = await fetch(SUPERBRAIN_WORKER_URL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1696,12 +1731,13 @@ async function runJigsaw() {
     btn.disabled = true;
 
     try {
-        const prompt = currentLang === 'en'
-            ? `Text: "${textInput.value.trim()}"\nReturn JSON only:\n{"buyuk_resim": "Main exciting idea in 1 simple sentence", "kenar_parcalari": ["Step 1", "Step 2", "Step 3"]}`
-            : `Metin: "${textInput.value.trim()}"\nJSON ver:\n{"buyuk_resim": "Metnin ana fikri (tek sevimli cümle)", "kenar_parcalari": ["1. Olay", "2. Olay", "3. Olay"]}`;
-        
-        const reply = await askGemini(prompt, null, 'jigsaw_' + textInput.value.trim());
-        const data = parseCleanJSON(reply);
+        const sourceText = textInput.value.trim();
+        const data = await askSuperBrainAI(
+            'jigsaw',
+            { text: sourceText },
+            'jigsaw_cf_' + currentLang + '_' + sourceText
+        );
+
         document.getElementById('jigsawCover').innerHTML = `🌟 "${cleanMarkdown(data.buyuk_resim)}"`;
         document.getElementById('jigsawEdges').innerHTML = data.kenar_parcalari.map((item, idx) => `
             <div class="jigsaw-card">
@@ -1709,12 +1745,16 @@ async function runJigsaw() {
                 <div>${cleanMarkdown(item.replace(/^[0-9]+[\.\:\s]*/, ''))}</div>
             </div>
         `).join('');
+
         box.style.display = 'block';
         box.scrollIntoView({ behavior: 'smooth' });
         unlockBadge('badgeJigsaw');
         playSuccessTone();
-    } catch (e) { alert(e.message); }
-    finally { btn.disabled = false; }
+    } catch (e) {
+        alert(e.message);
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 // ZİHİN SİNEMASI: Metin analizi + görsel üretimi Cloudflare Workers AI üzerinden
@@ -1729,10 +1769,38 @@ async function runDualCoding() {
     btn.disabled = true;
     box.style.display = 'block';
 
-    const loadingCardHTML = (msg) => `
+    const loadingMessages = currentLang === 'en'
+        ? [
+            'Paints and brushes are waking up...',
+            'The imagination studio is mixing colors...',
+            'Scenes are landing on the canvas...',
+            'Tiny details are finding their places...',
+            'The mind cinema is turning on its lights...'
+        ]
+        : [
+            'Boyalar ve fırçalar iş başında...',
+            'Hayal atölyesi renkleri karıştırıyor...',
+            'Sahneler yavaşça tuvale düşüyor...',
+            'Minik ayrıntılar yerini buluyor...',
+            'Zihin sineması ışıklarını yakıyor...'
+        ];
+
+    let loadingMessageIndex = 0;
+    const loadingCardHTML = () => `
         <div class="dual-card" style="padding:40px; color:#EA580C; font-weight:700; background:#FFF7ED; border:2px dashed #FED7AA;">
-            🎨 ${msg}
+            🎨 <span class="dual-loading-text">${loadingMessages[loadingMessageIndex]}</span>
         </div>`;
+
+    const refreshLoadingTexts = () => {
+        document.querySelectorAll('.dual-loading-text').forEach(el => {
+            el.textContent = loadingMessages[loadingMessageIndex];
+        });
+    };
+
+    const loadingTicker = setInterval(() => {
+        loadingMessageIndex = (loadingMessageIndex + 1) % loadingMessages.length;
+        refreshLoadingTexts();
+    }, 2200);
 
     const errorCardHTML = (caption, detail = "") => `
         <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
@@ -1741,19 +1809,12 @@ async function runDualCoding() {
             ${detail ? `<div style="font-size:11px; margin-top:8px; opacity:0.75;">${cleanMarkdown(detail)}</div>` : ''}
         </div>`;
 
-    grid.innerHTML =
-        loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...') +
-        loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...');
+    grid.innerHTML = loadingCardHTML() + loadingCardHTML();
 
     try {
-        const workerUrl = "https://gentle-dream-d716.bluerisma8.workers.dev/";
-
-        // 1) Hikâyeden iki sadık görsel sahne çıkar.
-        const sceneRes = await fetch(workerUrl, {
+        const sceneRes = await fetch(SUPERBRAIN_WORKER_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 action: "scenes",
                 text: textInput.value.trim(),
@@ -1772,24 +1833,16 @@ async function runDualCoding() {
             );
         }
 
-        // Önce iki yükleme kartını göster.
-        grid.innerHTML = data.scenes.map((_, i) => loadingCardHTML(
-            currentLang === 'en'
-                ? `Drawing scene ${i + 1}...`
-                : `${i + 1}. sahne çiziliyor...`
-        )).join('');
-
-        // 2) Görselleri aynı anda değil SIRAYLA üret.
-        // Free kotada daha kararlı çalışır ve her sahneyi tek tek ekrana koyar.
+        grid.innerHTML = data.scenes.map(() => loadingCardHTML()).join('');
         const cards = [];
 
         for (let i = 0; i < data.scenes.length; i++) {
             const scene = data.scenes[i];
 
             try {
-                const imgUrl = await askGeminiImage(
+                const imgUrl = await askSuperBrainImage(
                     scene.image_prompt,
-                    'dualimg_v3_' + scene.image_prompt
+                    'dualimg_v4_' + scene.image_prompt
                 );
 
                 cards.push(`
@@ -1798,35 +1851,23 @@ async function runDualCoding() {
                     </div>
                 `);
             } catch (err) {
-                cards.push(
-                    errorCardHTML(
-                        scene.caption,
-                        err && err.message ? err.message : ""
-                    )
-                );
+                cards.push(errorCardHTML(scene.caption, err && err.message ? err.message : ""));
             }
 
-            // Bitmiş kartları göster; kalan sahne için yükleme kartı bırak.
-            const remaining = data.scenes.slice(i + 1).map((_, j) =>
-                loadingCardHTML(
-                    currentLang === 'en'
-                        ? `Drawing scene ${i + j + 2}...`
-                        : `${i + j + 2}. sahne çiziliyor...`
-                )
-            );
-
+            const remaining = data.scenes.slice(i + 1).map(() => loadingCardHTML());
             grid.innerHTML = cards.join('') + remaining.join('');
+            refreshLoadingTexts();
         }
 
         box.scrollIntoView({ behavior: 'smooth' });
         playSuccessTone();
-
     } catch (e) {
         grid.innerHTML = `
             <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
                 ⚠️ ${cleanMarkdown(e.message)}
             </div>`;
     } finally {
+        clearInterval(loadingTicker);
         btn.disabled = false;
     }
 }
@@ -1872,28 +1913,28 @@ async function buildMemoryPalace() {
     loader.style.display = 'block';
 
     try {
-        const prompt = currentLang === 'en'
-            ? `Text: "${textInput.value.trim()}"\nPlace memorable symbolic objects into 3 rooms for a memory palace. Return JSON only:\n{"room1_icon": "🛋️", "room1_cue": "Short 1-line cue", "room2_icon": "🍳", "room2_cue": "Short 1-line cue", "room3_icon": "📚", "room3_cue": "Short 1-line cue"}`
-            : `Metin: "${textInput.value.trim()}"\nBu metindeki bilgileri hafıza sarayı tekniğiyle 3 odaya sembolik nesneler olarak yerleştir. Sadece JSON ver:\n{"room1_icon": "🛋️", "room1_cue": "Tek satırlık vurucu ipucu", "room2_icon": "🍳", "room2_cue": "Tek satırlık vurucu ipucu", "room3_icon": "📚", "room3_cue": "Tek satırlık vurucu ipucu"}`;
-        
-        const reply = await askGemini(prompt, null, 'palace_' + textInput.value.trim());
-        const data = parseCleanJSON(reply);
-        
+        const sourceText = textInput.value.trim();
+        const data = await askSuperBrainAI(
+            'palace',
+            { text: sourceText },
+            'palace_cf_' + currentLang + '_' + sourceText
+        );
+
         document.getElementById('room1Icon').innerText = data.room1_icon || "🛋️";
         document.getElementById('room1Cue').innerText = cleanMarkdown(data.room1_cue);
         document.getElementById('room2Icon').innerText = data.room2_icon || "🍳";
         document.getElementById('room2Cue').innerText = cleanMarkdown(data.room2_cue);
         document.getElementById('room3Icon').innerText = data.room3_icon || "📚";
         document.getElementById('room3Cue').innerText = cleanMarkdown(data.room3_cue);
-        
+
         m2CompletedSteps[1] = true;
         document.getElementById('checkStep1').innerText = "✓";
         document.getElementById('stepPill1').classList.add('completed');
-        
+
         const p2 = document.getElementById('stepPill2');
         p2.classList.remove('locked');
         document.getElementById('checkStep2').innerText = "";
-        
+
         const btnNext = document.getElementById('btnProceedToMnemonic');
         btnNext.disabled = false;
         btnNext.style.opacity = "1";
@@ -1901,8 +1942,12 @@ async function buildMemoryPalace() {
 
         unlockBadge('badgePalace');
         playSuccessTone();
-    } catch (e) { alert(e.message); }
-    finally { btn.disabled = false; loader.style.display = 'none'; }
+    } catch (e) {
+        alert(e.message);
+    } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+    }
 }
 
 function populateWordChips() {
@@ -1933,16 +1978,20 @@ async function generateCustomMnemonic() {
 async function fetchMnemonic(word) {
     const out = document.getElementById('mnemonicOutput');
     out.style.display = 'block';
-    out.innerHTML = "🪄 <i>Creating rhyme...</i>";
+    out.innerHTML = currentLang === 'en'
+        ? "🪄 <i>Rhyme workshop is humming...</i>"
+        : "🪄 <i>Kafiye atölyesi çalışıyor...</i>";
+
     try {
-        const prompt = currentLang === 'en'
-            ? `Word: "${word}"\nWrite a 2-line rhyming cute poem for a child in English. Strictly 2 separate lines. Never use asterisks or markdown.`
-            : `Kelime: "${word}"\nBu kelime için çocuğun unutmayacağı 2 ayrı satırlık sevimli bir kafiyeli tekerleme yaz. Asla yıldız veya markdown kullanma.`;
-        
-        const res = await askGemini(prompt, null, 'mnem_' + word);
-        const lines = res.split('\n').filter(l => l.trim().length > 0).slice(0, 2);
-        out.innerHTML = `🎵 <b>${cleanMarkdown(word)}:</b><br><br>"${cleanMarkdown(lines[0] || res)}"<br>"${cleanMarkdown(lines[1] || '')}"`;
-        
+        const data = await askSuperBrainAI(
+            'mnemonic',
+            { word },
+            'mnem_cf_' + currentLang + '_' + word
+        );
+        const lines = Array.isArray(data.lines) ? data.lines.slice(0, 2) : [];
+
+        out.innerHTML = `🎵 <b>${cleanMarkdown(word)}:</b><br><br>"${cleanMarkdown(lines[0] || '')}"<br>"${cleanMarkdown(lines[1] || '')}"`;
+
         m2CompletedSteps[2] = true;
         document.getElementById('checkStep2').innerText = "✓";
         document.getElementById('stepPill2').classList.add('completed');
@@ -1957,7 +2006,9 @@ async function fetchMnemonic(word) {
         btnNext.style.cursor = "pointer";
 
         playSuccessTone();
-    } catch(e) { out.innerHTML = e.message; }
+    } catch (e) {
+        out.innerHTML = e.message;
+    }
 }
 
 // KELİME PİSTİ
@@ -2056,20 +2107,25 @@ async function buildMindMap() {
     loader.style.display = 'inline';
 
     try {
-        const prompt = currentLang === 'en'
-            ? `Text: "${textInput.value.trim()}"\nReturn JSON only:\n{"root": "Center Concept", "branches": ["Branch 1", "Branch 2", "Branch 3"]}`
-            : `Metin: "${textInput.value.trim()}"\nSadece JSON ver:\n{"root": "Merkez Kavram", "branches": ["1. Önemli Bilgi", "2. Önemli Bilgi", "3. Önemli Bilgi"]}`;
-        
-        const reply = await askGemini(prompt, null, 'mindmap_' + textInput.value.trim());
-        const data = parseCleanJSON(reply);
+        const sourceText = textInput.value.trim();
+        const data = await askSuperBrainAI(
+            'mindmap',
+            { text: sourceText },
+            'mindmap_cf_' + currentLang + '_' + sourceText
+        );
+
         document.getElementById('mindmapRoot').innerText = "🌳 " + cleanMarkdown(data.root);
         document.getElementById('mindmapBranches').innerHTML = data.branches.map((b, idx) => `
             <div class="tree-node"><b>${currentLang === 'en' ? 'Branch' : 'Dal'} ${idx + 1}:</b> ${cleanMarkdown(b.replace(/^[0-9]+[\.\:\s]*/, ''))}</div>
         `).join('');
         document.getElementById('mindmapDisplay').style.display = 'block';
         playSuccessTone();
-    } catch (e) { alert(e.message); }
-    finally { btn.disabled = false; loader.style.display = 'none'; }
+    } catch (e) {
+        alert(e.message);
+    } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+    }
 }
 
 function addChatStarter(starter) {
@@ -2203,15 +2259,15 @@ async function generateChunks() {
     const box = document.getElementById('chunkResults');
     btn.disabled = true;
     box.style.display = 'block';
-    box.innerHTML = currentLang === 'en' ? "⏳ Preparing steps..." : "⏳ Görev dilimleri hazırlanıyor...";
+    box.innerHTML = currentLang === 'en' ? "⏳ Making tiny startable steps..." : "⏳ Minik ve başlanabilir adımlar hazırlanıyor...";
 
     try {
-        const prompt = currentLang === 'en'
-            ? `Task: "${task}"\nDivide this task into 3 manageable micro-steps for a child with specific minutes (e.g. 5 minutes). Return JSON only:\n{"chunks": ["Step 1 description", "Step 2 description", "Step 3 description"]}`
-            : `Görev: "${task}"\nBu görevi çocuk için 3 küçük görev dilimine böl. Dakikaları eksik bırakma (ör. 5 dakika). Sadece JSON ver:\n{"chunks": ["1. Görev Dilimi", "2. Görev Dilimi", "3. Görev Dilimi"]}`;
-        
-        const reply = await askGemini(prompt, null, 'chunk_' + task);
-        const data = parseCleanJSON(reply);
+        const data = await askSuperBrainAI(
+            'chunks',
+            { task },
+            'chunk_cf_' + currentLang + '_' + task
+        );
+
         box.innerHTML = data.chunks.map((c, idx) => `
             <div class="task-checklist-item" id="chkItem_${idx}">
                 <input type="checkbox" onchange="toggleTaskDone(${idx}, this)" style="width:20px; height:20px;">
@@ -2220,8 +2276,11 @@ async function generateChunks() {
             </div>
         `).join('');
         playSuccessTone();
-    } catch(e) { box.innerHTML = e.message; }
-    finally { btn.disabled = false; }
+    } catch (e) {
+        box.innerHTML = e.message;
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 function toggleTaskDone(idx, chk) {
@@ -2253,20 +2312,24 @@ async function convertWithYet() {
     const out = document.getElementById('yetOutputText');
     btn.disabled = true;
     card.style.display = 'block';
-    out.innerHTML = "🪄 Güce dönüştürülüyor...";
+    out.innerHTML = currentLang === 'en' ? "🪄 Turning it into power..." : "🪄 Güce dönüştürülüyor...";
 
     try {
-        const prompt = currentLang === 'en'
-            ? `Goal: "${input}". Convert this into a single, punchy 1-sentence growth mindset slogan for a child (A2 Level). Strictly NO pedagogical talk, NO author names.`
-            : `Hedef: "${input}". Bunu çocuk için doğrudan tek cümlelik sevimli bir büyüme zihniyeti sloganına çevir. Asla kuramcı ismi veya pedagojik açıklama ekleme.`;
-        
-        const reply = await askGemini(prompt, null, 'yet_' + input);
+        const data = await askSuperBrainAI(
+            'growth',
+            { goal: input },
+            'growth_cf_' + currentLang + '_' + input
+        );
+
         const yetStampWord = currentLang === 'en' ? 'YET! 🌟' : 'HENÜZ! 🌟';
-        out.innerHTML = `🌟 <b>${currentCompanion.name} ${(currentLang === 'en' ? 'says' : 'diyor ki')}:</b><br>"${cleanMarkdown(reply)}" <span class="yet-stamp">${yetStampWord}</span>`;
+        out.innerHTML = `🌟 <b>${currentCompanion.name} ${(currentLang === 'en' ? 'says' : 'diyor ki')}:</b><br>"${cleanMarkdown(data.text)}" <span class="yet-stamp">${yetStampWord}</span>`;
         unlockBadge('badgeGrowth');
         playSuccessTone();
-    } catch(e) { out.innerHTML = e.message; }
-    finally { btn.disabled = false; }
+    } catch (e) {
+        out.innerHTML = e.message;
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 function resetYetGoal() {
