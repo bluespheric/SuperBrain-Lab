@@ -25,6 +25,7 @@ export default {
       }
     };
 
+    // CORS
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -32,10 +33,12 @@ export default {
       });
     }
 
+    // Worker kontrolü
     if (request.method === "GET") {
       return json({
         ok: true,
         message: "SuperBrain AI Worker is running.",
+        imageModel: "FLUX.2 Klein 4B",
       });
     }
 
@@ -54,7 +57,8 @@ export default {
       const action = body.action || "image";
 
       // ==================================================
-      // 1) HERHANGİ BİR METNİ ANALİZ ET VE 2 GÖRSEL PLANLA
+      // 1) HERHANGİ BİR METNİ ANALİZ ET
+      //    VE EN UYGUN 2 GÖRSELİ PLANLA
       // ==================================================
 
       if (action === "scenes") {
@@ -86,148 +90,252 @@ export default {
         const systemPrompt = `
 You are the visual-planning engine of a general educational dual-coding tool.
 
-The source may be ANY kind of text:
+The source can be ANY type of educational or literary text:
+story, science, history, biography, explanation, instructions,
+process, cause-effect text, comparison, description, poem,
+abstract concept, or mixed text.
 
-- story
-- science
-- history
-- biography
-- instructions
-- process
-- explanation
-- cause-effect text
-- comparison
-- description
-- poem
-- abstract concept
-- mixed educational text
+Your job is to create TWO visuals that help a learner understand
+and remember the EXACT source text.
 
-Your job is NOT to make two generic pretty pictures.
+DO NOT create two generic attractive pictures.
 
-Your job is to choose TWO visuals that help a learner understand and remember the exact source text.
+==================================================
+STEP 1 — UNDERSTAND THE SOURCE
+==================================================
 
-STEP 1 — CLASSIFY THE TEXT
+First determine what type of text it is.
 
-Choose one text_type:
+Possible text types:
 
-"narrative"
-"informational"
-"process"
-"cause_effect"
-"historical"
-"comparison"
-"descriptive"
-"abstract"
-"mixed"
+narrative
+informational
+process
+cause_effect
+historical
+comparison
+descriptive
+abstract
+mixed
 
-STEP 2 — CHOOSE THE TWO MOST USEFUL VISUALS
+Understand:
 
-Use these rules:
+- Who or what are the important entities?
+- What is each entity?
+- What actions happen?
+- Which objects matter?
+- Which settings matter?
+- Which relationships matter?
+- What is the central idea?
+- What are the two most visually useful moments or concepts?
+
+==================================================
+STEP 2 — CHOOSE TWO EDUCATIONAL VISUALS
+==================================================
 
 NARRATIVE:
-Show two specific important events.
-Prefer a cause or turning point and then a consequence or resolution.
+Choose two SPECIFIC important events from the story.
+Prefer a meaningful action / turning point and its consequence or resolution.
 
 INFORMATIONAL OR SCIENCE:
-Show the central concept first.
-Then show its mechanism, relationship, effect, or important example.
+First show the main concept.
+Then show the mechanism, relationship, effect or concrete example.
 
-PROCESS OR INSTRUCTIONS:
-Show two important stages in chronological order.
+PROCESS:
+Choose two important chronological stages.
 
-CAUSE-EFFECT:
-Scene 1 should clearly show the cause.
-Scene 2 should clearly show the effect.
+CAUSE_EFFECT:
+Scene 1 = cause.
+Scene 2 = effect.
 
 HISTORICAL OR BIOGRAPHICAL:
-Show a source-grounded important event.
-Then show another important event, consequence, or context.
+Show two important source-grounded moments,
+or an event followed by its consequence.
 
 COMPARISON:
-Make the two scenes clearly represent the two sides being compared.
+Use the scenes to make the two sides visually distinct.
 
 DESCRIPTIVE:
-Show two representative source-grounded aspects.
+Show two important concrete aspects of the described subject.
 
 ABSTRACT:
-First try to find literal imagery already present in the source.
-If the idea cannot be visualized literally, use a simple educational metaphor
-and set scene_mode to "symbolic".
+Use literal imagery from the source whenever possible.
+Only if the idea cannot be shown literally,
+use a simple educational metaphor and mark the scene as symbolic.
 
 MIXED:
-Choose the two visuals that preserve the greatest learning value.
+Choose the two visuals with the greatest learning value.
 
+==================================================
 STRICT SOURCE FIDELITY
+==================================================
 
-1. For literal scenes, use only concrete people, animals, objects, places,
-actions, quantities, relationships, and time-period details supported
-by the source text.
+For LITERAL scenes:
 
-2. Do NOT invent random people, animals, fantasy creatures, buildings,
-vehicles, foods, objects, scenery, or events simply to make the image prettier.
+1. Use the identities and relationships given by the source text.
 
-3. If the source explicitly identifies something, preserve it.
+2. Preserve species, object types, roles and important descriptions.
+
 Examples:
+
+If the source says:
+"Sincap Ceviz"
+then this entity is a squirrel.
+
+If the source says:
+"Kirpi Diken"
+then this entity is a hedgehog.
+
+If the source says:
+"Tavşan Tonton"
+then this entity is a rabbit.
+
+But these are only EXAMPLES.
+Never assume the source contains animals.
+Analyze every new source independently.
+
+3. Do NOT rely only on proper names.
+
+Translate names into visible descriptions inside image_prompt.
+
+For example:
+
+Do not write only:
+"Ceviz"
+
+Instead write:
+"a small brown squirrel named Ceviz"
+
+Do not write only:
+"Diken"
+
+Instead write:
+"a small hedgehog named Diken"
+
+4. If the same entity appears in both scenes,
+repeat its important visible characteristics in BOTH prompts.
+
+5. Never silently change an entity into something else.
+
 A squirrel must not become a rabbit.
+A hedgehog must not become a dog.
 A microscope must not become a telescope.
 A ship must not become a car.
 
-4. Do not rely on names alone.
+6. Preserve important actions.
 
-Turn important named entities into visible descriptions.
+If A gives an object to B,
+the image must visibly show A giving that object to B.
 
-For example, if the text says:
-"Tonton is a small white rabbit"
+7. Preserve important objects.
 
-do not only write:
-"Tonton"
+If the source says "a basket full of carrots",
+do not replace it with random food.
 
-write:
-"a small white rabbit with soft white fur"
+8. Preserve important relationships.
 
-5. Preserve objects, actions, quantities, relationships and settings
-that carry the meaning of the source.
+Friend, teacher, parent, enemy, customer, scientist,
+animal, historical figure, object, process, etc.
+must be represented according to context.
 
-6. If a person, character, object, place or other entity appears in both scenes,
-repeat its important visual characteristics in both prompts.
+9. Do not add random humans.
 
-7. Do NOT assume that the text contains animals or characters.
-Analyze what is actually present.
+10. Do not add random animals.
 
-8. Do NOT automatically add children or human characters to educational scenes.
+11. Do not add random objects or scenery merely for decoration.
 
-9. If the source is abstract and a metaphor is necessary,
-keep the metaphor simple and clearly symbolic.
-Do not present a symbolic invention as if it literally happened in the source.
+12. If the source does NOT contain people,
+do not automatically insert children or adults.
 
-VISUAL PROMPT RULES
+13. If the source does NOT contain animals,
+do not automatically insert animals.
 
-10. image_prompt MUST ALWAYS be written in clear ENGLISH,
-even when the source text is Turkish.
+==================================================
+SCENE REQUIREMENTS
+==================================================
 
-11. caption MUST be written in ${captionLanguage}.
+Every scene must include:
 
-12. Every scene must contain a short scene_goal.
-This describes what the learner should understand or remember from the image.
+caption
+scene_mode
+scene_goal
+must_include
+must_avoid
+image_prompt
 
-13. Every scene must contain a must_include list.
-Include 2 to 8 concrete visual requirements.
+scene_mode must be:
 
-14. Every scene must contain a must_avoid list.
-Include 2 to 8 things that would make the scene inaccurate,
-misleading, or irrelevant.
+"literal"
 
-15. image_prompt must be concrete and visually drawable.
+or
 
-Bad:
-"Show friendship."
+"symbolic"
 
-Better:
-"Two friends share food with each other while smiling."
+scene_goal:
+Explain in one short sentence what the learner should remember.
 
-16. Never request visible text inside the generated image.
+must_include:
+List 2 to 8 MANDATORY visual facts.
+
+These are not suggestions.
+They are required.
+
+Example format only:
+
+[
+  "one small white rabbit",
+  "one brown squirrel",
+  "basket full of carrots",
+  "rabbit visibly handing carrots to squirrel"
+]
+
+must_avoid:
+List 2 to 8 things that would make the scene inaccurate.
+
+For example:
+
+[
+  "humans",
+  "extra rabbits",
+  "unrelated animals",
+  "written words"
+]
+
+These examples are NOT permanent rules.
+Generate them dynamically from the actual source.
+
+==================================================
+IMAGE PROMPT RULES
+==================================================
+
+image_prompt MUST ALWAYS be in ENGLISH.
+
+caption MUST be in ${captionLanguage}.
+
+The prompt must describe:
+
+- exact subjects
+- exact roles
+- visible appearance when known
+- exact action
+- important objects
+- setting
+- composition
+
+Do not use vague prompts like:
+
+"friendship"
+"history"
+"photosynthesis"
+
+Describe what must literally be visible.
+
+IMPORTANT:
+
+No visible writing inside the illustration.
 
 NO:
+text
 words
 letters
 numbers
@@ -239,53 +347,50 @@ speech bubbles
 logos
 watermarks
 
-17. Do NOT request:
+Do not request:
 
 poster
 book cover
-infographic
 worksheet
-title card
-page layout
+title page
+infographic
 labeled diagram
+comic page
 
-18. Choose clarity over decoration.
+The image itself should be a single clean visual scene.
 
-The important educational elements must be large,
-recognizable and central to the composition.
-
-Return EXACTLY this JSON structure:
+Return EXACTLY:
 
 {
-  "text_type": "one allowed type",
+  "text_type": "type",
   "scenes": [
     {
-      "caption": "short learner-friendly caption",
-      "scene_mode": "literal or symbolic",
-      "scene_goal": "what this visual should teach or remind",
+      "caption": "short caption",
+      "scene_mode": "literal",
+      "scene_goal": "learning goal",
       "must_include": [
-        "important visual element",
-        "important visual element"
+        "mandatory element",
+        "mandatory element"
       ],
       "must_avoid": [
-        "misleading element",
+        "incorrect element",
         "irrelevant element"
       ],
-      "image_prompt": "clear English visual description"
+      "image_prompt": "detailed English visual description"
     },
     {
-      "caption": "short learner-friendly caption",
-      "scene_mode": "literal or symbolic",
-      "scene_goal": "what this visual should teach or remind",
+      "caption": "short caption",
+      "scene_mode": "literal",
+      "scene_goal": "learning goal",
       "must_include": [
-        "important visual element",
-        "important visual element"
+        "mandatory element",
+        "mandatory element"
       ],
       "must_avoid": [
-        "misleading element",
+        "incorrect element",
         "irrelevant element"
       ],
-      "image_prompt": "clear English visual description"
+      "image_prompt": "detailed English visual description"
     }
   ]
 }
@@ -293,7 +398,7 @@ Return EXACTLY this JSON structure:
 
         const userPrompt =
           `SOURCE TEXT:\n${text}\n\n` +
-          `Create the two most educationally useful visuals for this exact text.`;
+          `Create the two most educationally useful and source-faithful visuals for this exact text.`;
 
         let response;
 
@@ -313,8 +418,7 @@ Return EXACTLY this JSON structure:
               ],
 
               temperature: 0.1,
-
-              max_tokens: 1100,
+              max_tokens: 1200,
 
               response_format: {
                 type: "json_schema",
@@ -400,8 +504,7 @@ Return EXACTLY this JSON structure:
           );
         }
 
-        let sceneData =
-          response?.response;
+        let sceneData = response?.response;
 
         if (typeof sceneData === "string") {
           const clean =
@@ -416,12 +519,11 @@ Return EXACTLY this JSON structure:
           const end =
             clean.lastIndexOf("}");
 
-          sceneData =
-            JSON.parse(
-              start !== -1 && end !== -1
-                ? clean.slice(start, end + 1)
-                : clean
-            );
+          sceneData = JSON.parse(
+            start !== -1 && end !== -1
+              ? clean.slice(start, end + 1)
+              : clean
+          );
         }
 
         if (
@@ -488,25 +590,25 @@ Return EXACTLY this JSON structure:
               String(scene.image_prompt || "")
                 .replace(/\s+/g, " ")
                 .trim()
-                .slice(0, 1050);
+                .slice(0, 950);
 
             const structuredPrompt =
               [
-                `MODE: ${mode}.`,
+                `SCENE MODE: ${mode}.`,
 
                 goal
                   ? `LEARNING GOAL: ${goal}.`
                   : "",
 
                 mustInclude.length
-                  ? `MUST INCLUDE: ${mustInclude.join("; ")}.`
+                  ? `MANDATORY ELEMENTS — EVERY ONE MUST BE VISIBLE: ${mustInclude.join("; ")}.`
                   : "",
 
                 mustAvoid.length
-                  ? `MUST AVOID: ${mustAvoid.join("; ")}.`
+                  ? `DO NOT SHOW: ${mustAvoid.join("; ")}.`
                   : "",
 
-                `VISUAL DESCRIPTION: ${basePrompt}`,
+                `EXACT VISUAL SCENE: ${basePrompt}`,
               ]
                 .filter(Boolean)
                 .join(" ")
@@ -527,7 +629,7 @@ Return EXACTLY this JSON structure:
       }
 
       // ==================================================
-      // 2) PLANLANAN SAHNEDEN GÖRSEL ÜRET
+      // 2) FLUX.2 KLEIN 4B İLE GÖRSEL ÜRET
       // ==================================================
 
       if (action === "image") {
@@ -550,51 +652,111 @@ Return EXACTLY this JSON structure:
           prompt
             .replace(/\s+/g, " ")
             .trim()
-            .slice(0, 1500);
+            .slice(0, 1550);
 
         const finalPrompt = (
-          `Clear educational illustration for a dual-coding learning tool. ` +
+          `Educational dual-coding illustration. ` +
 
-          `Follow the requested scene faithfully. ` +
+          `Follow the source-grounded scene instructions with very high fidelity. ` +
 
-          `Prioritize factual and visual accuracy over decoration. ` +
+          `MANDATORY ELEMENTS are strict requirements. ` +
+          `Every mandatory element must appear visibly and recognizably. ` +
 
-          `Do not add unrelated people, animals, objects, scenery or events. ` +
+          `DO NOT SHOW items are strict exclusions. ` +
 
-          `If the scene is scientific, historical or informational, ` +
-          `prioritize clarity and source fidelity over cuteness. ` +
+          `Do not replace requested subjects with similar-looking subjects. ` +
 
-          `If the scene is symbolic, make the metaphor visually simple ` +
-          `and easy to understand. ` +
+          `Do not change a person's role, animal species, object type, scientific object, historical object, location type, or important action. ` +
 
-          `Main learning-relevant elements should be large, recognizable and central. ` +
+          `Do not add unrelated people, animals, objects or events. ` +
 
-          `Single full-bleed illustration. ` +
+          `Prioritize semantic accuracy and educational clarity over decoration. ` +
 
-          `Not a poster. ` +
-          `Not a book cover. ` +
-          `Not an infographic. ` +
-          `Not a labeled diagram. ` +
+          `Use one coherent scene with the learning-relevant subjects large and clearly visible. ` +
 
-          `Absolutely ZERO visible typography: ` +
-          `no text, no words, no letters, no numbers, ` +
-          `no title, no caption, no signs, no labels, ` +
-          `no speech bubbles, no logo, no watermark. ` +
+          `Polished high-quality children's educational illustration when the source is a story. ` +
 
-          `SCENE INSTRUCTIONS: ${compactPrompt}`
-        ).slice(0, 1980);
+          `For scientific, historical, informational or non-fiction content, use an age-appropriate educational illustration style rather than making it unnecessarily cute. ` +
 
-        let result;
+          `Absolutely no visible typography. ` +
+          `No text, words, letters, numbers, titles, captions, signs, labels, speech bubbles, logos or watermarks. ` +
+
+          `Do not make a poster, book cover, worksheet, infographic or title card. ` +
+
+          `SCENE: ${compactPrompt}`
+        ).slice(0, 3000);
 
         try {
-          result =
+          // FLUX.2 Klein Cloudflare'da multipart FormData ister.
+          const form = new FormData();
+
+          form.append(
+            "prompt",
+            finalPrompt
+          );
+
+          // Prompta daha sıkı bağlı kalması için.
+          form.append(
+            "guidance",
+            "4"
+          );
+
+          // Zihin Sineması kartlarına uygun 4:3 yatay görsel.
+          form.append(
+            "width",
+            "1024"
+          );
+
+          form.append(
+            "height",
+            "768"
+          );
+
+          // FormData'yı Cloudflare'ın istediği multipart biçimine çevir.
+          const formResponse =
+            new Response(form);
+
+          const formStream =
+            formResponse.body;
+
+          const formContentType =
+            formResponse.headers.get(
+              "content-type"
+            );
+
+          const result =
             await env.AI.run(
-              "@cf/black-forest-labs/flux-1-schnell",
+              "@cf/black-forest-labs/flux-2-klein-4b",
               {
-                prompt: finalPrompt,
-                steps: 4,
+                multipart: {
+                  body: formStream,
+                  contentType: formContentType,
+                },
               }
             );
+
+          if (
+            !result ||
+            !result.image
+          ) {
+            return json(
+              {
+                success: false,
+                where: "image_generation",
+                error:
+                  "FLUX.2 returned no image.",
+              },
+              500
+            );
+          }
+
+          const dataUrl =
+            `data:image/jpeg;charset=utf-8;base64,${result.image}`;
+
+          return json({
+            success: true,
+            image: dataUrl,
+          });
 
         } catch (aiError) {
           return json(
@@ -606,29 +768,6 @@ Return EXACTLY this JSON structure:
             500
           );
         }
-
-        if (
-          !result ||
-          !result.image
-        ) {
-          return json(
-            {
-              success: false,
-              where: "image_generation",
-              error:
-                "No image returned from model.",
-            },
-            500
-          );
-        }
-
-        const dataUrl =
-          `data:image/jpeg;charset=utf-8;base64,${result.image}`;
-
-        return json({
-          success: true,
-          image: dataUrl,
-        });
       }
 
       return json(
