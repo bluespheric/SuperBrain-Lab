@@ -703,14 +703,14 @@ Return EXACTLY:
 
           // Zihin Sineması kartlarına uygun 4:3 yatay görsel.
           form.append(
-            "width",
-            "1024"
-          );
+  "width",
+  "512"
+);
 
-          form.append(
-            "height",
-            "768"
-          );
+form.append(
+  "height",
+  "512"
+);
 
           // FormData'yı Cloudflare'ın istediği multipart biçimine çevir.
           const formResponse =
