@@ -187,13 +187,12 @@ Görsellerin içinde kesinlikle yazı, harf, etiket veya kelime bulunmamalı.`;
         let result;
         try {
           result = await env.AI.run(
-            "@cf/black-forest-labs/flux-1-schnell",
-            {
-              prompt: finalPrompt,
-              steps: 4,
-              seed: Math.floor(Math.random() * 1000000),
-            }
-          );
+  "@cf/black-forest-labs/flux-1-schnell",
+  {
+    prompt: finalPrompt,
+    steps: 4,
+  }
+);
         } catch (aiError) {
           return Response.json(
             {
