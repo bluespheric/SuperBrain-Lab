@@ -264,7 +264,7 @@ QUALITY RULES:
         textModel: "Llama 3.3 70B FP8 Fast",
         fallbackTextModel: "Llama 3.1 8B Fast",
         imageModel: "FLUX.2 Klein 4B",
-        ocr: "Hybrid OCR: browser + Llama 3.2 11B Vision verification",
+        ocr: "Hybrid OCR: browser + Gemma 4 26B Vision verification",
       });
     }
 
@@ -893,7 +893,7 @@ Set priority 1-5.`
           );
         }
 
-        const OCR_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
+        const OCR_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 
         const cleanVisionText = (value) =>
           cleanMultiLine(
@@ -1064,7 +1064,7 @@ ${candidate}`;
           return json({
             success: true,
             text: finalText,
-            model: "llama-3.2-11b-vision-instruct",
+            model: "gemma-4-26b-a4b-it",
             verified,
           });
 
