@@ -2125,7 +2125,7 @@ title and desc should provide a meaningful final mission/transfer task, not just
             ? `SOURCE TEXT:
 ${text}
 
-Select 1-3 visually meaningful scenes that would help a learner understand or remember this exact source.
+Select exactly 2 visually meaningful scenes that would help a learner understand or remember this exact source.
 
 For each scene:
 - title: 2-7 words.
@@ -2140,7 +2140,7 @@ For each scene:
             : `KAYNAK METİN:
 ${text}
 
-Öğrencinin bu kaynağı anlamasına veya hatırlamasına gerçekten yardım edecek 1-3 görsel sahne seç.
+Öğrencinin bu kaynağı anlamasına veya hatırlamasına gerçekten yardım edecek tam 2 görsel sahne seç.
 
 Her sahne için:
 - title: 2-7 kelime.
@@ -2158,8 +2158,8 @@ Her sahne için:
           properties: {
             scenes: {
               type: "array",
-              minItems: 1,
-              maxItems: 3,
+             minItems: 2,
+             maxItems: 2,
               items: {
                 type: "object",
                 properties: {
@@ -2194,7 +2194,7 @@ Her sahne için:
 
         const scenes = Array.isArray(data.scenes)
           ? data.scenes
-              .slice(0, 3)
+              .slice(0, 2)
               .map((scene) => ({
                 title: cleanOneLine(
                   scene.title,
