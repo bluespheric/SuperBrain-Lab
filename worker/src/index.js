@@ -127,6 +127,117 @@ CORE PRINCIPLES:
       }
     };
 
+
+    const missionSystemPrompt = `
+You are the curriculum-generation engine for an English-learning game called Deep Sea Lab / Bathysphere.
+Your job is to transform the teacher's supplied lesson content into playable English-learning stations while preserving the fixed interaction mechanic of each station.
+QUALITY RULES:
+- Ground every language-learning target in the teacher's source.
+- Do not invent unsupported curriculum objectives.
+- Keep target language, vocabulary, grammar and reading content accurate.
+- Make each station meaningfully different from the others.
+- Avoid repeating the same target word or same question pattern without a reason.
+- A correct answer must be unambiguous.
+- Distractors must be plausible but clearly wrong according to the source.
+- Keep prompts concise enough for a game screen, but not vague.
+- Use natural English appropriate to the level implied by the source.
+- Respect any CEFR level, age group, grammar target or vocabulary set named in the source.
+- Use the deep-sea mission theme as a wrapper; never let the theme replace the learning objective.
+- Do not put pedagogy explanations into student-facing fields.
+- For stations 11-15, create useful transcript/instruction content even if no audio file exists. The teacher may add audio later.
+- Do not add customImg or customAudio fields. Media is attached separately.
+- Return only data matching the requested JSON schema.
+    `.trim();
+
+    const runMissionStructuredText = async ({ taskPrompt, schema, maxTokens = 2600 }) => {
+      const input = {
+        messages: [
+          { role: "system", content: missionSystemPrompt },
+          { role: "user", content: taskPrompt },
+        ],
+        temperature: 0.38,
+        max_tokens: maxTokens,
+        top_p: 0.9,
+        repetition_penalty: 1.07,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.08,
+        response_format: { type: "json_schema", json_schema: schema },
+      };
+
+      try {
+        const result = await env.AI.run(DEEP_TEXT_MODEL, input);
+        return parseAIJson(extractModelPayload(result));
+      } catch (primaryError) {
+        console.log("Mission deep model fallback:", safeErrorText(primaryError));
+        const fallback = await env.AI.run(FALLBACK_TEXT_MODEL, input);
+        return parseAIJson(extractModelPayload(fallback));
+      }
+    };
+
+    const str = (max = 500) => ({ type: "string", maxLength: max });
+    const strArr = (min, max, itemMax = 180) => ({
+      type: "array", minItems: min, maxItems: max, items: str(itemMax),
+    });
+
+    const visualSchema = {
+      type: "array", minItems: 0, maxItems: 2,
+      items: {
+        type: "object",
+        properties: {
+          stationId: { type: "integer" },
+          prompt: str(900),
+          reason: str(240),
+          priority: { type: "integer", minimum: 1, maximum: 5 },
+        },
+        required: ["stationId", "prompt", "reason", "priority"],
+      },
+    };
+
+    const stationSchemas = {
+      1: { type: "object", properties: {
+        "1": { type: "object", properties: { type:{type:"string",enum:["fener"]}, prompt:str(), target:str(120), decoys:strArr(2,2,120) }, required:["type","prompt","target","decoys"] },
+        "2": { type: "object", properties: { type:{type:"string",enum:["kablo"]}, prompt:str(), source:str(180), correct:str(180), distractors:strArr(2,2,180) }, required:["type","prompt","source","correct","distractors"] },
+        "3": { type: "object", properties: { type:{type:"string",enum:["vana"]}, prompt:str(), targetVal:str(120), choices:strArr(3,3,120) }, required:["type","prompt","targetVal","choices"] },
+        "4": { type: "object", properties: { type:{type:"string",enum:["kargo"]}, prompt:str(), cargo:str(180), correct:str(180), distractors:strArr(2,2,180) }, required:["type","prompt","cargo","correct","distractors"] },
+        "5": { type: "object", properties: { type:{type:"string",enum:["mikroskop"]}, prompt:str(), label:str(160), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","label","correct","distractors"] },
+      }, required:["1","2","3","4","5"] },
+      2: { type: "object", properties: {
+        "6": { type:"object", properties:{ type:{type:"string",enum:["boru"]}, prompt:str(), sentence:str(260) }, required:["type","prompt","sentence"] },
+        "7": { type:"object", properties:{ type:{type:"string",enum:["radyo"]}, prompt:str(), targetFreq:{type:"integer",minimum:82,maximum:138} }, required:["type","prompt","targetFreq"] },
+        "8": { type:"object", properties:{ type:{type:"string",enum:["periskop"]}, prompt:str(), correctErr:str(240), normals:strArr(2,2,240) }, required:["type","prompt","correctErr","normals"] },
+        "9": { type:"object", properties:{ type:{type:"string",enum:["terazi"]}, prompt:str(), subject:str(180), correct:str(120), distractor:str(120) }, required:["type","prompt","subject","correct","distractor"] },
+        "10": { type:"object", properties:{ type:{type:"string",enum:["mors"]}, prompt:str(), text:str(260), correct:str(120), distractors:strArr(2,2,120) }, required:["type","prompt","text","correct","distractors"] },
+      }, required:["6","7","8","9","10"] },
+      3: { type: "object", properties: {
+        "11": { type:"object", properties:{ type:{type:"string",enum:["ses_sik"]}, prompt:str(), trans:str(300), correct:str(180), distractors:strArr(2,2,180) }, required:["type","prompt","trans","correct","distractors"] },
+        "12": { type:"object", properties:{ type:{type:"string",enum:["ses_sik"]}, prompt:str(), trans:str(300), correct:str(180), distractors:strArr(2,2,180) }, required:["type","prompt","trans","correct","distractors"] },
+        "13": { type:"object", properties:{ type:{type:"string",enum:["ses_sik"]}, prompt:str(), trans:str(300), correct:str(180), distractors:strArr(2,2,180) }, required:["type","prompt","trans","correct","distractors"] },
+        "14": { type:"object", properties:{ type:{type:"string",enum:["ses_sik"]}, prompt:str(), trans:str(300), correct:str(180), distractors:strArr(2,2,180) }, required:["type","prompt","trans","correct","distractors"] },
+        "15": { type:"object", properties:{ type:{type:"string",enum:["salter"]}, prompt:str(), trans:str(320), order:str(220) }, required:["type","prompt","trans","order"] },
+      }, required:["11","12","13","14","15"] },
+      4: { type: "object", properties: {
+        "16": { type:"object", properties:{ type:{type:"string",enum:["uv"]}, prompt:str(), text:str(420), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","text","correct","distractors"] },
+        "17": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "18": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "19": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "20": { type:"object", properties:{ type:{type:"string",enum:["tablo"]}, prompt:str(), tableHtml:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","tableHtml","correct","distractors"] },
+      }, required:["16","17","18","19","20"] },
+      5: { type: "object", properties: {
+        "21": { type:"object", properties:{ type:{type:"string",enum:["yazma"]}, prompt:str(), hint:str(220), display:str(300), answers:str(220) }, required:["type","prompt","hint","display","answers"] },
+        "22": { type:"object", properties:{ type:{type:"string",enum:["yazma"]}, prompt:str(), hint:str(220), display:str(300), answers:str(220) }, required:["type","prompt","hint","display","answers"] },
+        "23": { type:"object", properties:{ type:{type:"string",enum:["yazma"]}, prompt:str(), hint:str(220), display:str(300), answers:str(220) }, required:["type","prompt","hint","display","answers"] },
+        "24": { type:"object", properties:{ type:{type:"string",enum:["yazma"]}, prompt:str(), hint:str(220), display:str(300), answers:str(220) }, required:["type","prompt","hint","display","answers"] },
+        "25": { type:"object", properties:{ type:{type:"string",enum:["yazma"]}, prompt:str(), hint:str(220), display:str(300), answers:str(220) }, required:["type","prompt","hint","display","answers"] },
+      }, required:["21","22","23","24","25"] },
+      6: { type: "object", properties: {
+        "26": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "27": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "28": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "29": { type:"object", properties:{ type:{type:"string",enum:["okuma_sik"]}, prompt:str(), log:str(500), correct:str(220), distractors:strArr(2,2,220) }, required:["type","prompt","log","correct","distractors"] },
+        "30": { type:"object", properties:{ type:{type:"string",enum:["final"]}, prompt:str(), title:str(220), desc:str(380) }, required:["type","prompt","title","desc"] },
+      }, required:["26","27","28","29","30"] },
+    };
+
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
@@ -138,7 +249,7 @@ CORE PRINCIPLES:
         textModel: "Llama 3.3 70B FP8 Fast",
         fallbackTextModel: "Llama 3.1 8B Fast",
         imageModel: "FLUX.2 Klein 4B",
-        ocr: "Browser Tesseract.js",
+        ocr: "Hybrid OCR: browser + Moondream 3.1",
       });
     }
 
@@ -503,6 +614,84 @@ CORE PRINCIPLES:
         });
 
         return json({ success: true, text: cleanOneLine(data.text, 500) });
+      }
+
+      // ==================================================
+      // DEEP SEA LAB — 5 STATION MODULE GENERATOR
+      // ==================================================
+      if (action === "mission_module") {
+        const sourceText = cleanMultiLine(body.sourceText, 30000);
+        const moduleNo = Number(body.module);
+        const visualMode = body.visualMode === true;
+
+        if (!sourceText) return json({ success:false, error:"Mission source text is required." }, 400);
+        if (![1,2,3,4,5,6].includes(moduleNo)) return json({ success:false, error:"Module must be between 1 and 6." }, 400);
+
+        const moduleNotes = {
+          1: `MODULE 1 — Vocabulary & Salvage, stations 1-5.
+1 fener: one target keyword + exactly 2 decoy keywords.
+2 kablo: a source label matched to one correct terminal/category + exactly 2 distractors.
+3 vana: exactly 3 choices; IMPORTANT: targetVal MUST equal choices[1], because the game's middle valve position is correct.
+4 kargo: one cargo/category item + one correct destination/category + exactly 2 distractors.
+5 mikroskop: a label/item + one correct definition/classification + exactly 2 distractors.
+Use concrete vocabulary and meaning/classification relationships from the source.`,
+          2: `MODULE 2 — Syntax & Structure, stations 6-10.
+6 boru: sentence must be stored as comma-separated WORD/CHUNK sequence in correct order, e.g. "She,is,reading,a,book". Do not add commas inside a chunk.
+7 radyo: choose an integer targetFreq from 82-138. The prompt must connect tuning the frequency to a genuine grammar/structure clue from the source.
+8 periskop: correctErr is the grammatically flawed sentence; normals are exactly 2 correct sentences.
+9 terazi: subject + correct verb + one incorrect distractor for agreement/auxiliary/tense matching.
+10 mors: a short incomplete language form with one correct piece and exactly 2 distractors.
+Use the teacher's actual target grammar and vary the task.`,
+          3: `MODULE 3 — Acoustic Signals, stations 11-15.
+No AI audio file is generated. Create strong transcript/instruction material that the teacher can later record or replace.
+11-14 ses_sik: short trans transcript, one correct answer and exactly 2 distractors. Vary listening purpose where supported by source.
+15 salter: trans contains a clear 3-step sequence. order is exactly three short comma-separated labels in the same correct order.`,
+          4: `MODULE 4 — Deep Sea Reading, stations 16-20.
+16 uv: source-grounded reading clue/text + one inference/comprehension answer + exactly 2 distractors.
+17-19 okuma_sik: concise passages, one correct answer and exactly 2 distractors. Use different comprehension skills where possible.
+20 tablo: tableHtml is plain readable telemetry/table TEXT, not actual HTML markup. One correct answer + exactly 2 distractors.
+Preserve meaningful details from the source.`,
+          5: `MODULE 5 — Cipher & Writing, stations 21-25.
+All are yazma stations with prompt, hint, display and answers.
+answers is a comma-separated list of acceptable answers. Use one unless a genuine equivalent/spelling variant should be accepted.
+Vary the productive task and keep typing short enough for a single-line input.`,
+          6: `MODULE 6 — Emergency Protocol + Final, stations 26-30.
+26-29 okuma_sik: short decision/comprehension scenarios grounded in the source with one correct answer + exactly 2 distractors each.
+Do not repeat stations 17-20; use synthesis, transfer, contrast or application.
+30 final: celebratory final station reflecting THIS generated lesson without inventing achievements.`,
+        };
+
+        const visualsInstruction = visualMode
+          ? `SMART VISUAL MODE IS ON.
+Return 0-2 visual suggestions for this module.
+Only suggest an image if it materially improves understanding, memory, classification, reading context or concrete vocabulary.
+Do not suggest an image just because images are allowed.
+Avoid visuals for purely grammatical items unless a concrete scene genuinely supports meaning.
+Each visual prompt must be source-grounded, describe the exact educational scene in English, and contain NO visible text, labels, letters, numbers, captions, signs, speech bubbles or worksheets.
+Set priority 1-5.`
+          : `TEXT-ONLY MODE IS ON. Return an empty visuals array.`;
+
+        const taskPrompt = `TEACHER SOURCE:\n${sourceText}\n\nCREATE:\n${moduleNotes[moduleNo]}\n\nGENERAL REQUIREMENTS:\n- Produce exactly the five required stations.\n- Preserve fixed station types exactly.\n- Use the source deeply enough that output feels custom, not generic.\n- Do not recycle the same vocabulary/answer without a reason.\n- Keep prompts playable and student-facing.\n- Avoid information absent from the source.\n- Deep-sea language may frame the activity, but the English target must come from the source.\n\n${visualsInstruction}`;
+
+        const schema = {
+          type: "object",
+          properties: { stations: stationSchemas[moduleNo], visuals: visualSchema },
+          required: ["stations", "visuals"],
+        };
+
+        try {
+          const result = await runMissionStructuredText({ taskPrompt, schema, maxTokens: (moduleNo === 4 || moduleNo === 6) ? 3000 : 2500 });
+          const stations = result?.stations && typeof result.stations === "object" ? result.stations : {};
+          const visuals = Array.isArray(result?.visuals) ? result.visuals.slice(0,2).map(v => ({
+            stationId: Number(v.stationId),
+            prompt: cleanMultiLine(v.prompt, 1000),
+            reason: cleanOneLine(v.reason, 260),
+            priority: Math.max(1, Math.min(5, Number(v.priority) || 1)),
+          })) : [];
+          return json({ success:true, module:moduleNo, stations, visuals: visualMode ? visuals : [] });
+        } catch (aiError) {
+          return json({ success:false, where:"mission_module", module:moduleNo, error:safeErrorText(aiError) }, 500);
+        }
       }
 
       // ==================================================
