@@ -700,7 +700,7 @@
                     <div id="jigsawEdges" class="jigsaw-grid"></div>
                 </div>
 
-                <!-- Dual Coding Sonucu (GERÇEK ZAMANLI, METNE ÖZEL GEMİNİ GÖRSEL ÜRETİMİ) -->
+                <!-- Dual Coding Sonucu (Cloudflare AI ile metne özel görsel üretimi) -->
                 <div id="dualBox" class="dual-box">
                     <div style="font-weight:700; font-size:16px; color:#9A3412; margin-bottom:8px;" id="lblDualScenesTitle">🎬 ZİHİN SİNEMASI SAHNELERİ</div>
                     <div class="dual-grid" id="dualGrid"></div>
@@ -1652,10 +1652,12 @@ async function askGeminiImage(promptText, cacheKey = null) {
         const data = await res.json();
 
         if (!res.ok || !data.success || !data.image) {
+            const workerMessage = data && data.error ? data.error : "";
             throw new Error(
-                currentLang === "en"
+                workerMessage ||
+                (currentLang === "en"
                     ? "Image could not be created, please try again."
-                    : "Görsel oluşturulamadı, lütfen tekrar dene."
+                    : "Görsel oluşturulamadı, lütfen tekrar dene.")
             );
         }
 
@@ -1667,14 +1669,10 @@ async function askGeminiImage(promptText, cacheKey = null) {
 
     } catch (err) {
         console.error("Cloudflare image error:", err);
-
-        throw new Error(
-            currentLang === "en"
-                ? "Image could not be created, please try again."
-                : "Görsel oluşturulamadı, lütfen tekrar dene."
-        );
+        throw err;
     }
 }
+
 function parseCleanJSON(raw) {
     let clean = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
     const start = clean.indexOf('{');
@@ -1717,9 +1715,11 @@ async function runJigsaw() {
 async function runDualCoding() {
     const textInput = document.getElementById('textInput');
     if (!textInput || !textInput.value.trim()) return;
+
     const btn = document.getElementById('btnDual');
     const box = document.getElementById('dualBox');
     const grid = document.getElementById('dualGrid');
+
     btn.disabled = true;
     box.style.display = 'block';
 
@@ -1728,13 +1728,21 @@ async function runDualCoding() {
             🎨 ${msg}
         </div>`;
 
-    grid.innerHTML = loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...') +
-                      loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...');
+    const errorCardHTML = (caption, detail = "") => `
+        <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
+            ⚠️ ${currentLang === 'en' ? 'Could not draw this scene.' : 'Bu sahne çizilemedi.'}<br>
+            <span style="font-size:13px; font-weight:600;">${cleanMarkdown(caption || '')}</span>
+            ${detail ? `<div style="font-size:11px; margin-top:8px; opacity:0.75;">${cleanMarkdown(detail)}</div>` : ''}
+        </div>`;
+
+    grid.innerHTML =
+        loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...') +
+        loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...');
 
     try {
-        // 1) Metni Cloudflare Workers AI ile 2 görsel sahneye ayır
         const workerUrl = "https://gentle-dream-d716.bluerisma8.workers.dev/";
 
+        // 1) Hikâyeden iki sadık görsel sahne çıkar.
         const sceneRes = await fetch(workerUrl, {
             method: "POST",
             headers: {
@@ -1749,45 +1757,75 @@ async function runDualCoding() {
 
         const data = await sceneRes.json();
 
-        if (!sceneRes.ok || !data.success || !Array.isArray(data.scenes)) {
+        if (!sceneRes.ok || !data.success || !Array.isArray(data.scenes) || data.scenes.length !== 2) {
             throw new Error(
-                currentLang === "en"
+                (data && data.error) ||
+                (currentLang === "en"
                     ? "Scenes could not be prepared, please try again."
-                    : "Sahneler hazırlanamadı, lütfen tekrar dene."
+                    : "Sahneler hazırlanamadı, lütfen tekrar dene.")
             );
         }
 
+        // Önce iki yükleme kartını göster.
         grid.innerHTML = data.scenes.map((_, i) => loadingCardHTML(
-            currentLang === 'en' ? `Drawing scene ${i + 1}...` : `${i + 1}. sahne çiziliyor...`
+            currentLang === 'en'
+                ? `Drawing scene ${i + 1}...`
+                : `${i + 1}. sahne çiziliyor...`
         )).join('');
 
-        // 2) Her sahne için GERÇEK, metne özel görseli üret
-        const cards = await Promise.all(data.scenes.map(async (scene) => {
+        // 2) Görselleri aynı anda değil SIRAYLA üret.
+        // Free kotada daha kararlı çalışır ve her sahneyi tek tek ekrana koyar.
+        const cards = [];
+
+        for (let i = 0; i < data.scenes.length; i++) {
+            const scene = data.scenes[i];
+
             try {
-                const imgUrl = await askGeminiImage(scene.image_prompt, 'dualimg_' + scene.image_prompt);
-                return `
+                const imgUrl = await askGeminiImage(
+                    scene.image_prompt,
+                    'dualimg_v3_' + scene.image_prompt
+                );
+
+                cards.push(`
                     <div class="dual-card">
                         <img src="${imgUrl}" alt="${cleanMarkdown(scene.caption)}">
                         <div class="dual-card-caption">🎬 ${cleanMarkdown(scene.caption)}</div>
-                    </div>`;
+                    </div>
+                `);
             } catch (err) {
-                return `
-                    <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
-                        ⚠️ ${currentLang === 'en' ? 'Could not draw this scene.' : 'Bu sahne çizilemedi.'}<br>
-                        <span style="font-size:13px; font-weight:500;">${cleanMarkdown(scene.caption)}</span>
-                    </div>`;
+                cards.push(
+                    errorCardHTML(
+                        scene.caption,
+                        err && err.message ? err.message : ""
+                    )
+                );
             }
-        }));
 
-        grid.innerHTML = cards.join('');
+            // Bitmiş kartları göster; kalan sahne için yükleme kartı bırak.
+            const remaining = data.scenes.slice(i + 1).map((_, j) =>
+                loadingCardHTML(
+                    currentLang === 'en'
+                        ? `Drawing scene ${i + j + 2}...`
+                        : `${i + j + 2}. sahne çiziliyor...`
+                )
+            );
+
+            grid.innerHTML = cards.join('') + remaining.join('');
+        }
+
         box.scrollIntoView({ behavior: 'smooth' });
         playSuccessTone();
+
     } catch (e) {
-        grid.innerHTML = `<div class="dual-card" style="padding:24px; color:#B91C1C;">⚠️ ${cleanMarkdown(e.message)}</div>`;
+        grid.innerHTML = `
+            <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
+                ⚠️ ${cleanMarkdown(e.message)}
+            </div>`;
     } finally {
         btn.disabled = false;
     }
 }
+
 
 // 2. İSTASYON
 function switchPipelineStep(step) {
