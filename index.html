@@ -2512,12 +2512,141 @@ function safeOcrLoadImage(dataUrl) {
     });
 }
 
-function safeOcrBuildCanvas(img, strong = false) {
-    const MAX_SIDE = 1800;
-    const MAX_PIXELS = 2600000;
+function safeOcrFindPageCrop(img) {
+    // Lightweight crop only; no OpenCV/perspective transform.
+    // Goal: remove bed/table, neighboring page and fingers before OCR.
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
 
-    let width = img.naturalWidth || img.width;
-    let height = img.naturalHeight || img.height;
+    // Analyze a small copy so this stays fast even on phones.
+    const aw = 220;
+    const ah = Math.max(120, Math.round(aw * ih / iw));
+    const c = document.createElement('canvas');
+    c.width = aw;
+    c.height = ah;
+
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, aw, ah);
+
+    const data = ctx.getImageData(0, 0, aw, ah).data;
+
+    // Per-column "paper likelihood": bright-ish + not strongly saturated.
+    const colScore = new Array(aw).fill(0);
+    const rowScore = new Array(ah).fill(0);
+
+    for (let y = 0; y < ah; y++) {
+        for (let x = 0; x < aw; x++) {
+            const i = (y * aw + x) * 4;
+            const r = data[i] / 255;
+            const g = data[i + 1] / 255;
+            const b = data[i + 2] / 255;
+
+            const maxv = Math.max(r, g, b);
+            const minv = Math.min(r, g, b);
+            const sat = maxv === 0 ? 0 : (maxv - minv) / maxv;
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+            // Warm/off-white paper usually scores high.
+            if (lum > 0.48 && sat < 0.42) {
+                colScore[x]++;
+                rowScore[y]++;
+            }
+        }
+    }
+
+    const minCol = ah * 0.42;
+    const minRow = aw * 0.42;
+
+    let left = 0;
+    while (left < aw - 1 && colScore[left] < minCol) left++;
+
+    let right = aw - 1;
+    while (right > 0 && colScore[right] < minCol) right--;
+
+    let top = 0;
+    while (top < ah - 1 && rowScore[top] < minRow) top++;
+
+    let bottom = ah - 1;
+    while (bottom > 0 && rowScore[bottom] < minRow) bottom--;
+
+    // Conservative fallback if segmentation is weak.
+    if (right - left < aw * 0.45) {
+        left = Math.round(aw * 0.03);
+        right = Math.round(aw * 0.97);
+    }
+    if (bottom - top < ah * 0.50) {
+        top = Math.round(ah * 0.03);
+        bottom = Math.round(ah * 0.97);
+    }
+
+    // If an open book is visible, look for a dark vertical gutter in the
+    // right half and cut there. This removes the neighboring page.
+    // We only do this when the candidate gutter is strongly darker than
+    // nearby columns, so normal single-page photos are left alone.
+    const xStart = Math.max(left + 15, Math.round(aw * 0.58));
+    const xEnd = Math.min(right - 6, Math.round(aw * 0.94));
+
+    let bestX = -1;
+    let bestDark = -1;
+
+    for (let x = xStart; x <= xEnd; x++) {
+        let dark = 0;
+        let samples = 0;
+
+        for (let y = Math.max(top, Math.round(ah * 0.08));
+             y <= Math.min(bottom, Math.round(ah * 0.92));
+             y += 2) {
+
+            const i = (y * aw + x) * 4;
+            const r = data[i] / 255;
+            const g = data[i + 1] / 255;
+            const b = data[i + 2] / 255;
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+            dark += (1 - lum);
+            samples++;
+        }
+
+        const avgDark = samples ? dark / samples : 0;
+        if (avgDark > bestDark) {
+            bestDark = avgDark;
+            bestX = x;
+        }
+    }
+
+    if (
+        bestX > 0 &&
+        bestDark > 0.33 &&
+        bestX > left + (right - left) * 0.58
+    ) {
+        right = Math.min(right, bestX - 2);
+    }
+
+    // Small inset removes page-edge shadows and fingers.
+    const insetX = Math.max(2, Math.round((right - left) * 0.018));
+    const insetY = Math.max(2, Math.round((bottom - top) * 0.018));
+
+    left += insetX;
+    right -= insetX;
+    top += insetY;
+    bottom -= insetY;
+
+    return {
+        sx: Math.max(0, Math.round(left / aw * iw)),
+        sy: Math.max(0, Math.round(top / ah * ih)),
+        sw: Math.max(1, Math.round((right - left) / aw * iw)),
+        sh: Math.max(1, Math.round((bottom - top) / ah * ih))
+    };
+}
+
+function safeOcrBuildCanvas(img, strong = false) {
+    const MAX_SIDE = 1900;
+    const MAX_PIXELS = 3000000;
+
+    const crop = safeOcrFindPageCrop(img);
+
+    let width = crop.sw;
+    let height = crop.sh;
 
     const scale = Math.min(
         1,
@@ -2542,9 +2671,13 @@ function safeOcrBuildCanvas(img, strong = false) {
         ? 'grayscale(1) contrast(1.85) brightness(1.06)'
         : 'grayscale(1) contrast(1.35) brightness(1.03)';
 
-    ctx.drawImage(img, 0, 0, width, height);
-    ctx.filter = 'none';
+    ctx.drawImage(
+        img,
+        crop.sx, crop.sy, crop.sw, crop.sh,
+        0, 0, width, height
+    );
 
+    ctx.filter = 'none';
     return canvas;
 }
 
