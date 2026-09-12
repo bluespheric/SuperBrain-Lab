@@ -186,19 +186,19 @@
         .syllable-a { color: #1E3A8A; font-weight: 600; }
         .syllable-b { color: #0F172A; font-weight: 600; }
 
-        /* YAN YANA AÇIK SES SEÇENEKLERİ (DROPDOWN YOK) */
+        /* 4 AÇIK VE DENGELİ SES KARTI (2 KADIN, 2 ERKEK) */
         .voice-section {
             display: none; background: #EFF6FF; border: 2px solid #BFDBFE; border-radius: 18px;
             padding: 16px; margin: 16px 0; text-align: left;
         }
         .voice-section-title {
-            font-size: 14px; font-weight: 700; color: #1E40AF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+            font-size: 14px; font-weight: 700; color: #1E40AF; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
         }
         .voice-cards-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;
         }
         .voice-pick-card {
-            background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 14px; padding: 12px;
+            background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 14px; padding: 12px 14px;
             cursor: pointer; transition: all 0.2s; text-align: left; display: flex; align-items: center; justify-content: space-between;
         }
         .voice-pick-card:hover { border-color: #3B82F6; background: #F8FAFC; }
@@ -207,7 +207,7 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
         }
         .voice-pick-name { font-weight: 700; font-size: 14px; color: #1E3A8A; }
-        .voice-pick-accent { font-size: 12px; color: #64748B; margin-top: 2px; }
+        .voice-pick-accent { font-size: 12px; color: #64748B; margin-top: 3px; font-weight: 600; }
         .voice-pick-play-icon { font-size: 20px; color: #2563EB; }
 
         /* BELİRGİN AŞAĞI SAYFALAMA BUTONLARI */
@@ -617,37 +617,41 @@
                     </label>
                 </div>
 
-                <!-- YAN YANA AÇIK SES KARTLARI (YALNIZCA İNGİLİZCE MODUNDA GÖRÜNÜR) -->
+                <!-- 4 AÇIK VE DENGELİ SES KARTI (2 KADIN, 2 ERKEK - YALNIZCA İNGİLİZCE) -->
                 <div id="englishVoiceBar" class="voice-section">
                     <div class="voice-section-title">
-                        <span>🎧</span> <span>Storyteller Voices (Tap one to listen!):</span>
+                        <span>🎧</span> <span>Storyteller Characters (Tap to play / stop):</span>
                     </div>
                     <div class="voice-cards-grid">
+                        <!-- Kadın 1 (Amerikan) -->
                         <div class="voice-pick-card" id="card_US_F" onclick="pickAndPlayVoice('US_F')">
                             <div>
-                                <div class="voice-pick-name">✨ Starlight Pixie</div>
-                                <div class="voice-pick-accent">American Accent • Soft</div>
+                                <div class="voice-pick-name">👩 Starlight Pixie</div>
+                                <div class="voice-pick-accent">American Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_US_F">▶</span>
                         </div>
+                        <!-- Kadın 2 (İngiliz) -->
                         <div class="voice-pick-card" id="card_UK_F" onclick="pickAndPlayVoice('UK_F')">
                             <div>
-                                <div class="voice-pick-name">🫖 Tea Fairy</div>
-                                <div class="voice-pick-accent">British Accent • Calm</div>
+                                <div class="voice-pick-name">👩 Tea Fairy</div>
+                                <div class="voice-pick-accent">British Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_UK_F">▶</span>
                         </div>
+                        <!-- Erkek 1 (Amerikan) -->
                         <div class="voice-pick-card" id="card_US_M" onclick="pickAndPlayVoice('US_M')">
                             <div>
-                                <div class="voice-pick-name">🚀 Cosmo Buddy</div>
-                                <div class="voice-pick-accent">American Accent • Energetic</div>
+                                <div class="voice-pick-name">👨 Cosmo Buddy</div>
+                                <div class="voice-pick-accent">American Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_US_M">▶</span>
                         </div>
+                        <!-- Erkek 2 (İngiliz) -->
                         <div class="voice-pick-card" id="card_UK_M" onclick="pickAndPlayVoice('UK_M')">
                             <div>
-                                <div class="voice-pick-name">🧙 Royal Wizard</div>
-                                <div class="voice-pick-accent">British Accent • Deep</div>
+                                <div class="voice-pick-name">👨 Royal Wizard</div>
+                                <div class="voice-pick-accent">British Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_UK_M">▶</span>
                         </div>
@@ -1369,7 +1373,6 @@ function startJourney() {
             : `<b class="comp-name">${finalCompName}</b> diyor ki: "İster kitabının resmini yükle, ister metnini buraya yaz! Karar senin kâşif!"`;
     }
 
-    // Modül selamlama metinleri
     if (currentLang === 'en') {
         document.getElementById('m2Greeting').innerHTML = `<b class="comp-name">${finalCompName}</b> says: "Complete the 3 stops one by one to unlock the door!"`;
         document.getElementById('m3Greeting').innerHTML = `<b class="comp-name">${finalCompName}</b> says: "Branch your thoughts like a tree so everything stays crystal clear!"`;
@@ -1502,7 +1505,7 @@ function changeChunk(direction) {
     }
 }
 
-// 4 AÇIK KARTLI SESLENDİRME MOTORU (YALNIZCA İNGİLİZCE)
+// 4 AÇIK KARTLI SESLENDİRME MOTORU (2 KADIN, 2 ERKEK - DENGELİ AKSANLAR)
 function pickAndPlayVoice(voiceType) {
     if (!('speechSynthesis' in window)) return;
 
@@ -1520,22 +1523,34 @@ function pickAndPlayVoice(voiceType) {
     const all = window.speechSynthesis.getVoices();
     let matchVoice = null;
 
+    // 1. Kadın (Amerikan)
     if (voiceType === 'US_F') {
-        matchVoice = all.find(v => (v.lang === 'en-US' || v.lang.includes('US')) && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Female') || v.name.includes('Google US English')));
+        matchVoice = all.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('Female') || v.name.includes('Google US English')));
         utterance.pitch = 1.1;
-    } else if (voiceType === 'UK_F') {
-        matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang.includes('GB')) && (v.name.includes('Hazel') || v.name.includes('Female') || v.name.includes('Google UK English Female')));
-        utterance.pitch = 1.0;
-    } else if (voiceType === 'US_M') {
-        matchVoice = all.find(v => (v.lang === 'en-US' || v.lang.includes('US')) && (v.name.includes('David') || v.name.includes('Male') || v.name.includes('Google US English')));
-        utterance.pitch = 1.0;
-    } else if (voiceType === 'UK_M') {
-        matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang.includes('GB')) && (v.name.includes('George') || v.name.includes('Male') || v.name.includes('Google UK English Male')));
-        utterance.pitch = 0.9;
+    } 
+    // 2. Kadın (İngiliz)
+    else if (voiceType === 'UK_F') {
+        matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Hazel') || v.name.includes('Susan') || v.name.includes('Victoria') || v.name.includes('Female') || v.name.includes('Google UK English Female')));
+        utterance.pitch = 1.05;
+    } 
+    // 3. Erkek (Amerikan)
+    else if (voiceType === 'US_M') {
+        matchVoice = all.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && (v.name.includes('David') || v.name.includes('Mark') || v.name.includes('Guy') || v.name.includes('Male') || v.name.includes('Google US English Male')));
+        utterance.pitch = 0.85; // Tok erkek tonu
+    } 
+    // 4. Erkek (İngiliz)
+    else if (voiceType === 'UK_M') {
+        matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('George') || v.name.includes('Oliver') || v.name.includes('Brian') || v.name.includes('Male') || v.name.includes('Google UK English Male')));
+        utterance.pitch = 0.8; // Derin bilge büyücü erkek tonu
     }
 
+    // Aksan hedefine göre yedekleme
     if (!matchVoice) {
-        matchVoice = all.find(v => v.lang.startsWith('en'));
+        if (voiceType.startsWith('US')) {
+            matchVoice = all.find(v => v.lang.includes('US') || v.lang.includes('en'));
+        } else {
+            matchVoice = all.find(v => v.lang.includes('GB') || v.lang.includes('UK') || v.lang.includes('en'));
+        }
     }
 
     if (matchVoice) utterance.voice = matchVoice;
