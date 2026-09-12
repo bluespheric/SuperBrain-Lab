@@ -1,6 +1,8 @@
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
+    const requestUrl = new URL(request.url);
+    const pathname = requestUrl.pathname.replace(/\/+$/, "") || "/";
     const configuredOrigins = String(
       env.ALLOWED_ORIGINS || "https://bluespheric.github.io"
     )
@@ -29,8 +31,8 @@ export default {
     const corsHeaders = originAllowed
       ? {
           "Access-Control-Allow-Origin": origin,
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, X-Client-Id",
+          "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, X-Client-Id, X-Lesson-Delete-Token",
           "Access-Control-Max-Age": "86400",
         }
       : {};
@@ -230,6 +232,8 @@ Never teach the meaning of "fener", "kablo", "valve", "cable", "spotlight", "sub
 Instead, treat each mechanic as a container for the teacher's actual language objective.
 
 Your job is to transform the teacher's source AND the shared lesson blueprint into a coherent sequence of playable English-learning tasks.
+- The teacher may paste a rough lesson draft created in ChatGPT, Gemini, Claude, or another AI. Treat it as ordinary source material.
+- Do NOT require the teacher to map content to station numbers. Automatically place each learning item into the most suitable fixed interaction mechanic.
 
 WHEN THE TEACHER'S PROMPT IS SPARSE:
 - Infer a sensible classroom micro-curriculum from the explicit topic, CEFR level, age, grammar point, skill, or vocabulary theme.
@@ -401,6 +405,230 @@ QUALITY RULES:
       }, required:["26","27","28","29","30"] },
     };
 
+
+
+    // ==================================================
+    // SHARED LESSON SNAPSHOTS (non-AI)
+    // ==================================================
+    // These routes are intentionally separate from AI actions so the existing
+    // 192 KiB AI request limit stays unchanged. A shared lesson is an immutable
+    // copy of station content only: no teacher password, student logs, score,
+    // nickname, browser id, or other learner state is stored in the snapshot.
+    const SHARED_LESSON_MAX_BYTES = 6 * 1024 * 1024;
+    const SHARED_MEDIA_MAX_CHARS = 2500000;
+    const LESSON_ID_RE = /^[A-Za-z0-9_-]{16,40}$/;
+
+    const expectedLessonTypes = {
+      1:"fener",2:"kablo",3:"vana",4:"kargo",5:"mikroskop",
+      6:"boru",7:"radyo",8:"periskop",9:"terazi",10:"mors",
+      11:"ses_sik",12:"ses_sik",13:"ses_sik",14:"ses_sik",15:"salter",
+      16:"uv",17:"okuma_sik",18:"okuma_sik",19:"okuma_sik",20:"tablo",
+      21:"yazma",22:"yazma",23:"yazma",24:"yazma",25:"yazma",
+      26:"okuma_sik",27:"okuma_sik",28:"okuma_sik",29:"okuma_sik",30:"final"
+    };
+
+    const sharedAllowedFields = new Set([
+      "prompt","target","decoys","source","correct","distractors","targetVal","choices","cargo","label",
+      "sentence","targetFreq","correctErr","normals","subject","distractor","text","trans","order","log",
+      "tableHtml","hint","display","answers","title","desc","customImg","customAudio"
+    ]);
+
+    const cleanSharedString = (value, max = 2000) =>
+      String(value ?? "")
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+        .slice(0, max);
+
+    const safeSharedImage = (value) =>
+      typeof value === "string" &&
+      value.length <= SHARED_MEDIA_MAX_CHARS &&
+      /^data:image\/(?:png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(value);
+
+    const safeSharedAudio = (value) =>
+      typeof value === "string" &&
+      value.length <= SHARED_MEDIA_MAX_CHARS &&
+      /^data:audio\/(?:mpeg|mp3|wav|x-wav|ogg|webm);base64,[A-Za-z0-9+/=\s]+$/i.test(value);
+
+    const sanitizeSharedStation = (id, raw) => {
+      const expectedType = expectedLessonTypes[id];
+      if (!expectedType || !raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+      if (raw.type !== undefined && raw.type !== expectedType) return null;
+
+      const out = { type: expectedType };
+      for (const [key, value] of Object.entries(raw)) {
+        if (!sharedAllowedFields.has(key)) continue;
+        if (key === "customImg") {
+          if (safeSharedImage(value)) out[key] = value;
+          continue;
+        }
+        if (key === "customAudio") {
+          if (safeSharedAudio(value)) out[key] = value;
+          continue;
+        }
+        if (key === "targetFreq") {
+          const num = Number(value);
+          if (Number.isFinite(num)) out[key] = Math.max(82, Math.min(138, Math.round(num)));
+          continue;
+        }
+        if (Array.isArray(value)) {
+          out[key] = value
+            .slice(0, 10)
+            .map((v) => cleanSharedString(v, 500));
+          continue;
+        }
+        if (typeof value === "string" || typeof value === "number") {
+          out[key] = cleanSharedString(value, 2000);
+        }
+      }
+      return out;
+    };
+
+    const sanitizeSharedLesson = (rawLesson) => {
+      if (!rawLesson || typeof rawLesson !== "object" || Array.isArray(rawLesson)) return null;
+      const safe = {};
+      for (let id = 1; id <= 30; id++) {
+        const station = sanitizeSharedStation(id, rawLesson[id] ?? rawLesson[String(id)]);
+        if (!station) return null;
+        safe[id] = station;
+      }
+      return safe;
+    };
+
+    const randomToken = (byteLength = 18) => {
+      const bytes = new Uint8Array(byteLength);
+      crypto.getRandomValues(bytes);
+      let binary = "";
+      for (const b of bytes) binary += String.fromCharCode(b);
+      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    };
+
+    const sha256Hex = async (value) => {
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(value)));
+      return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+    };
+
+    const validClientId = (request.headers.get("x-client-id") || "").match(/^[A-Za-z0-9_-]{16,80}$/);
+    const lessonPathMatch = pathname.match(/^\/lessons\/([A-Za-z0-9_-]{16,40})$/);
+
+    // Fetch an immutable shared lesson snapshot.
+    if (request.method === "GET" && lessonPathMatch) {
+      if (!originAllowed) return json({ success: false, error: "Origin not allowed." }, 403);
+      if (!validClientId) return json({ success: false, error: "Missing or invalid anonymous client id." }, 400);
+      if (!env.LESSONS || typeof env.LESSONS.get !== "function") {
+        return json({ success: false, error: "Lesson sharing storage is not configured." }, 503);
+      }
+
+      const lessonId = lessonPathMatch[1];
+      if (!LESSON_ID_RE.test(lessonId)) return json({ success: false, error: "Invalid lesson id." }, 400);
+
+      const rateLimit = async (binding, key) => {
+        if (!binding || typeof binding.limit !== "function") return true;
+        const result = await binding.limit({ key });
+        return !!result?.success;
+      };
+      const clientId = request.headers.get("x-client-id") || "";
+      if (!(await rateLimit(env.SITE_RATE_LIMITER, `lesson-read-site:${origin}`)) ||
+          !(await rateLimit(env.CLIENT_RATE_LIMITER, `lesson-read-client:${clientId}`))) {
+        return json({ success: false, error: "Too many lesson requests. Please wait a moment." }, 429, { "Retry-After": "60" });
+      }
+
+      const stored = await env.LESSONS.get(`lesson:${lessonId}`, { type: "json" });
+      if (!stored || !stored.lesson) return json({ success: false, error: "Shared lesson not found or no longer available." }, 404);
+      return json({ success: true, lessonId, lesson: stored.lesson, createdAt: stored.createdAt || null });
+    }
+
+    // Create an immutable lesson snapshot. This is rate-limited and schema-sanitized.
+    if (request.method === "POST" && pathname === "/lessons") {
+      if (!originAllowed) return json({ success: false, error: "Origin not allowed." }, 403);
+      if (!validClientId) return json({ success: false, error: "Missing or invalid anonymous client id." }, 400);
+      if (!env.LESSONS || typeof env.LESSONS.put !== "function") {
+        return json({ success: false, error: "Lesson sharing storage is not configured." }, 503);
+      }
+
+      const contentType = request.headers.get("content-type") || "";
+      if (!contentType.toLowerCase().startsWith("application/json")) {
+        return json({ success: false, error: "Content-Type must be application/json." }, 415);
+      }
+
+      const declaredLength = Number(request.headers.get("content-length") || "0");
+      if (Number.isFinite(declaredLength) && declaredLength > SHARED_LESSON_MAX_BYTES) {
+        return json({ success: false, error: "Shared lesson package is too large (6 MB maximum)." }, 413);
+      }
+
+      const raw = await request.text();
+      if (new TextEncoder().encode(raw).byteLength > SHARED_LESSON_MAX_BYTES) {
+        return json({ success: false, error: "Shared lesson package is too large (6 MB maximum)." }, 413);
+      }
+
+      let body;
+      try { body = JSON.parse(raw); }
+      catch { return json({ success: false, error: "Invalid JSON." }, 400); }
+
+      const lesson = sanitizeSharedLesson(body?.lesson);
+      if (!lesson) return json({ success: false, error: "Invalid or unsafe lesson package." }, 400);
+
+      const serializedLesson = JSON.stringify(lesson);
+      if (new TextEncoder().encode(serializedLesson).byteLength > SHARED_LESSON_MAX_BYTES) {
+        return json({ success: false, error: "Sanitized lesson package is too large (6 MB maximum)." }, 413);
+      }
+
+      const rateLimit = async (binding, key) => {
+        if (!binding || typeof binding.limit !== "function") return true;
+        const result = await binding.limit({ key });
+        return !!result?.success;
+      };
+      const clientId = request.headers.get("x-client-id") || "";
+      if (!(await rateLimit(env.SITE_RATE_LIMITER, `lesson-create-site:${origin}`)) ||
+          !(await rateLimit(env.CLIENT_RATE_LIMITER, `lesson-create-client:${clientId}`)) ||
+          !(await rateLimit(env.SHARE_RATE_LIMITER, `lesson-create-global:${origin}`))) {
+        return json({ success: false, error: "Lesson sharing limit reached. Please wait about a minute." }, 429, { "Retry-After": "60" });
+      }
+
+      const lessonId = randomToken(15);
+      const deleteToken = randomToken(24);
+      const deleteHash = await sha256Hex(deleteToken);
+      const createdAt = new Date().toISOString();
+      await env.LESSONS.put(
+        `lesson:${lessonId}`,
+        JSON.stringify({ version: 1, createdAt, deleteHash, lesson })
+      );
+
+      return json({ success: true, lessonId, deleteToken, createdAt }, 201);
+    }
+
+    // Delete a shared snapshot only with the unguessable deletion token returned at creation.
+    if (request.method === "DELETE" && lessonPathMatch) {
+      if (!originAllowed) return json({ success: false, error: "Origin not allowed." }, 403);
+      if (!validClientId) return json({ success: false, error: "Missing or invalid anonymous client id." }, 400);
+      if (!env.LESSONS || typeof env.LESSONS.get !== "function" || typeof env.LESSONS.delete !== "function") {
+        return json({ success: false, error: "Lesson sharing storage is not configured." }, 503);
+      }
+
+      const lessonId = lessonPathMatch[1];
+      const token = request.headers.get("x-lesson-delete-token") || "";
+      if (!/^[A-Za-z0-9_-]{24,80}$/.test(token)) {
+        return json({ success: false, error: "Missing or invalid delete token." }, 403);
+      }
+
+      const stored = await env.LESSONS.get(`lesson:${lessonId}`, { type: "json" });
+      if (!stored) return json({ success: false, error: "Shared lesson not found." }, 404);
+      if ((await sha256Hex(token)) !== stored.deleteHash) {
+        return json({ success: false, error: "Delete authorization failed." }, 403);
+      }
+
+      const rateLimit = async (binding, key) => {
+        if (!binding || typeof binding.limit !== "function") return true;
+        const result = await binding.limit({ key });
+        return !!result?.success;
+      };
+      const clientId = request.headers.get("x-client-id") || "";
+      if (!(await rateLimit(env.SHARE_RATE_LIMITER, `lesson-delete:${clientId}`))) {
+        return json({ success: false, error: "Too many delete requests. Please wait." }, 429, { "Retry-After": "60" });
+      }
+
+      await env.LESSONS.delete(`lesson:${lessonId}`);
+      return json({ success: true, deleted: true, lessonId });
+    }
+
     if (request.method === "OPTIONS") {
       if (!originAllowed) {
         return json({ success: false, error: "Origin not allowed." }, 403);
@@ -424,7 +652,7 @@ QUALITY RULES:
       return json(
         { success: false, error: "Method not allowed." },
         405,
-        { "Allow": "GET, POST, OPTIONS" }
+        { "Allow": "GET, POST, DELETE, OPTIONS" }
       );
     }
 
