@@ -186,18 +186,29 @@
         .syllable-a { color: #1E3A8A; font-weight: 600; }
         .syllable-b { color: #0F172A; font-weight: 600; }
 
-        /* SESLENDİRME ÇUBUĞU (SADECE İNGİLİZCE) */
-        .voice-bar {
-            display: none; background: #EFF6FF; border: 2px solid #BFDBFE; border-radius: 16px;
-            padding: 12px 16px; margin: 12px 0; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        /* YAN YANA AÇIK SES SEÇENEKLERİ (DROPDOWN YOK) */
+        .voice-section {
+            display: none; background: #EFF6FF; border: 2px solid #BFDBFE; border-radius: 18px;
+            padding: 16px; margin: 16px 0; text-align: left;
         }
-        .voice-selector {
-            padding: 8px 12px; border-radius: 12px; border: 1.5px solid #93C5FD; font-family: inherit; font-size: 14px; font-weight: 600; color: #1E40AF; background: #FFFFFF; outline: none;
+        .voice-section-title {
+            font-size: 14px; font-weight: 700; color: #1E40AF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
         }
-        .voice-btn-play {
-            background: #2563EB; color: white; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
+        .voice-cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;
         }
-        .voice-btn-play:hover { background: #1D4ED8; }
+        .voice-pick-card {
+            background: #FFFFFF; border: 2px solid #CBD5E1; border-radius: 14px; padding: 12px;
+            cursor: pointer; transition: all 0.2s; text-align: left; display: flex; align-items: center; justify-content: space-between;
+        }
+        .voice-pick-card:hover { border-color: #3B82F6; background: #F8FAFC; }
+        .voice-pick-card.active {
+            border-color: #2563EB; background: #DBEAFE; border-width: 2.5px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+        .voice-pick-name { font-weight: 700; font-size: 14px; color: #1E3A8A; }
+        .voice-pick-accent { font-size: 12px; color: #64748B; margin-top: 2px; }
+        .voice-pick-play-icon { font-size: 20px; color: #2563EB; }
 
         /* BELİRGİN AŞAĞI SAYFALAMA BUTONLARI */
         .bottom-chunk-navigation {
@@ -606,21 +617,41 @@
                     </label>
                 </div>
 
-                <!-- SESLENDİRME ÇUBUĞU (YALNIZCA İNGİLİZCE MODUNDA GÖRÜNÜR) -->
-                <div id="englishVoiceBar" class="voice-bar">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:18px;">🎧</span>
-                        <span style="font-weight:700; color:#1E40AF; font-size:14px;">Storyteller Voice:</span>
-                        <select id="voiceSelect" class="voice-selector">
-                            <option value="US_F">✨ Starlight Pixie (US Accent • Soft)</option>
-                            <option value="UK_F">🫖 Tea Fairy (UK Accent • Calm)</option>
-                            <option value="US_M">🚀 Cosmo Buddy (US Accent • Energetic)</option>
-                            <option value="UK_M">🧙 Royal Wizard (UK Accent • Deep)</option>
-                        </select>
+                <!-- YAN YANA AÇIK SES KARTLARI (YALNIZCA İNGİLİZCE MODUNDA GÖRÜNÜR) -->
+                <div id="englishVoiceBar" class="voice-section">
+                    <div class="voice-section-title">
+                        <span>🎧</span> <span>Storyteller Characters (Tap one to listen!):</span>
                     </div>
-                    <button class="voice-btn-play" onclick="toggleReadAloud()">
-                        <span id="playIcon">▶</span> <span id="playText">Read to Me</span>
-                    </button>
+                    <div class="voice-cards-grid">
+                        <div class="voice-pick-card" id="card_US_F" onclick="pickAndPlayVoice('US_F')">
+                            <div>
+                                <div class="voice-pick-name">✨ Starlight Pixie</div>
+                                <div class="voice-pick-accent">American Accent • Soft</div>
+                            </div>
+                            <span class="voice-pick-play-icon" id="icon_US_F">▶</span>
+                        </div>
+                        <div class="voice-pick-card" id="card_UK_F" onclick="pickAndPlayVoice('UK_F')">
+                            <div>
+                                <div class="voice-pick-name">🫖 Tea Fairy</div>
+                                <div class="voice-pick-accent">British Accent • Calm</div>
+                            </div>
+                            <span class="voice-pick-play-icon" id="icon_UK_F">▶</span>
+                        </div>
+                        <div class="voice-pick-card" id="card_US_M" onclick="pickAndPlayVoice('US_M')">
+                            <div>
+                                <div class="voice-pick-name">🚀 Cosmo Buddy</div>
+                                <div class="voice-pick-accent">American Accent • Energetic</div>
+                            </div>
+                            <span class="voice-pick-play-icon" id="icon_US_M">▶</span>
+                        </div>
+                        <div class="voice-pick-card" id="card_UK_M" onclick="pickAndPlayVoice('UK_M')">
+                            <div>
+                                <div class="voice-pick-name">🧙 Royal Wizard</div>
+                                <div class="voice-pick-accent">British Accent • Deep</div>
+                            </div>
+                            <span class="voice-pick-play-icon" id="icon_UK_M">▶</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- DİSLEKSİ DOSTU TİPOGRAFİK OKUMA ALANI -->
@@ -1069,8 +1100,7 @@ let textChunks = [];
 let currentChunkIndex = 0;
 
 // SESLENDİRME DURUMU
-let isReadingAloud = false;
-let availableVoices = [];
+let currentlyPlayingVoiceType = null;
 
 // MODÜL 2 ADIM TAMAMLANMA TAKİBİ
 let m2CompletedSteps = { 1: false, 2: false, 3: false };
@@ -1116,13 +1146,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const k = localStorage.getItem('superbrain_gemini_key');
     if (k) document.getElementById('apiKeyInput').value = k;
-
-    // Ses motorunu yükle
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => {
-            availableVoices = window.speechSynthesis.getVoices();
-        };
-    }
 });
 
 function selectMood(moodKey, el) {
@@ -1145,7 +1168,7 @@ function selectLang(lang, el) {
     const voiceBar = document.getElementById('englishVoiceBar');
 
     if (lang === 'en') {
-        if (voiceBar) voiceBar.style.display = 'flex';
+        if (voiceBar) voiceBar.style.display = 'block';
         currentTrackWord = "planet";
         selectedDayMood = "🦁 Strong & Ready";
         selectedCompMood = "🤝 Great Team";
@@ -1462,46 +1485,41 @@ function changeChunk(direction) {
         currentChunkIndex = newIdx;
         updateTextDisplay();
         playSuccessTone();
-        if (isReadingAloud) toggleReadAloud(); // Sayfa değişirse sesi durdur
+        if (currentlyPlayingVoiceType) stopReadingAloud();
     }
 }
 
-// 4 KARAKTERLİ SESLENDİRME MOTORU (YALNIZCA İNGİLİZCE)
-function toggleReadAloud() {
+// 4 AÇIK KARTLI SESLENDİRME MOTORU (YALNIZCA İNGİLİZCE)
+function pickAndPlayVoice(voiceType) {
     if (!('speechSynthesis' in window)) return;
-    const playIcon = document.getElementById('playIcon');
-    const playText = document.getElementById('playText');
 
-    if (isReadingAloud) {
-        window.speechSynthesis.cancel();
-        isReadingAloud = false;
-        playIcon.innerText = "▶";
-        playText.innerText = "Read to Me";
+    // Aynı ses çalıyorsa durdur
+    if (currentlyPlayingVoiceType === voiceType) {
+        stopReadingAloud();
         return;
     }
+
+    stopReadingAloud();
 
     const currentText = textChunks[currentChunkIndex] || document.getElementById('textInput').value.trim();
     if (!currentText) return;
 
     const utterance = new SpeechSynthesisUtterance(currentText);
-    const selectedVoiceType = document.getElementById('voiceSelect').value;
-
-    // Tarayıcıdaki sesleri tara ve eşleştir
-    let matchVoice = null;
     const all = window.speechSynthesis.getVoices();
+    let matchVoice = null;
 
-    if (selectedVoiceType === 'US_F') {
+    if (voiceType === 'US_F') {
         matchVoice = all.find(v => (v.lang === 'en-US' || v.lang.includes('US')) && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Female') || v.name.includes('Google US English')));
-        utterance.pitch = 1.1; // Tatlı, sevimli peri tonu
-    } else if (selectedVoiceType === 'UK_F') {
+        utterance.pitch = 1.1;
+    } else if (voiceType === 'UK_F') {
         matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang.includes('GB')) && (v.name.includes('Hazel') || v.name.includes('Female') || v.name.includes('Google UK English Female')));
         utterance.pitch = 1.0;
-    } else if (selectedVoiceType === 'US_M') {
+    } else if (voiceType === 'US_M') {
         matchVoice = all.find(v => (v.lang === 'en-US' || v.lang.includes('US')) && (v.name.includes('David') || v.name.includes('Male') || v.name.includes('Google US English')));
         utterance.pitch = 1.0;
-    } else if (selectedVoiceType === 'UK_M') {
+    } else if (voiceType === 'UK_M') {
         matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang.includes('GB')) && (v.name.includes('George') || v.name.includes('Male') || v.name.includes('Google UK English Male')));
-        utterance.pitch = 0.9; // Bilge büyücü tonu
+        utterance.pitch = 0.9;
     }
 
     if (!matchVoice) {
@@ -1509,18 +1527,29 @@ function toggleReadAloud() {
     }
 
     if (matchVoice) utterance.voice = matchVoice;
-    utterance.rate = 0.9; // Çocuklar için sakin ve takip edilebilir hız
+    utterance.rate = 0.9;
 
     utterance.onend = () => {
-        isReadingAloud = false;
-        playIcon.innerText = "▶";
-        playText.innerText = "Read to Me";
+        stopReadingAloud();
     };
 
     window.speechSynthesis.speak(utterance);
-    isReadingAloud = true;
-    playIcon.innerText = "⏹";
-    playText.innerText = "Stop Reading";
+    currentlyPlayingVoiceType = voiceType;
+
+    // Arayüz kartını aktif yap
+    document.querySelectorAll('.voice-pick-card').forEach(c => c.classList.remove('active'));
+    document.getElementById(`card_${voiceType}`).classList.add('active');
+    document.getElementById(`icon_${voiceType}`).innerText = "⏹";
+}
+
+function stopReadingAloud() {
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.voice-pick-card').forEach(c => c.classList.remove('active'));
+    ['US_F', 'UK_F', 'US_M', 'UK_M'].forEach(t => {
+        const ic = document.getElementById(`icon_${t}`);
+        if (ic) ic.innerText = "▶";
+    });
+    currentlyPlayingVoiceType = null;
 }
 
 function toggleRuler() {
@@ -1667,7 +1696,7 @@ async function runDualCoding() {
     finally { btn.disabled = false; }
 }
 
-// 2. İSTASYON: KADEMELİ GÖREV PİPELİNE'I
+// 2. İSTASYON
 function switchPipelineStep(step) {
     if (step === 2 && !m2CompletedSteps[1]) {
         alert(currentLang === 'en' ? "Complete Room Exploring first! 🛋️" : "Önce 1. İstasyon olan 'Odaları Gez'i tamamlamalısın! 🛋️");
@@ -2071,7 +2100,7 @@ async function convertWithYet() {
     const out = document.getElementById('yetOutputText');
     btn.disabled = true;
     card.style.display = 'block';
-    out.innerHTML = currentLang === 'en' ? "🪄 Turning into superpower..." : "🪄 Güce dönüştürülüyor...";
+    out.innerHTML = "🪄 Güce dönüştürülüyor...";
 
     try {
         const prompt = currentLang === 'en'
