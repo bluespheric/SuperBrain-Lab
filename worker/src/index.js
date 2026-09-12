@@ -873,16 +873,17 @@ Set priority 1-5.`
       }
 
       // ==================================================
-      // 10) YÜKSEK DOĞRULUKLU FOTOĞRAF OCR
-      //     Qwen 3.8 27B Vision + image-grounded verification
+      // 10) BELGE / FOTOĞRAF OCR
+      //     Qwen 3.8 27B Vision, gerçek base64 image attachment
+      //     + aynı görselle doğrulama
       // ==================================================
       if (action === "ocr") {
-        const image =
+        const imageDataUrl =
           typeof body.image === "string"
             ? body.image.trim()
             : "";
 
-        if (!image || !image.startsWith("data:image/")) {
+        if (!imageDataUrl || !imageDataUrl.startsWith("data:image/")) {
           return json(
             {
               success: false,
@@ -892,40 +893,58 @@ Set priority 1-5.`
           );
         }
 
+        // Workers AI vision models expect the actual base64 payload.
+        // Do NOT pass the data:image/... prefix as the image itself.
+        const commaIndex = imageDataUrl.indexOf(",");
+        const imageBase64 =
+          commaIndex >= 0
+            ? imageDataUrl.slice(commaIndex + 1)
+            : imageDataUrl;
+
+        if (!imageBase64 || imageBase64.length < 100) {
+          return json(
+            {
+              success: false,
+              error: "The uploaded image data is empty or invalid.",
+            },
+            400
+          );
+        }
+
         const OCR_MODEL = "@cf/qwen/qwen3.8-27b";
 
         const firstPrompt =
           lang === "en"
-            ? `You are performing strict OCR on a photographed book/document page.
+            ? `Perform strict OCR on this photographed book/document page.
 
-TRANSCRIBE the MAIN PAGE exactly as it is visibly printed.
+Transcribe ALL readable printed text from the MAIN PAGE exactly as it appears.
 
 Rules:
 - Return ONLY the transcription.
-- Read the page itself; do not summarize or paraphrase.
+- Do not summarize, paraphrase, explain, or answer the page.
 - Preserve paragraph order and punctuation when visible.
-- Preserve headings if they are visibly printed.
+- Preserve visible headings.
 - Do not invent missing words.
-- Do not silently "correct" the author's wording.
-- Ignore hands, table/background, page edges, and unrelated neighboring pages.
-- If a word is genuinely impossible to read, write [unclear].
-- Pay special attention to Turkish/English diacritics, apostrophes, numbers and proper names.
-- Work line by line and use the image as the only source of truth.`
-            : `Fotoğrafı çekilmiş bir kitap/doküman sayfasında çok sıkı OCR yapıyorsun.
+- Do not silently correct the author's wording.
+- Ignore hands, desk/background, page edges, and unrelated neighboring pages.
+- If a word is genuinely unreadable, write [unclear].
+- Pay close attention to Turkish and English characters, apostrophes, numbers, names, and short function words.
+- Read the image line by line.`
+            : `Bu fotoğraftaki kitap/doküman sayfasında sıkı OCR yap.
 
-ANA SAYFADA gözle görülebilen basılı metni mümkün olduğunca AYNEN aktar.
+ANA SAYFADA okunabilen basılı metnin TAMAMINI göründüğü biçime mümkün olduğunca sadık kalarak aktar.
 
 Kurallar:
 - YALNIZCA transkripsiyonu döndür.
-- Sayfayı gerçekten oku; özetleme veya yeniden yazma yapma.
+- Özetleme, açıklama, yorum veya soruların cevabını verme.
 - Görülebiliyorsa paragraf sırasını ve noktalama işaretlerini koru.
-- Basılı başlıkları koru.
+- Görünen başlıkları koru.
 - Eksik kelime uydurma.
-- Yazarın cümlesini "düzeltmeye" çalışma.
-- El, masa/arka plan, sayfa kenarı ve ana sayfaya ait olmayan komşu sayfayı görmezden gel.
-- Bir kelime gerçekten okunamıyorsa [okunamadı] yaz.
-- Türkçe karakterlere, İngilizce kelimelere, kesme işaretlerine, sayılara ve özel adlara özellikle dikkat et.
-- Satır satır ilerle ve yalnızca görseli doğruluk kaynağı olarak kullan.`;
+- Yazarın cümlesini düzeltmeye çalışma.
+- El, masa/arka plan, sayfa kenarı ve ilgisiz komşu sayfayı görmezden gel.
+- Gerçekten okunamayan kelimede [okunamadı] yaz.
+- Türkçe ve İngilizce karakterlere, kısa kelimelere, kesme işaretlerine, sayılara ve özel adlara dikkat et.
+- Görseli satır satır oku.`;
 
         const cleanVisionText = (value) =>
           cleanMultiLine(
@@ -936,33 +955,26 @@ Kurallar:
                 /^(transcription|transcript|metin|transkripsiyon)\s*:\s*/i,
                 ""
               ),
-            24000
+            26000
           );
 
-        try {
-          // PASS 1 — direct visual transcription
-          const firstResult = await env.AI.run(
+        const runVision = async (prompt) => {
+          // Cloudflare vision API: prompt + image(base64) at the top level.
+          return await env.AI.run(
             OCR_MODEL,
             {
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are a precision OCR engine. Fidelity to visible text is more important than fluency."
-                },
-                {
-                  role: "user",
-                  content: firstPrompt
-                }
-              ],
-              image,
+              prompt,
+              image: imageBase64,
               reasoning_effort: "low",
               temperature: 0,
               top_p: 0.8,
               max_completion_tokens: 7000
             }
           );
+        };
 
+        try {
+          const firstResult = await runVision(firstPrompt);
           const firstText =
             cleanVisionText(extractModelPayload(firstResult));
 
@@ -971,82 +983,62 @@ Kurallar:
               {
                 success: false,
                 where: "vision_ocr_first_pass",
-                error: "Vision model returned no readable text.",
+                error: "Vision OCR returned no readable text.",
               },
               500
             );
           }
 
-          // PASS 2 — the model sees the ORIGINAL IMAGE again and checks
-          // the first transcript against it. This is not a language-only
-          // cleanup pass, so it should not invent words merely for fluency.
+          // Verify against the SAME original image.
           const verifyPrompt =
             lang === "en"
-              ? `Compare the candidate OCR transcript below against the ORIGINAL IMAGE.
+              ? `Check this candidate OCR transcript against the attached ORIGINAL IMAGE.
 
-Correct ONLY errors that you can verify from the image:
+Correct ONLY errors that are visibly verifiable from the image:
 - missing visible words or lines
-- wrong letters/words
+- wrong letters or words
 - punctuation
 - numbers
 - Turkish/English diacritics
 - accidental text from a neighboring page
 
-Do NOT rewrite for style or grammar.
-Do NOT add text that is not visibly supported.
-If something is unreadable, use [unclear].
+Do not rewrite for fluency or grammar.
+Do not add anything unsupported by the image.
+Use [unclear] for genuinely unreadable text.
 Return ONLY the corrected full transcription.
 
-CANDIDATE TRANSCRIPT:
+CANDIDATE OCR:
 ${firstText}`
-              : `Aşağıdaki aday OCR transkripsiyonunu ORİJİNAL GÖRSEL ile tek tek karşılaştır.
+              : `Aşağıdaki aday OCR metnini ekli ORİJİNAL GÖRSEL ile karşılaştır.
 
 Yalnızca görselden doğrulayabildiğin hataları düzelt:
 - eksik görünen kelime veya satırlar
-- yanlış harf/kelimeler
+- yanlış harf veya kelimeler
 - noktalama
 - sayılar
 - Türkçe/İngilizce karakterler
 - komşu sayfadan yanlışlıkla alınmış metin
 
-Üslup veya dilbilgisi için yeniden yazma.
-Görselde desteklenmeyen hiçbir metni ekleme.
-Okunamayan yerde [okunamadı] kullan.
+Akıcı olsun diye yeniden yazma veya dilbilgisini değiştirme.
+Görselde olmayan hiçbir şeyi ekleme.
+Gerçekten okunamayan yerde [okunamadı] kullan.
 YALNIZCA düzeltilmiş tam transkripsiyonu döndür.
 
-ADAY TRANSKRİPSİYON:
+ADAY OCR:
 ${firstText}`;
 
           let finalText = firstText;
           let verified = false;
 
           try {
-            const verifyResult = await env.AI.run(
-              OCR_MODEL,
-              {
-                messages: [
-                  {
-                    role: "system",
-                    content:
-                      "You verify OCR against the supplied image. Never prefer a fluent guess over what is actually visible."
-                  },
-                  {
-                    role: "user",
-                    content: verifyPrompt
-                  }
-                ],
-                image,
-                reasoning_effort: "low",
-                temperature: 0,
-                top_p: 0.8,
-                max_completion_tokens: 7000
-              }
-            );
-
+            const verifyResult = await runVision(verifyPrompt);
             const checked =
               cleanVisionText(extractModelPayload(verifyResult));
 
-            if (checked && checked.length >= Math.max(20, firstText.length * 0.45)) {
+            if (
+              checked &&
+              checked.length >= Math.max(20, firstText.length * 0.45)
+            ) {
               finalText = checked;
               verified = true;
             }
