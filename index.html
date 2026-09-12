@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://gentle-dream-d716.bluerisma8.workers.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+    <meta name="referrer" content="no-referrer">
     <title>Süper Beyin Laboratuvarı</title>
     <!-- Okuma dostu yazı tipleri: Lexend + Atkinson Hyperlegible -->
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inclusive+Sans:wght@400;600;700&family=Lexend:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1480,12 +1482,12 @@ function updateTextDisplay() {
     } else {
         const words = displayText.split(/\s+/);
         const syllabled = words.map(word => {
-            if (word.length <= 3) return `<span class="syllable-a">${word}</span>`;
+            if (word.length <= 3) return `<span class="syllable-a">${escapeHTML(word)}</span>`;
             let out = "";
             for (let i = 0; i < word.length; i += 2) {
                 let chunk = word.slice(i, i + 2);
                 let cls = (i / 2) % 2 === 0 ? "syllable-a" : "syllable-b";
-                out += `<span class="${cls}">${chunk}</span>`;
+                out += `<span class="${cls}">${escapeHTML(chunk)}</span>`;
             }
             return out;
         });
@@ -1619,13 +1621,34 @@ function showBadgeTip(msg) { alert(msg); }
 
 const SUPERBRAIN_WORKER_URL = "https://gentle-dream-d716.bluerisma8.workers.dev/";
 
+function getAnonymousClientId() {
+    const storageKey = 'edu_anon_client_id_v1';
+    const makeId = () => {
+        if (crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    };
+    try {
+        const existing = localStorage.getItem(storageKey);
+        if (existing && /^[A-Za-z0-9_-]{16,80}$/.test(existing)) return existing;
+        const created = makeId();
+        localStorage.setItem(storageKey, created);
+        return created;
+    } catch {
+        return makeId();
+    }
+}
+const SUPERBRAIN_ANON_CLIENT_ID = getAnonymousClientId();
+
+
 async function askSuperBrainAI(action, payload = {}, cacheKey = null) {
     if (cacheKey && aiCache.has(cacheKey)) return aiCache.get(cacheKey);
 
     try {
         const res = await fetch(SUPERBRAIN_WORKER_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "X-Client-Id": SUPERBRAIN_ANON_CLIENT_ID },
             body: JSON.stringify({
                 action,
                 lang: currentLang,
@@ -1664,7 +1687,8 @@ async function askSuperBrainImage(promptText, cacheKey = null) {
         const res = await fetch(SUPERBRAIN_WORKER_URL, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-Client-Id": SUPERBRAIN_ANON_CLIENT_ID
             },
             body: JSON.stringify({
                 action: "image",
@@ -1719,11 +1743,11 @@ async function runJigsaw() {
             { text: sourceText }
         );
 
-        document.getElementById('jigsawCover').innerHTML = `🌟 "${cleanMarkdown(data.buyuk_resim)}"`;
+        document.getElementById('jigsawCover').innerHTML = `🌟 "${escapeHTML(cleanMarkdown(data.buyuk_resim))}"`;
         document.getElementById('jigsawEdges').innerHTML = data.kenar_parcalari.map((item, idx) => `
             <div class="jigsaw-card">
                 <div class="jigsaw-card-title">${currentLang === 'en' ? 'Step' : 'Adım'} ${idx + 1}</div>
-                <div>${cleanMarkdown(item.replace(/^[0-9]+[\.\:\s]*/, ''))}</div>
+                <div>${escapeHTML(cleanMarkdown(item.replace(/^[0-9]+[\.\:\s]*/, '')))}</div>
             </div>
         `).join('');
 
@@ -1788,8 +1812,8 @@ async function runDualCoding() {
     const errorCardHTML = (caption, detail = "") => `
         <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
             ⚠️ ${currentLang === 'en' ? 'Could not draw this scene.' : 'Bu sahne çizilemedi.'}<br>
-            <span style="font-size:13px; font-weight:600;">${cleanMarkdown(caption || '')}</span>
-            ${detail ? `<div style="font-size:11px; margin-top:8px; opacity:0.75;">${cleanMarkdown(detail)}</div>` : ''}
+            <span style="font-size:13px; font-weight:600;">${escapeHTML(cleanMarkdown(caption || ''))}</span>
+            ${detail ? `<div style="font-size:11px; margin-top:8px; opacity:0.75;">${escapeHTML(cleanMarkdown(detail))}</div>` : ''}
         </div>`;
 
     grid.innerHTML = loadingCardHTML() + loadingCardHTML();
@@ -1797,7 +1821,7 @@ async function runDualCoding() {
     try {
         const sceneRes = await fetch(SUPERBRAIN_WORKER_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "X-Client-Id": SUPERBRAIN_ANON_CLIENT_ID },
             body: JSON.stringify({
                 action: "scenes",
                 text: textInput.value.trim(),
@@ -1847,7 +1871,7 @@ async function runDualCoding() {
     } catch (e) {
         grid.innerHTML = `
             <div class="dual-card" style="padding:24px; color:#B91C1C; background:#FEF2F2; border:2px dashed #FCA5A5;">
-                ⚠️ ${cleanMarkdown(e.message)}
+                ⚠️ ${escapeHTML(cleanMarkdown(e.message))}
             </div>`;
     } finally {
         clearInterval(loadingTicker);
@@ -1940,7 +1964,15 @@ function populateWordChips() {
     if (!container || !textInput) return;
     const cleanWords = textInput.value.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").split(/\s+/).filter(w => w.length > 4);
     const uniqueWords = [...new Set(cleanWords)].slice(0, 5);
-    container.innerHTML = uniqueWords.map(w => `<span class="word-chip" onclick="selectWordChip('${w.toLowerCase()}', this)">${w.toLowerCase()}</span>`).join('');
+    container.innerHTML = '';
+    uniqueWords.forEach(w => {
+        const word = w.toLowerCase();
+        const chip = document.createElement('span');
+        chip.className = 'word-chip';
+        chip.textContent = word;
+        chip.addEventListener('click', () => selectWordChip(word, chip));
+        container.appendChild(chip);
+    });
     if (uniqueWords[0]) setupTrackWord(uniqueWords[0].toLowerCase());
 }
 
@@ -1948,7 +1980,7 @@ async function selectWordChip(word, el) {
     document.querySelectorAll('.word-chip').forEach(c => c.classList.remove('selected'));
     if (el) {
         el.classList.add('selected');
-        el.innerHTML = `${word} ✓ ✨`;
+        el.textContent = `${word} ✓ ✨`;
     }
     setupTrackWord(word);
     fetchMnemonic(word);
@@ -1976,7 +2008,7 @@ async function fetchMnemonic(word) {
         );
         const lines = Array.isArray(data.lines) ? data.lines.slice(0, 2) : [];
 
-        out.innerHTML = `🎵 <b>${cleanMarkdown(word)}:</b><br><br>"${cleanMarkdown(lines[0] || '')}"<br>"${cleanMarkdown(lines[1] || '')}"`;
+        out.innerHTML = `🎵 <b>${escapeHTML(cleanMarkdown(word))}:</b><br><br>"${escapeHTML(cleanMarkdown(lines[0] || ''))}"<br>"${escapeHTML(cleanMarkdown(lines[1] || ''))}"`;
 
         m2CompletedSteps[2] = true;
         document.getElementById('checkStep2').innerText = "✓";
@@ -1995,7 +2027,7 @@ async function fetchMnemonic(word) {
         lastBuddyFeedback = data.buddy_feedback || lastBuddyFeedback;
         playSuccessTone();
     } catch (e) {
-        out.innerHTML = e.message;
+        out.textContent = e.message;
     }
 }
 
@@ -2103,7 +2135,7 @@ async function buildMindMap() {
 
         document.getElementById('mindmapRoot').innerText = "🌳 " + cleanMarkdown(data.root);
         document.getElementById('mindmapBranches').innerHTML = data.branches.map((b, idx) => `
-            <div class="tree-node"><b>${currentLang === 'en' ? 'Branch' : 'Dal'} ${idx + 1}:</b> ${cleanMarkdown(b.replace(/^[0-9]+[\.\:\s]*/, ''))}</div>
+            <div class="tree-node"><b>${currentLang === 'en' ? 'Branch' : 'Dal'} ${idx + 1}:</b> ${escapeHTML(cleanMarkdown(b.replace(/^[0-9]+[\.\:\s]*/, '')))}</div>
         `).join('');
         document.getElementById('mindmapDisplay').style.display = 'block';
         setBuddyMessage('m3Greeting', data.buddy_feedback);
@@ -2277,13 +2309,35 @@ async function generateChunks() {
             { task }
         );
 
-        box.innerHTML = data.chunks.map((c, idx) => `
-            <div class="task-checklist-item" id="chkItem_${idx}">
-                <input type="checkbox" onchange="toggleTaskDone(${idx}, this)" style="width:20px; height:20px;">
-                <span style="flex:1;"><b>${currentLang === 'en' ? 'Step' : 'Adım'} ${idx + 1}:</b> ${cleanMarkdown(c.replace(/^[0-9]+[\.\:\s]*/, ''))}</span>
-                <button class="theme-btn" style="margin:0; font-size:12px;" onclick="lockStepToTimer('${cleanMarkdown(c).replace(/'/g, "\\'")}')">${currentLang === 'en' ? 'Focus on Step ⏱️' : 'Bu Adıma Odaklan ⏱️'}</button>
-            </div>
-        `).join('');
+        box.innerHTML = '';
+        (data.chunks || []).forEach((c, idx) => {
+            const item = document.createElement('div');
+            item.className = 'task-checklist-item';
+            item.id = `chkItem_${idx}`;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.width = '20px';
+            checkbox.style.height = '20px';
+            checkbox.addEventListener('change', () => toggleTaskDone(idx, checkbox));
+
+            const textSpan = document.createElement('span');
+            textSpan.style.flex = '1';
+            const strong = document.createElement('b');
+            strong.textContent = `${currentLang === 'en' ? 'Step' : 'Adım'} ${idx + 1}: `;
+            textSpan.appendChild(strong);
+            textSpan.appendChild(document.createTextNode(cleanMarkdown(String(c || '').replace(/^[0-9]+[\.\:\s]*/, ''))));
+
+            const focusBtn = document.createElement('button');
+            focusBtn.className = 'theme-btn';
+            focusBtn.style.margin = '0';
+            focusBtn.style.fontSize = '12px';
+            focusBtn.textContent = currentLang === 'en' ? 'Focus on Step ⏱️' : 'Bu Adıma Odaklan ⏱️';
+            focusBtn.addEventListener('click', () => lockStepToTimer(cleanMarkdown(String(c || ''))));
+
+            item.append(checkbox, textSpan, focusBtn);
+            box.appendChild(item);
+        });
         const totalText = data.total_estimate
             ? `${currentLang === 'en' ? 'Estimated total' : 'Tahmini toplam'}: ${data.total_estimate}. `
             : '';
@@ -2291,7 +2345,7 @@ async function generateChunks() {
         lastBuddyFeedback = data.buddy_feedback || lastBuddyFeedback;
         playSuccessTone();
     } catch (e) {
-        box.innerHTML = e.message;
+        box.textContent = e.message;
     } finally {
         btn.disabled = false;
     }
@@ -2335,13 +2389,13 @@ async function convertWithYet() {
         );
 
         const yetStampWord = currentLang === 'en' ? 'YET! 🌟' : 'HENÜZ! 🌟';
-        out.innerHTML = `🌟 <b>${currentCompanion.name} ${(currentLang === 'en' ? 'says' : 'diyor ki')}:</b><br>"${cleanMarkdown(data.text)}" <span class="yet-stamp">${yetStampWord}</span>`;
+        out.innerHTML = `🌟 <b>${escapeHTML(currentCompanion.name)} ${(currentLang === 'en' ? 'says' : 'diyor ki')}:</b><br>"${escapeHTML(cleanMarkdown(data.text))}" <span class="yet-stamp">${yetStampWord}</span>`;
         setBuddyMessage('m5Greeting', data.buddy_feedback);
         lastBuddyFeedback = data.buddy_feedback || lastBuddyFeedback;
         unlockBadge('badgeGrowth');
         playSuccessTone();
     } catch (e) {
-        out.innerHTML = e.message;
+        out.textContent = e.message;
     } finally {
         btn.disabled = false;
     }
