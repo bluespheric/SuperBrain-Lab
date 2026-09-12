@@ -264,7 +264,7 @@ QUALITY RULES:
         textModel: "Llama 3.3 70B FP8 Fast",
         fallbackTextModel: "Llama 3.1 8B Fast",
         imageModel: "FLUX.2 Klein 4B",
-        ocr: "Hybrid OCR: browser + Moondream 3.1",
+        ocr: "Hybrid OCR: browser + Qwen 3.8 27B Vision verification",
       });
     }
 
@@ -873,8 +873,8 @@ Set priority 1-5.`
       }
 
       // ==================================================
-      // 10) HİBRİT OCR İÇİN VISION FALLBACK
-      //     Fotoğraftaki basılı metni Moondream 3.1 ile çıkarır.
+      // 10) YÜKSEK DOĞRULUKLU FOTOĞRAF OCR
+      //     Qwen 3.8 27B Vision + image-grounded verification
       // ==================================================
       if (action === "ocr") {
         const image =
@@ -892,80 +892,183 @@ Set priority 1-5.`
           );
         }
 
-        const question =
+        const OCR_MODEL = "@cf/qwen/qwen3.8-27b";
+
+        const firstPrompt =
           lang === "en"
-            ? `Transcribe ALL readable printed text from the MAIN page in this image as accurately as possible.
-Return only the transcription.
-Preserve paragraph breaks and punctuation when visible.
-Do not summarize.
-Do not explain.
-Do not add headings or commentary.
-Ignore hands, table/background, and a neighboring page unless its text clearly belongs to the main page.
-If a word is genuinely unreadable, use [unclear] instead of inventing it.`
-            : `Bu görseldeki ANA sayfada bulunan okunabilir basılı metnin TAMAMINI mümkün olduğunca doğru biçimde aktar.
-Yalnızca metnin transkripsiyonunu döndür.
-Görülebiliyorsa paragraf ayrımlarını ve noktalama işaretlerini koru.
-Özetleme yapma.
-Açıklama ekleme.
-Başlık veya yorum uydurma.
-El, masa/arka plan ve yan sayfadaki metni ana sayfaya ait değilse görmezden gel.
-Gerçekten okunamayan bir kelime varsa uydurmak yerine [okunamadı] yaz.`;
+            ? `You are performing strict OCR on a photographed book/document page.
+
+TRANSCRIBE the MAIN PAGE exactly as it is visibly printed.
+
+Rules:
+- Return ONLY the transcription.
+- Read the page itself; do not summarize or paraphrase.
+- Preserve paragraph order and punctuation when visible.
+- Preserve headings if they are visibly printed.
+- Do not invent missing words.
+- Do not silently "correct" the author's wording.
+- Ignore hands, table/background, page edges, and unrelated neighboring pages.
+- If a word is genuinely impossible to read, write [unclear].
+- Pay special attention to Turkish/English diacritics, apostrophes, numbers and proper names.
+- Work line by line and use the image as the only source of truth.`
+            : `Fotoğrafı çekilmiş bir kitap/doküman sayfasında çok sıkı OCR yapıyorsun.
+
+ANA SAYFADA gözle görülebilen basılı metni mümkün olduğunca AYNEN aktar.
+
+Kurallar:
+- YALNIZCA transkripsiyonu döndür.
+- Sayfayı gerçekten oku; özetleme veya yeniden yazma yapma.
+- Görülebiliyorsa paragraf sırasını ve noktalama işaretlerini koru.
+- Basılı başlıkları koru.
+- Eksik kelime uydurma.
+- Yazarın cümlesini "düzeltmeye" çalışma.
+- El, masa/arka plan, sayfa kenarı ve ana sayfaya ait olmayan komşu sayfayı görmezden gel.
+- Bir kelime gerçekten okunamıyorsa [okunamadı] yaz.
+- Türkçe karakterlere, İngilizce kelimelere, kesme işaretlerine, sayılara ve özel adlara özellikle dikkat et.
+- Satır satır ilerle ve yalnızca görseli doğruluk kaynağı olarak kullan.`;
+
+        const cleanVisionText = (value) =>
+          cleanMultiLine(
+            String(value || "")
+              .replace(/```(?:text)?/gi, "")
+              .replace(/```/g, "")
+              .replace(
+                /^(transcription|transcript|metin|transkripsiyon)\s*:\s*/i,
+                ""
+              ),
+            24000
+          );
 
         try {
-          const result =
-            await env.AI.run(
-              "@cf/moondream/moondream3.1-9B-A2B",
-              {
-                task: "query",
-                image,
-                question,
-                reasoning: false,
-                temperature: 0,
-                top_p: 0.9,
-                max_tokens: 6000,
-              }
-            );
+          // PASS 1 — direct visual transcription
+          const firstResult = await env.AI.run(
+            OCR_MODEL,
+            {
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are a precision OCR engine. Fidelity to visible text is more important than fluency."
+                },
+                {
+                  role: "user",
+                  content: firstPrompt
+                }
+              ],
+              image,
+              reasoning_effort: "low",
+              temperature: 0,
+              top_p: 0.8,
+              max_completion_tokens: 7000
+            }
+          );
 
-          const rawText =
-            result?.answer ??
-            result?.response ??
-            result?.caption ??
-            "";
+          const firstText =
+            cleanVisionText(extractModelPayload(firstResult));
 
-          const text =
-            cleanMultiLine(
-              String(rawText)
-                .replace(/```text/gi, "")
-                .replace(/```/g, "")
-                .replace(
-                  /^(transcription|transcript|metin|transkripsiyon)\s*:\s*/i,
-                  ""
-                ),
-              18000
-            );
-
-          if (!text) {
+          if (!firstText) {
             return json(
               {
                 success: false,
-                where: "vision_ocr",
+                where: "vision_ocr_first_pass",
                 error: "Vision model returned no readable text.",
               },
               500
             );
           }
 
+          // PASS 2 — the model sees the ORIGINAL IMAGE again and checks
+          // the first transcript against it. This is not a language-only
+          // cleanup pass, so it should not invent words merely for fluency.
+          const verifyPrompt =
+            lang === "en"
+              ? `Compare the candidate OCR transcript below against the ORIGINAL IMAGE.
+
+Correct ONLY errors that you can verify from the image:
+- missing visible words or lines
+- wrong letters/words
+- punctuation
+- numbers
+- Turkish/English diacritics
+- accidental text from a neighboring page
+
+Do NOT rewrite for style or grammar.
+Do NOT add text that is not visibly supported.
+If something is unreadable, use [unclear].
+Return ONLY the corrected full transcription.
+
+CANDIDATE TRANSCRIPT:
+${firstText}`
+              : `Aşağıdaki aday OCR transkripsiyonunu ORİJİNAL GÖRSEL ile tek tek karşılaştır.
+
+Yalnızca görselden doğrulayabildiğin hataları düzelt:
+- eksik görünen kelime veya satırlar
+- yanlış harf/kelimeler
+- noktalama
+- sayılar
+- Türkçe/İngilizce karakterler
+- komşu sayfadan yanlışlıkla alınmış metin
+
+Üslup veya dilbilgisi için yeniden yazma.
+Görselde desteklenmeyen hiçbir metni ekleme.
+Okunamayan yerde [okunamadı] kullan.
+YALNIZCA düzeltilmiş tam transkripsiyonu döndür.
+
+ADAY TRANSKRİPSİYON:
+${firstText}`;
+
+          let finalText = firstText;
+          let verified = false;
+
+          try {
+            const verifyResult = await env.AI.run(
+              OCR_MODEL,
+              {
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "You verify OCR against the supplied image. Never prefer a fluent guess over what is actually visible."
+                  },
+                  {
+                    role: "user",
+                    content: verifyPrompt
+                  }
+                ],
+                image,
+                reasoning_effort: "low",
+                temperature: 0,
+                top_p: 0.8,
+                max_completion_tokens: 7000
+              }
+            );
+
+            const checked =
+              cleanVisionText(extractModelPayload(verifyResult));
+
+            if (checked && checked.length >= Math.max(20, firstText.length * 0.45)) {
+              finalText = checked;
+              verified = true;
+            }
+          } catch (verifyError) {
+            console.log(
+              "OCR verification pass failed; using first pass:",
+              safeErrorText(verifyError)
+            );
+          }
+
           return json({
             success: true,
-            text,
-            model: "moondream3.1-9B-A2B",
+            text: finalText,
+            model: "qwen3.8-27b",
+            verified,
           });
 
         } catch (aiError) {
           return json(
             {
               success: false,
-              where: "vision_ocr",
+              where: "vision_ocr_qwen",
               error: safeErrorText(aiError),
             },
             500
