@@ -506,7 +506,108 @@ CORE PRINCIPLES:
       }
 
       // ==================================================
-      // 10) METNİ ANALİZ ET VE 2 GÖRSEL PLANLA
+      // 10) HİBRİT OCR İÇİN VISION FALLBACK
+      //     Fotoğraftaki basılı metni Moondream 3.1 ile çıkarır.
+      // ==================================================
+      if (action === "ocr") {
+        const image =
+          typeof body.image === "string"
+            ? body.image.trim()
+            : "";
+
+        if (!image || !image.startsWith("data:image/")) {
+          return json(
+            {
+              success: false,
+              error: "A base64 image data URL is required.",
+            },
+            400
+          );
+        }
+
+        const question =
+          lang === "en"
+            ? `Transcribe ALL readable printed text from the MAIN page in this image as accurately as possible.
+Return only the transcription.
+Preserve paragraph breaks and punctuation when visible.
+Do not summarize.
+Do not explain.
+Do not add headings or commentary.
+Ignore hands, table/background, and a neighboring page unless its text clearly belongs to the main page.
+If a word is genuinely unreadable, use [unclear] instead of inventing it.`
+            : `Bu görseldeki ANA sayfada bulunan okunabilir basılı metnin TAMAMINI mümkün olduğunca doğru biçimde aktar.
+Yalnızca metnin transkripsiyonunu döndür.
+Görülebiliyorsa paragraf ayrımlarını ve noktalama işaretlerini koru.
+Özetleme yapma.
+Açıklama ekleme.
+Başlık veya yorum uydurma.
+El, masa/arka plan ve yan sayfadaki metni ana sayfaya ait değilse görmezden gel.
+Gerçekten okunamayan bir kelime varsa uydurmak yerine [okunamadı] yaz.`;
+
+        try {
+          const result =
+            await env.AI.run(
+              "@cf/moondream/moondream3.1-9B-A2B",
+              {
+                task: "query",
+                image,
+                question,
+                reasoning: false,
+                temperature: 0,
+                top_p: 0.9,
+                max_tokens: 6000,
+              }
+            );
+
+          const rawText =
+            result?.answer ??
+            result?.response ??
+            result?.caption ??
+            "";
+
+          const text =
+            cleanMultiLine(
+              String(rawText)
+                .replace(/```text/gi, "")
+                .replace(/```/g, "")
+                .replace(
+                  /^(transcription|transcript|metin|transkripsiyon)\s*:\s*/i,
+                  ""
+                ),
+              18000
+            );
+
+          if (!text) {
+            return json(
+              {
+                success: false,
+                where: "vision_ocr",
+                error: "Vision model returned no readable text.",
+              },
+              500
+            );
+          }
+
+          return json({
+            success: true,
+            text,
+            model: "moondream3.1-9B-A2B",
+          });
+
+        } catch (aiError) {
+          return json(
+            {
+              success: false,
+              where: "vision_ocr",
+              error: safeErrorText(aiError),
+            },
+            500
+          );
+        }
+      }
+
+      // ==================================================
+      // 11) METNİ ANALİZ ET VE 2 GÖRSEL PLANLA
       //     Bu bölüm özellikle mevcut başarılı davranışı koruyor.
       // ==================================================
       if (action === "scenes") {
@@ -638,7 +739,7 @@ No visible text, labels, titles, speech bubbles, logos or watermarks inside the 
       }
 
       // ==================================================
-      // 11) FLUX.2 KLEIN 4B İLE GÖRSEL ÜRET
+      // 12) FLUX.2 KLEIN 4B İLE GÖRSEL ÜRET
       // ==================================================
       if (action === "image") {
         const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
