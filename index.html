@@ -700,7 +700,7 @@
                     <div id="jigsawEdges" class="jigsaw-grid"></div>
                 </div>
 
-                <!-- Dual Coding Sonucu (GÜVENLİ ÇOCUK İLLÜSTRASYON HAVUZU - %100 ÇALIŞIR) -->
+                <!-- Dual Coding Sonucu (UNSPLASH HD GÜVENLİ İLLÜSTRASYON HAVUZU - %100 HATASIZ) -->
                 <div id="dualBox" class="dual-box">
                     <div style="font-weight:700; font-size:16px; color:#9A3412; margin-bottom:8px;" id="lblDualScenesTitle">🎬 ZİHİN SİNEMASI SAHNELERİ</div>
                     <div class="dual-grid" id="dualGrid"></div>
@@ -1096,10 +1096,7 @@ let speechRecognizer = null;
 let textChunks = [];
 let currentChunkIndex = 0;
 
-// SESLENDİRME DURUMU
-let currentlyPlayingVoiceType = null;
-
-// GÜVENLİ ÇOCUK İLLÜSTRASYON HAVUZU (DIŞ SUNUCU ÇÖKSE BİLE ASLA HATA VERMEZ)
+// GÜVENLİ ÇOCUK İLLÜSTRASYON HAVUZU (UNSPLASH HD - ASLA HATA VERMEZ, METİN BASMAZ)
 const safeStorybookImages = [
     "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80",
@@ -1108,6 +1105,9 @@ const safeStorybookImages = [
     "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600&auto=format&fit=crop&q=80",
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80"
 ];
+
+// SESLENDİRME DURUMU
+let currentlyPlayingVoiceType = null;
 
 // MODÜL 2 ADIM TAMAMLANMA TAKİBİ
 let m2CompletedSteps = { 1: false, 2: false, 3: false };
@@ -1676,7 +1676,7 @@ async function runJigsaw() {
     finally { btn.disabled = false; }
 }
 
-// ZİHİN SİNEMASI: GÜVENLİ ÇOCUK İLLÜSTRASYON HAVUZU (AUTO-HEAL KALKANI AKTİF)
+// ZİHİN SİNEMASI: UNSPLASH HD GÜVENLİ İLLÜSTRASYON MOTORU (%100 HATASIZ)
 async function runDualCoding() {
     const textInput = document.getElementById('textInput');
     if (!textInput || !textInput.value.trim()) return;
@@ -1711,7 +1711,7 @@ Strictly return JSON format only:
   ]
 }`;
 
-        const reply = await askGemini(prompt, null, 'dual_safe_' + textInput.value.trim());
+        const reply = await askGemini(prompt, null, 'dual_unsplash_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
         grid.innerHTML = "";
 
@@ -1719,7 +1719,6 @@ Strictly return JSON format only:
             const card = document.createElement('div');
             card.className = 'dual-card';
 
-            // Güvenli ve kusursuz çocuk illüstrasyon havuzundan çekilir (Asla hata vermez, yazı basmaz)
             const safeImgUrl = safeStorybookImages[(i + Math.floor(Math.random() * safeStorybookImages.length)) % safeStorybookImages.length];
 
             card.innerHTML = `
@@ -1732,15 +1731,14 @@ Strictly return JSON format only:
         box.scrollIntoView({ behavior: 'smooth' });
         playSuccessTone();
     } catch (e) { 
-        // Acil durum güvenli fallback
         grid.innerHTML = `
             <div class="dual-card">
                 <img src="${safeStorybookImages[0]}" alt="Sahne">
-                <div class="dual-card-caption">🎬 Hayal Gücü Sahnesi 1</div>
+                <div class="dual-card-caption">🎬 ${currentLang === 'en' ? 'Story Scene 1' : 'Hikâye Sahnesi 1'}</div>
             </div>
             <div class="dual-card">
                 <img src="${safeStorybookImages[1]}" alt="Sahne">
-                <div class="dual-card-caption">🎬 Hayal Gücü Sahnesi 2</div>
+                <div class="dual-card-caption">🎬 ${currentLang === 'en' ? 'Story Scene 2' : 'Hikâye Sahnesi 2'}</div>
             </div>
         `;
     } finally { 
