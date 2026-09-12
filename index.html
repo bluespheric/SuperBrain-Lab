@@ -2486,11 +2486,10 @@ function finishBreak() {
     playSuccessTone();
 }
 
-// OCR — API anahtarı yok; Tesseract.js tarayıcıda çalışır.
-// Bu sürüm özellikle telefon/tablet fotoğraflarında tarayıcıyı kilitlememek için
-// ağır OpenCV/perspektif işlemlerini kullanmaz.
-// Büyük fotoğraf önce güvenli boyuta küçültülür; sonra hızlı bir okuma yapılır.
-// Sonuç zayıfsa yalnızca bir kez daha daha güçlü kontrastla denenir.
+// OCR — hibrit sistem:
+// - Temiz ekran görüntüsü / dijital sayfa: Tesseract.js
+// - Gerçek fotoğraf veya düşük güvenli sonuç: Cloudflare Moondream Vision OCR
+// Gemini API anahtarı gerekmez.
 
 function buildOcrCanvas(img, strong = false) {
     const MAX_SIDE = 1500;
@@ -2507,15 +2506,12 @@ function buildOcrCanvas(img, strong = false) {
         );
     }
 
-    // Çok büyük telefon fotoğraflarını Tesseract'a vermeden önce küçült.
-    // Böylece mobil/tablet tarayıcısında donma ve "sayfa yanıt vermiyor" riski azalır.
     let scale = Math.min(
         1,
         MAX_SIDE / Math.max(width, height),
         Math.sqrt(MAX_PIXELS / (width * height))
     );
 
-    // Çok küçük metin görsellerini az miktarda büyüt.
     if (scale === 1 && width < 900) {
         scale = Math.min(1.25, 900 / width);
     }
@@ -2528,14 +2524,12 @@ function buildOcrCanvas(img, strong = false) {
     canvas.height = height;
 
     const ctx = canvas.getContext('2d', { alpha: false });
-
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
-    // Canvas filtresi piksel piksel JS döngüsünden çok daha hafif.
     ctx.filter = strong
-        ? 'grayscale(1) contrast(1.85) brightness(1.08)'
-        : 'grayscale(1) contrast(1.35) brightness(1.04)';
+        ? 'grayscale(1) contrast(1.75) brightness(1.06)'
+        : 'grayscale(1) contrast(1.30) brightness(1.03)';
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -2545,30 +2539,81 @@ function buildOcrCanvas(img, strong = false) {
     return canvas;
 }
 
+function buildVisionOcrDataUrl(img) {
+    const MAX_SIDE = 1600;
+    const MAX_PIXELS = 2000000;
+
+    let width = img.naturalWidth || img.width;
+    let height = img.naturalHeight || img.height;
+
+    let scale = Math.min(
+        1,
+        MAX_SIDE / Math.max(width, height),
+        Math.sqrt(MAX_PIXELS / (width * height))
+    );
+
+    width = Math.max(1, Math.round(width * scale));
+    height = Math.max(1, Math.round(height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, width, height);
+
+    // Fotoğrafı Worker'a gereksiz büyük göndermemek için sıkıştır.
+    return canvas.toDataURL('image/jpeg', 0.88);
+}
+
 function cleanOcrText(text) {
     return String(text || '')
         .replace(/\r/g, '')
+        .replace(/^```(?:text)?\s*/i, '')
+        .replace(/```\s*$/i, '')
         .replace(/[ \t]+\n/g, '\n')
         .replace(/[ \t]{2,}/g, ' ')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
 }
 
-function scoreOcrResult(result) {
-    const confidence = Number(result?.data?.confidence || 0);
-    const text = cleanOcrText(result?.data?.text || '');
+function looksLikeUsableText(text) {
+    const clean = cleanOcrText(text);
+    if (clean.length < 20) return false;
 
     const letters =
-        (text.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
+        (clean.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
 
-    const odd =
-        (text.match(/[^\sA-Za-z0-9ÇĞİÖŞÜçğıöşü.,;:!?'"“”‘’()\-–—*/%]/g) || []).length;
+    return letters >= Math.max(10, clean.length * 0.38);
+}
 
-    return (
-        confidence +
-        Math.min(7, letters / 120) -
-        Math.min(8, odd * 0.7)
-    );
+async function runCloudflareVisionOcr(img, prog) {
+    prog.innerText =
+        currentLang === 'en'
+            ? '👁️ Photo detected — AI is reading the page...'
+            : '👁️ Fotoğraf algılandı — yapay zekâ sayfayı okuyor...';
+
+    const imageDataUrl = buildVisionOcrDataUrl(img);
+
+    const data = await askSuperBrainAI('ocr', {
+        image: imageDataUrl
+    });
+
+    const text = cleanOcrText(data.text || '');
+
+    if (!looksLikeUsableText(text)) {
+        throw new Error(
+            currentLang === 'en'
+                ? 'Vision OCR could not extract enough readable text.'
+                : 'Görsel OCR yeterince okunabilir metin çıkaramadı.'
+        );
+    }
+
+    return text;
 }
 
 document.getElementById('imageInput').addEventListener('change', function(e) {
@@ -2608,141 +2653,155 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
         };
 
         img.onload = async () => {
+            let finalText = '';
+            let usedVision = false;
+
             try {
-                if (!window.Tesseract) {
-                    throw new Error(
-                        currentLang === 'en'
-                            ? 'OCR engine could not load. Refresh the page and try again.'
-                            : 'OCR motoru yüklenemedi. Sayfayı yenileyip tekrar dene.'
-                    );
-                }
+                // JPEG + yüksek çözünürlük çoğunlukla telefon/kamera fotoğrafıdır.
+                // Böyle görselleri Tesseract'ta uzun süre bekletmek yerine
+                // doğrudan vision OCR'a gönderiyoruz.
+                const isJpeg =
+                    /^image\/jpe?g$/i.test(file.type || '');
 
-                const ocrLang =
-                    currentLang === 'en'
-                        ? 'eng'
-                        : 'tur+eng';
+                const looksLikeCameraPhoto =
+                    isJpeg ||
+                    (img.naturalWidth >= 1800 &&
+                     img.naturalHeight >= 1200 &&
+                     !/^image\/png$/i.test(file.type || ''));
 
-                const runOcr = async (canvas, label) => {
-                    // Tesseract kendi Web Worker'ında çalışır;
-                    // bu nedenle ana sayfayı kilitlemez.
-                    return await Tesseract.recognize(
-                        canvas,
-                        ocrLang,
-                        {
-                            logger: (m) => {
-                                if (m.status === 'recognizing text') {
-                                    const pct =
-                                        Math.round((m.progress || 0) * 100);
+                if (looksLikeCameraPhoto) {
+                    try {
+                        finalText =
+                            await runCloudflareVisionOcr(img, prog);
 
-                                    prog.innerText =
-                                        currentLang === 'en'
-                                            ? `🔎 ${label} ${pct}%`
-                                            : `🔎 ${label} %${pct}`;
-                                } else if (
-                                    m.status === 'loading language traineddata'
-                                ) {
-                                    prog.innerText =
-                                        currentLang === 'en'
-                                            ? '📚 Loading OCR language data...'
-                                            : '📚 OCR dil verileri hazırlanıyor...';
-                                } else if (
-                                    m.status === 'initializing tesseract'
-                                ) {
-                                    prog.innerText =
-                                        currentLang === 'en'
-                                            ? '🧠 OCR is getting ready...'
-                                            : '🧠 OCR hazırlanıyor...';
-                                }
-                            }
-                        }
-                    );
-                };
-
-                // İlk geçiş: dijital ekran görüntüsü + normal fotoğraf.
-                const normalCanvas = buildOcrCanvas(img, false);
-
-                let bestResult = await runOcr(
-                    normalCanvas,
-                    currentLang === 'en'
-                        ? 'Reading...'
-                        : 'Metin okunuyor...'
-                );
-
-                let bestText =
-                    cleanOcrText(bestResult?.data?.text || '');
-
-                let bestConfidence =
-                    Number(bestResult?.data?.confidence || 0);
-
-                // Yalnızca gerçekten gerekliyse ikinci geçiş yap.
-                // Önceki sürümdeki ağır perspektif/OpenCV zinciri tamamen kaldırıldı.
-                const letterCount =
-                    (bestText.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
-
-                const needsSecondPass =
-                    bestConfidence < 72 ||
-                    bestText.length < 30 ||
-                    letterCount < Math.max(10, bestText.length * 0.42);
-
-                if (needsSecondPass) {
-                    prog.innerText =
-                        currentLang === 'en'
-                            ? '🪄 Photo is a little difficult — trying stronger contrast...'
-                            : '🪄 Fotoğraf biraz zorlayıcı — daha güçlü kontrast deneniyor...';
-
-                    // UI'nın nefes almasına fırsat ver.
-                    await new Promise(resolve => setTimeout(resolve, 80));
-
-                    const strongCanvas = buildOcrCanvas(img, true);
-
-                    const secondResult = await runOcr(
-                        strongCanvas,
-                        currentLang === 'en'
-                            ? 'Second reading...'
-                            : 'İkinci okuma...'
-                    );
-
-                    if (
-                        scoreOcrResult(secondResult) >
-                        scoreOcrResult(bestResult)
-                    ) {
-                        bestResult = secondResult;
-                        bestText =
-                            cleanOcrText(secondResult?.data?.text || '');
-                        bestConfidence =
-                            Number(secondResult?.data?.confidence || 0);
+                        usedVision = true;
+                    } catch (visionErr) {
+                        console.warn(
+                            'Vision OCR failed; falling back to Tesseract:',
+                            visionErr
+                        );
                     }
                 }
 
-                if (!bestText) {
+                // Temiz ekran görüntülerinde hızlı ve ücretsiz tarayıcı OCR'ı.
+                if (!finalText) {
+                    if (!window.Tesseract) {
+                        // Tesseract CDN yüklenmediyse vision doğrudan yedek olur.
+                        finalText =
+                            await runCloudflareVisionOcr(img, prog);
+
+                        usedVision = true;
+                    } else {
+                        const ocrLang =
+                            currentLang === 'en'
+                                ? 'eng'
+                                : 'tur+eng';
+
+                        const canvas =
+                            buildOcrCanvas(img, false);
+
+                        const result =
+                            await Tesseract.recognize(
+                                canvas,
+                                ocrLang,
+                                {
+                                    logger: (m) => {
+                                        if (
+                                            m.status ===
+                                            'recognizing text'
+                                        ) {
+                                            const pct =
+                                                Math.round(
+                                                    (m.progress || 0) * 100
+                                                );
+
+                                            prog.innerText =
+                                                currentLang === 'en'
+                                                    ? `🔎 Reading text... ${pct}%`
+                                                    : `🔎 Metin okunuyor... %${pct}`;
+                                        }
+                                    }
+                                }
+                            );
+
+                        const tessText =
+                            cleanOcrText(
+                                result?.data?.text || ''
+                            );
+
+                        const confidence =
+                            Number(
+                                result?.data?.confidence || 0
+                            );
+
+                        // Tesseract sonucu şüpheliyse vision modeline geç.
+                        const shouldUseVision =
+                            confidence < 80 ||
+                            !looksLikeUsableText(tessText);
+
+                        if (shouldUseVision) {
+                            try {
+                                finalText =
+                                    await runCloudflareVisionOcr(
+                                        img,
+                                        prog
+                                    );
+
+                                usedVision = true;
+                            } catch (visionErr) {
+                                console.warn(
+                                    'Vision OCR fallback failed:',
+                                    visionErr
+                                );
+
+                                finalText = tessText;
+                            }
+                        } else {
+                            finalText = tessText;
+                        }
+                    }
+                }
+
+                finalText =
+                    cleanOcrText(finalText);
+
+                if (!looksLikeUsableText(finalText)) {
                     throw new Error(
                         currentLang === 'en'
-                            ? 'No readable text was found. Try a brighter, closer photo.'
-                            : 'Okunabilir metin bulunamadı. Daha aydınlık ve yakından çekilmiş bir fotoğraf dene.'
+                            ? 'No readable text could be extracted. Try a brighter and closer photo.'
+                            : 'Okunabilir metin çıkarılamadı. Daha aydınlık ve yakından çekilmiş bir fotoğraf dene.'
                     );
                 }
 
-                document.getElementById('textInput').value = bestText;
+                document.getElementById(
+                    'textInput'
+                ).value = finalText;
+
                 resetAndDisplayChunks();
 
-                if (bestConfidence >= 76) {
-                    prog.innerText =
-                        currentLang === 'en'
-                            ? '✅ Text transferred!'
-                            : '✅ Metin aktarıldı!';
-                } else {
-                    prog.innerText =
-                        currentLang === 'en'
-                            ? '⚠️ Text transferred — please quickly check a few words.'
-                            : '⚠️ Metin aktarıldı — fotoğraf zordu, birkaç kelimeyi hızlıca kontrol et.';
-                }
+                prog.innerText =
+                    currentLang === 'en'
+                        ? (
+                            usedVision
+                                ? '✅ Photo read with AI!'
+                                : '✅ Text transferred!'
+                        )
+                        : (
+                            usedVision
+                                ? '✅ Fotoğraf yapay zekâ ile okundu!'
+                                : '✅ Metin aktarıldı!'
+                        );
 
                 setTimeout(() => {
                     prog.style.display = 'none';
-                }, bestConfidence >= 76 ? 900 : 2200);
+                }, 1100);
 
             } catch (err) {
-                console.error('OCR error:', err);
+                console.error(
+                    'Hybrid OCR error:',
+                    err
+                );
+
                 prog.style.display = 'none';
 
                 alert(
@@ -2751,7 +2810,9 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
                         : `OCR tamamlanamadı: ${err.message}`
                 );
             } finally {
-                document.getElementById('imageInput').value = '';
+                document.getElementById(
+                    'imageInput'
+                ).value = '';
             }
         };
 
