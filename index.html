@@ -2503,6 +2503,48 @@ function safeOcrLooksUsable(text) {
     return letters >= Math.max(8, clean.length * 0.30);
 }
 
+function safeOcrRemoveGarbageLines(text) {
+    const lines = safeOcrClean(text).split('\n');
+    const kept = [];
+
+    for (const raw of lines) {
+        const line = raw.trim();
+
+        if (!line) {
+            if (kept.length && kept[kept.length - 1] !== '') kept.push('');
+            continue;
+        }
+
+        // Keep meaningful separators.
+        if (line === '*' || line === '***') {
+            kept.push(line);
+            continue;
+        }
+
+        const letters = (line.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length;
+        const digits = (line.match(/[0-9]/g) || []).length;
+        const visible = line.replace(/\s/g, '').length || 1;
+        const letterRatio = letters / visible;
+
+        // Remove short OCR garbage such as:
+        // "YL ba Yüde", "MM Py BE", stray single symbols, etc.
+        if (
+            visible <= 3 ||
+            (visible < 14 && letterRatio < 0.58) ||
+            (letters <= 2 && digits === 0)
+        ) {
+            continue;
+        }
+
+        kept.push(line);
+    }
+
+    return kept
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+}
+
 function safeOcrLoadImage(dataUrl) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -2623,13 +2665,19 @@ function safeOcrFindPageCrop(img) {
     }
 
     // Small inset removes page-edge shadows and fingers.
-    const insetX = Math.max(2, Math.round((right - left) * 0.018));
-    const insetY = Math.max(2, Math.round((bottom - top) * 0.018));
+    // For photographed book pages, a slightly stronger top/bottom trim
+    // also removes page-number/header noise and finger/shadow clutter.
+    const pageW = right - left;
+    const pageH = bottom - top;
+
+    const insetX = Math.max(2, Math.round(pageW * 0.025));
+    const insetTop = Math.max(2, Math.round(pageH * 0.055));
+    const insetBottom = Math.max(2, Math.round(pageH * 0.035));
 
     left += insetX;
     right -= insetX;
-    top += insetY;
-    bottom -= insetY;
+    top += insetTop;
+    bottom -= insetBottom;
 
     return {
         sx: Math.max(0, Math.round(left / aw * iw)),
@@ -2696,12 +2744,14 @@ async function safeOcrRecognizeImage(img, language, onProgress) {
                     if (m.status === 'recognizing text' && onProgress) {
                         onProgress(Math.round((m.progress || 0) * 100), strong);
                     }
-                }
+                },
+                tessedit_pageseg_mode: 6,
+                preserve_interword_spaces: 1
             }
         );
 
         return {
-            text: safeOcrClean(result?.data?.text || ''),
+            text: safeOcrRemoveGarbageLines(result?.data?.text || ''),
             confidence: Number(result?.data?.confidence || 0)
         };
     };
