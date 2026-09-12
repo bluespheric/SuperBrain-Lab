@@ -186,7 +186,7 @@
         .syllable-a { color: #1E3A8A; font-weight: 600; }
         .syllable-b { color: #0F172A; font-weight: 600; }
 
-        /* 4 AÇIK VE DENGELİ SES KARTI (2 KADIN, 2 ERKEK) */
+        /* 4 AÇIK VE RENKLİ SES KARTI (EVRENSEL GÜVENLİ EMOJİLERLE) */
         .voice-section {
             display: none; background: #EFF6FF; border: 2px solid #BFDBFE; border-radius: 18px;
             padding: 16px; margin: 16px 0; text-align: left;
@@ -617,7 +617,7 @@
                     </label>
                 </div>
 
-                <!-- 4 AÇIK VE DENGELİ SES KARTI (2 KADIN, 2 ERKEK - YALNIZCA İNGİLİZCE) -->
+                <!-- 4 AÇIK VE RENKLİ SES KARTI (EVRENSEL GÜVENLİ EMOJİLERLE - YALNIZCA İNGİLİZCE) -->
                 <div id="englishVoiceBar" class="voice-section">
                     <div class="voice-section-title">
                         <span>🎧</span> <span>Storyteller Characters (Tap to play / stop):</span>
@@ -626,7 +626,7 @@
                         <!-- Kadın 1 (Amerikan) -->
                         <div class="voice-pick-card" id="card_US_F" onclick="pickAndPlayVoice('US_F')">
                             <div>
-                                <div class="voice-pick-name">👩 Starlight Pixie</div>
+                                <div class="voice-pick-name">🌟 Starlight Pixie</div>
                                 <div class="voice-pick-accent">American Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_US_F">▶</span>
@@ -634,7 +634,7 @@
                         <!-- Kadın 2 (İngiliz) -->
                         <div class="voice-pick-card" id="card_UK_F" onclick="pickAndPlayVoice('UK_F')">
                             <div>
-                                <div class="voice-pick-name">👩 Tea Fairy</div>
+                                <div class="voice-pick-name">🫖 Tea Fairy</div>
                                 <div class="voice-pick-accent">British Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_UK_F">▶</span>
@@ -642,7 +642,7 @@
                         <!-- Erkek 1 (Amerikan) -->
                         <div class="voice-pick-card" id="card_US_M" onclick="pickAndPlayVoice('US_M')">
                             <div>
-                                <div class="voice-pick-name">👨 Cosmo Buddy</div>
+                                <div class="voice-pick-name">🚀 Cosmo Buddy</div>
                                 <div class="voice-pick-accent">American Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_US_M">▶</span>
@@ -650,7 +650,7 @@
                         <!-- Erkek 2 (İngiliz) -->
                         <div class="voice-pick-card" id="card_UK_M" onclick="pickAndPlayVoice('UK_M')">
                             <div>
-                                <div class="voice-pick-name">👨 Royal Wizard</div>
+                                <div class="voice-pick-name">🪄 Royal Wizard</div>
                                 <div class="voice-pick-accent">British Accent</div>
                             </div>
                             <span class="voice-pick-play-icon" id="icon_UK_M">▶</span>
@@ -1505,7 +1505,7 @@ function changeChunk(direction) {
     }
 }
 
-// 4 AÇIK KARTLI SESLENDİRME MOTORU (2 KADIN, 2 ERKEK - DENGELİ AKSANLAR)
+// 4 AÇIK KARTLI SESLENDİRME MOTORU (2 KADIN, 2 ERKEK - GÜVENLİ EVRENSEL EMOJİLER)
 function pickAndPlayVoice(voiceType) {
     if (!('speechSynthesis' in window)) return;
 
@@ -1536,15 +1536,14 @@ function pickAndPlayVoice(voiceType) {
     // 3. Erkek (Amerikan)
     else if (voiceType === 'US_M') {
         matchVoice = all.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && (v.name.includes('David') || v.name.includes('Mark') || v.name.includes('Guy') || v.name.includes('Male') || v.name.includes('Google US English Male')));
-        utterance.pitch = 0.85; // Tok erkek tonu
+        utterance.pitch = 0.85;
     } 
     // 4. Erkek (İngiliz)
     else if (voiceType === 'UK_M') {
         matchVoice = all.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('George') || v.name.includes('Oliver') || v.name.includes('Brian') || v.name.includes('Male') || v.name.includes('Google UK English Male')));
-        utterance.pitch = 0.8; // Derin bilge büyücü erkek tonu
+        utterance.pitch = 0.8;
     }
 
-    // Aksan hedefine göre yedekleme
     if (!matchVoice) {
         if (voiceType.startsWith('US')) {
             matchVoice = all.find(v => v.lang.includes('US') || v.lang.includes('en'));
