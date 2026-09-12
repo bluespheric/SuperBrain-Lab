@@ -5,6 +5,12 @@
   "ai": {
     "binding": "AI"
   },
+  "kv_namespaces": [
+    {
+      "binding": "LESSONS",
+      "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+    }
+  ],
   "vars": {
     "ALLOWED_ORIGINS": "https://bluespheric.github.io",
     "ALLOW_LOCAL_DEV": "false"
@@ -39,6 +45,14 @@
       "namespace_id": "7812404",
       "simple": {
         "limit": 30,
+        "period": 60
+      }
+    },
+    {
+      "name": "SHARE_RATE_LIMITER",
+      "namespace_id": "7812405",
+      "simple": {
+        "limit": 10,
         "period": 60
       }
     }
