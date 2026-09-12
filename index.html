@@ -323,7 +323,7 @@
             border-radius: 14px; margin-top: 14px; font-weight: 500; line-height: 1.8; color: #0F172A; font-size: 16px; text-align: left;
         }
 
-        /* KELİME PİSTİ (DOKUNSAL VE MOBİL DOSTU) */
+        /* KELİME PİSTİ */
         .letter-slots-container { display: flex; gap: 8px; justify-content: center; margin: 16px 0; flex-wrap: wrap; }
         .letter-slot {
             width: 46px; height: 52px; border: 2.5px solid #CBD5E1; border-radius: 12px;
@@ -421,7 +421,7 @@
             font-size: 17px; font-weight: 700; width: 100%; cursor: pointer;
         }
 
-        /* YARATICI SONRAKİ ODA KÖPRÜSÜ (EN AŞAĞIDA DOĞAL AKIŞTA) */
+        /* YARATICI SONRAKİ ODA KÖPRÜSÜ (EN AŞAĞIDA) */
         .next-bridge-container {
             display: flex; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid #E2D7C5;
         }
@@ -811,7 +811,7 @@
                     </div>
                 </div>
 
-                <!-- 3. İSTASYON: KELİME PİSTİ (TABLET KLAVYESİ AKTİF ETME DESTEĞİ) -->
+                <!-- 3. İSTASYON: KELİME PİSTİ (DOKUNMATİK VE TABLET KLAVYESİ DESTEĞİ) -->
                 <div id="subTrack" class="sub-content">
                     <h3 style="margin:0 0 8px 0; color:#1E3A8A;" id="lblTrackTitle">✍️ 3. İstasyon: Kelime Pisti</h3>
                     <p style="color:#475569; font-size:14px; margin-top:0;" id="lblTrackDesc">Hedef kelimeyi harf harf yaz veya kutuya dokunup klavyeni aç:</p>
@@ -822,7 +822,6 @@
 
                         <div class="letter-slots-container" id="letterSlotsContainer" onclick="focusTrackInput()"></div>
                         
-                        <!-- Tablette Klavyeyi Kesin Başlatan Görünür Dokunma Alanı -->
                         <div class="tablet-keyboard-box">
                             <input type="text" id="trackInput" class="tablet-input-field" placeholder="⌨️ Buraya Dokun & Yaz" oninput="handleTrackInput(this)">
                             <button class="theme-btn" style="margin:0;" onclick="undoLastLetter()"><span id="btnUndoLetterText">⌫</span></button>
@@ -940,7 +939,6 @@
                         <div class="timer-center-text" id="forestTimerDisplay">15:00</div>
                     </div>
                     <div id="treeVisual" style="font-size:70px; margin:6px 0;">🌱</div>
-                    <!-- Pomodoro'da Odaklanılan Görevin Dinamik Başlığı -->
                     <div id="currentTargetLockNotice" style="font-size:14px; font-weight:700; color:#0F766E; margin-bottom:10px; min-height:20px;"></div>
                     <div>
                         <button id="startForestBtn" class="btn-action-large btn-dual-style" onclick="toggleForestTimer()"><span id="lblStartTimer">🚀 Odaklanmayı Başlat</span></button>
@@ -1687,7 +1685,7 @@ async function runJigsaw() {
     finally { btn.disabled = false; }
 }
 
-// ZİHİN SİNEMASI: METİNDEKİ OLAYI BİREBİR TASVİR EDEN GELİŞMİŞ GÖRSEL MOTORU
+// ZİHİN SİNEMASI: FLUX MOTORU & SANAT YÖNETMENİ PROMPTU İLE KESİNTİSİZ ÇİZİM
 async function runDualCoding() {
     const textInput = document.getElementById('textInput');
     if (!textInput || !textInput.value.trim()) return;
@@ -1696,28 +1694,78 @@ async function runDualCoding() {
     const grid = document.getElementById('dualGrid');
     btn.disabled = true;
     grid.innerHTML = "";
+    box.style.display = 'block';
+
+    // Geçici yükleme kartları
+    grid.innerHTML = `
+        <div class="dual-card" style="padding:40px; color:#EA580C; font-weight:700; background:#FFF7ED; border:2px dashed #FED7AA;">
+            🎨 1. Sahne çiziliyor, boyalar hazırlanıyor...
+        </div>
+        <div class="dual-card" style="padding:40px; color:#EA580C; font-weight:700; background:#FFF7ED; border:2px dashed #FED7AA;">
+            🎨 2. Sahne canlandırılıyor...
+        </div>
+    `;
 
     try {
-        const prompt = `Story/Text: "${textInput.value.trim()}"\nGenerate 2 distinct visual scenes that accurately depict the specific actions and key moments from this text.\nReturn JSON only:\n{"scenes": [{"caption": "Short descriptive scene title", "prompt": "detailed vivid english visual description of the action and characters without text"}, {"caption": "Second scene title", "prompt": "detailed vivid english visual description of the next action and setting"}]}`;
-        const reply = await askGemini(prompt, null, 'dual_' + textInput.value.trim());
+        const prompt = `Story text: "${textInput.value.trim()}".
+Act as a master children's book illustrator. Break this story into 2 sequential, highly specific visual moments.
+For each scene, describe the exact character, what action they are performing, and the background in vivid detail.
+Strictly return JSON format only:
+{
+  "scenes": [
+    {
+      "caption": "Short, lively scene title in ${currentLang === 'en' ? 'English' : 'Turkish'}",
+      "visual_prompt": "cute friendly character performing the exact action from story, clear colorful environment, storybook illustration, pixar 3d style, soft warm lighting, clean composition, vibrant pastel colors, masterpiece, no text, no watermark"
+    },
+    {
+      "caption": "Second scene title in ${currentLang === 'en' ? 'English' : 'Turkish'}",
+      "visual_prompt": "the next specific action or moment from the text, charming character expression, whimsical storybook art, bright inviting atmosphere, Disney animation aesthetic, no text, no watermark"
+    }
+  ]
+}`;
+
+        const reply = await askGemini(prompt, null, 'dual_art_' + textInput.value.trim());
         const data = parseCleanJSON(reply);
-        box.style.display = 'block';
+        grid.innerHTML = "";
 
         data.scenes.forEach((scene, i) => {
             const card = document.createElement('div');
             card.className = 'dual-card';
+
+            const fullPrompt = encodeURIComponent(scene.visual_prompt);
+            const seed = Math.floor(Math.random() * 10000) + (i * 77);
+            const imgUrl = `https://image.pollinations.ai/prompt/${fullPrompt}?model=flux&width=600&height=420&nologo=true&seed=${seed}`;
+
             const img = document.createElement('img');
-            const searchPrompt = encodeURIComponent(scene.prompt + " colorful children book illustration, vibrant character, clear setting");
-            img.src = `https://image.pollinations.ai/prompt/${searchPrompt}?width=520&height=380&nologo=true&seed=${i + Math.floor(Math.random()*100)}`;
+            img.alt = scene.caption;
+            img.src = imgUrl;
+
             img.onload = () => {
-                card.innerHTML = `<img src="${img.src}"><div class="dual-card-caption">🎬 ${cleanMarkdown(scene.caption)}</div>`;
+                card.innerHTML = `
+                    <img src="${img.src}" alt="${scene.caption}">
+                    <div class="dual-card-caption">🎬 ${cleanMarkdown(scene.caption)}</div>
+                `;
+                grid.appendChild(card);
+            };
+
+            img.onerror = () => {
+                card.innerHTML = `
+                    <div style="padding:30px; color:#475569; font-weight:600;">
+                        🖼️ <b>${cleanMarkdown(scene.caption)}</b><br>
+                        <span style="font-size:13px; color:#64748B;">Zihninde canlandır: ${cleanMarkdown(scene.visual_prompt.split(',')[0])}</span>
+                    </div>
+                `;
                 grid.appendChild(card);
             };
         });
+
         box.scrollIntoView({ behavior: 'smooth' });
         playSuccessTone();
-    } catch (e) { alert(e.message); }
-    finally { btn.disabled = false; }
+    } catch (e) { 
+        grid.innerHTML = `<div style="color:#DC2626; padding:20px;">Görsel hazırlanırken minik bir takılma oldu, butona tekrar dokunabilirsin! ✨</div>`;
+    } finally { 
+        btn.disabled = false; 
+    }
 }
 
 // 2. İSTASYON
@@ -1848,7 +1896,7 @@ async function fetchMnemonic(word) {
     } catch(e) { out.innerHTML = e.message; }
 }
 
-// KELİME PİSTİ (TABLET VE DOKUNMATİK DESTEKLİ)
+// KELİME PİSTİ
 function focusTrackInput() {
     const input = document.getElementById('trackInput');
     if (input) {
@@ -2122,14 +2170,12 @@ function toggleTaskDone(idx, chk) {
     }
 }
 
-// HANGİ ADIMA BASILDIYSA O ADI DİNAMİK OLARAK SAYACA KİLİTLER
 function lockStepToTimer(taskTitle) {
     const cleanTitle = taskTitle.replace(/^[0-9]+[\.\:\s]*/, '').replace(/^Step\s*[0-9]+[\.\:\s]*/i, '').replace(/^Adım\s*[0-9]+[\.\:\s]*/i, '');
     const noticeEl = document.getElementById('currentTargetLockNotice');
     if (noticeEl) {
         noticeEl.innerText = (currentLang === 'en' ? `🎯 Focus Task: ` : `🎯 Şu anki Görev: `) + cleanTitle;
     }
-    // Modül 4 sekmesine yumuşak geçiş yap
     document.querySelector('[data-mod="module4"]').click();
     window.scrollTo({ top: document.getElementById('currentTargetLockNotice').offsetTop - 60, behavior: 'smooth' });
 }
@@ -2143,7 +2189,7 @@ async function convertWithYet() {
     const out = document.getElementById('yetOutputText');
     btn.disabled = true;
     card.style.display = 'block';
-    out.innerHTML = currentLang === 'en' ? "🪄 Turning into superpower..." : "🪄 Güce dönüştürülüyor...";
+    out.innerHTML = "🪄 Güce dönüştürülüyor...";
 
     try {
         const prompt = currentLang === 'en'
