@@ -1628,7 +1628,7 @@ async function askGemini(promptText, base64Image = null, cacheKey = null) {
     } catch (err) { throw err; }
 }
 
-// GERÇEK GÖRSEL ÜRETİMİ: Gemini'nin görsel üretebilen modeli (gemini-2.5-flash-image).
+// GERÇEK GÖRSEL ÜRETİMİ: Cloudflare Workers AI üzerindeki FLUX modeli.
 // Metinden çıkarılan sahne tarifini alır, o sahneye özel bir illüstrasyon (base64) döndürür.
 async function askGeminiImage(promptText, cacheKey = null) {
     if (cacheKey && aiCache.has(cacheKey)) {
@@ -1644,6 +1644,7 @@ async function askGeminiImage(promptText, cacheKey = null) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
+                action: "image",
                 prompt: promptText
             })
         });
@@ -1712,7 +1713,7 @@ async function runJigsaw() {
     finally { btn.disabled = false; }
 }
 
-// ZİHİN SİNEMASI: METNE ÖZEL, GERÇEK ZAMANLI GÖRSEL ÜRETİMİ (Gemini image model)
+// ZİHİN SİNEMASI: Metin analizi + görsel üretimi Cloudflare Workers AI üzerinden
 async function runDualCoding() {
     const textInput = document.getElementById('textInput');
     if (!textInput || !textInput.value.trim()) return;
@@ -1731,31 +1732,30 @@ async function runDualCoding() {
                       loadingCardHTML(currentLang === 'en' ? 'Reading the story...' : 'Hikâye okunuyor...');
 
     try {
-        // 1) Metni gerçekten görsel olarak tarif edecek sahne promptları üret
+        // 1) Metni Cloudflare Workers AI ile 2 görsel sahneye ayır
         const workerUrl = "https://gentle-dream-d716.bluerisma8.workers.dev/";
 
-const sceneRes = await fetch(workerUrl, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        action: "scenes",
-        text: textInput.value.trim(),
-        lang: currentLang
-    })
-});
+        const sceneRes = await fetch(workerUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                action: "scenes",
+                text: textInput.value.trim(),
+                lang: currentLang
+            })
+        });
 
-const data = await sceneRes.json();
+        const data = await sceneRes.json();
 
-if (!sceneRes.ok || !data.success || !Array.isArray(data.scenes)) {
-    throw new Error(
-        currentLang === "en"
-            ? "Scenes could not be prepared, please try again."
-            : "Sahneler hazırlanamadı, lütfen tekrar dene."
-    );
-}
-        const data = parseCleanJSON(reply);
+        if (!sceneRes.ok || !data.success || !Array.isArray(data.scenes)) {
+            throw new Error(
+                currentLang === "en"
+                    ? "Scenes could not be prepared, please try again."
+                    : "Sahneler hazırlanamadı, lütfen tekrar dene."
+            );
+        }
 
         grid.innerHTML = data.scenes.map((_, i) => loadingCardHTML(
             currentLang === 'en' ? `Drawing scene ${i + 1}...` : `${i + 1}. sahne çiziliyor...`
